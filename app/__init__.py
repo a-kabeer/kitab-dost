@@ -86,6 +86,10 @@ def create_app(config_name='default'):
     app.register_blueprint(teacher_bp)
     app.register_blueprint(auth_bp)
 
+    @app.route('/favicon.ico')
+    def favicon():
+        return app.send_static_file('img/favicon.svg')
+
     # Error Handlers
     @app.errorhandler(404)
     def page_not_found(e):

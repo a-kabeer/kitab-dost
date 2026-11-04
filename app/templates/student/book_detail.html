@@ -112,22 +112,28 @@
             <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline">
               ← Back to Catalogue
             </a>
-            <button 
-              type="button" 
-              class="btn btn-primary" 
-              disabled 
-              title="Book requesting opens in Phase 4"
-              style="opacity: 0.7; cursor: not-allowed;"
-            >
+            {% if book.status == 'available' %}
+            <a href="{{ url_for('student.request_book', code_or_id=book.book_code) }}" class="btn btn-primary">
               <span>📋</span>
               <span>Request This Book</span>
+            </a>
+            {% elif book.status == 'reserved' %}
+            <button type="button" class="btn btn-outline" disabled style="opacity: 0.7; cursor: not-allowed;">
+              <span>⏳</span>
+              <span>Currently Reserved</span>
             </button>
+            {% else %}
+            <button type="button" class="btn btn-outline" disabled style="opacity: 0.7; cursor: not-allowed;">
+              <span>🤝</span>
+              <span>{{ book.status|title }}</span>
+            </button>
+            {% endif %}
           </div>
         </div>
 
         <div style="background-color: var(--bg-muted); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
           <span>ℹ️</span>
-          <span><strong>Note for Students:</strong> Digital request submission opens in Phase 4. Currently, you can note down the Reference Code (<strong>{{ book.book_code }}</strong>) and ask your class teacher directly.</span>
+          <span><strong>Note for Students:</strong> Submit your request with your Class &amp; Roll Number. A school teacher reviews all requests to ensure fair allocation. Once approved, the book is reserved for pickup.</span>
         </div>
       </div>
     </div>

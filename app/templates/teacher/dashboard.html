@@ -33,14 +33,14 @@
     <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Review Queue →</div>
   </a>
 
-  <div class="metric-card">
+  <a href="{{ url_for('teacher.requests') }}" class="metric-card" style="text-decoration: none; color: inherit;">
     <div class="metric-header">
       <span class="metric-title">Pending Requests</span>
       <div class="metric-icon">📋</div>
     </div>
     <div class="metric-value">{{ stats.pending_requests }}</div>
-    <div class="metric-footer">Awaiting verification & reservation</div>
-  </div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Request Queue →</div>
+  </a>
 
   <div class="metric-card">
     <div class="metric-header">

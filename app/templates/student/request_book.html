@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Request Book - {{ book.title }} - Kitaab Bank{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('student.index') }}">Home</a>
+    <span>/</span>
+    <a href="{{ url_for('student.catalogue') }}">Catalogue</a>
+    <span>/</span>
+    <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}">{{ book.title }}</a>
+    <span>/</span>
+    <span style="color: var(--text-primary); font-weight: 600;">Request Book</span>
+  </nav>
+
+  <div class="donation-form-wrap">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="hero-pill" style="margin-bottom: 0.75rem;">
+        <span>📋</span>
+        <span>Student Book Request</span>
+      </div>
+      <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+        Request Textbook for Your Studies
+      </h1>
+      <p class="text-muted" style="max-width: 580px; margin: 0 auto; font-size: 1.05rem;">
+        Submit your request to reserve this verified book. A school teacher will review your request and confirm reservation for physical handover.
+      </p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Selected Book Mini-Card -->
+    <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.75rem; display: flex; gap: 1.25rem; align-items: center; box-shadow: var(--shadow-sm); flex-wrap: wrap;">
+      <img 
+        src="{{ url_for('static', filename=book.image_path) }}" 
+        alt="{{ book.title }} Cover" 
+        style="width: 72px; height: 96px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color);"
+      >
+      <div style="flex: 1; min-width: 220px;">
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+          <span class="badge badge-primary">{{ book.class_grade }}</span>
+          <span class="badge badge-secondary">{{ book.subject }}</span>
+          <span class="badge {% if book.condition_state == 'Like New' %}badge-success{% elif book.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}">
+            {{ book.condition_state }}
+          </span>
+        </div>
+        <h3 style="margin: 0 0 0.25rem; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">
+          {{ book.title }}
+        </h3>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+          By {{ book.author or 'Textbook Board' }} • Code: <code style="font-weight: 700; color: var(--primary);">{{ book.book_code }}</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">● Available</span>
+      </div>
+    </div>
+
+    <!-- Request Form Card -->
+    <div class="donation-card">
+      <form action="{{ url_for('student.request_book') }}" method="POST" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="book_id" value="{{ book.id }}">
+        <input type="hidden" name="book_code" value="{{ book.book_code }}">
+
+        <div class="donation-section">
+          <div class="section-title">
+            <span>👤</span>
+            <span>Student Requester Information</span>
+          </div>
+          <p class="section-desc">
+            Enter your correct school identifiers. Teachers will verify this information during physical handover.
+          </p>
+
+          <div class="form-grid-2">
+            <!-- Requester Name -->
+            <div class="form-group">
+              <label for="requester-name" class="form-label">
+                Your Full Name <span class="required-star">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="requester-name" 
+                name="requester_name" 
+                class="form-control" 
+                placeholder="e.g. Fatima Noor"
+                value="{{ form_data.get('requester_name', '') }}" 
+                required
+                maxlength="100"
+              >
+            </div>
+
+            <!-- Class & Section -->
+            <div class="form-group">
+              <label for="requester-class" class="form-label">
+                Class &amp; Section <span class="required-star">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="requester-class" 
+                name="requester_class" 
+                class="form-control" 
+                placeholder="e.g. Class 7-B, 6-Blue"
+                value="{{ form_data.get('requester_class', '') }}" 
+                required
+                maxlength="50"
+              >
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <!-- Roll Number -->
+            <div class="form-group">
+              <label for="requester-roll" class="form-label">
+                School Roll Number <span class="required-star">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="requester-roll" 
+                name="requester_roll_no" 
+                class="form-control" 
+                placeholder="e.g. 18"
+                value="{{ form_data.get('requester_roll_no', '') }}"
+                required
+                maxlength="50"
+              >
+              <span class="form-hint">Used by the teacher to verify your identity when you collect the book.</span>
+            </div>
+
+            <!-- Contact / Parent Phone -->
+            <div class="form-group">
+              <label for="requester-contact" class="form-label">
+                Contact Phone / Parent Mobile <span class="required-star">*</span>
+              </label>
+              <input 
+                type="tel" 
+                id="requester-contact" 
+                name="requester_contact" 
+                class="form-control" 
+                placeholder="e.g. 0300-1234567"
+                value="{{ form_data.get('requester_contact', '') }}"
+                required
+                maxlength="50"
+              >
+              <span class="form-hint">Strictly private. Never shared publicly.</span>
+            </div>
+          </div>
+
+          <!-- Notes / Reason -->
+          <div class="form-group">
+            <label for="request-notes" class="form-label">
+              Reason / Message for Teacher (Optional)
+            </label>
+            <textarea 
+              id="request-notes" 
+              name="notes" 
+              class="form-control" 
+              placeholder="e.g. Need this book for daily classwork and exam preparation..."
+              maxlength="500"
+            >{{ form_data.get('notes', '') }}</textarea>
+          </div>
+        </div>
+
+        <!-- Privacy & Fair Allocation Notice -->
+        <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 2rem; display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.85rem; color: var(--primary-text);">
+          <span style="font-size: 1.25rem; line-height: 1;">🛡️</span>
+          <div>
+            <strong>Atomic Reservation &amp; Privacy:</strong> After submitting, you will receive an unpredictable Tracking Code (e.g. <code>KB-REQ-7K9M-2X4P</code>). Once approved by a teacher, the book is locked and reserved exclusively for you. Your phone number and roll number remain strictly confidential.
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+          <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem; font-size: 1.05rem;">
+            <span>📤</span>
+            <span>Submit Request for Teacher Review</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

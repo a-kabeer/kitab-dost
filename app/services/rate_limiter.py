@@ -12,6 +12,9 @@ _rate_limits = defaultdict(list)
 
 def get_client_ip():
     """Extract client IP safely from X-Forwarded-For or remote_addr."""
+    from flask import has_request_context
+    if not has_request_context():
+        return '127.0.0.1'
     x_forwarded_for = request.headers.get('X-Forwarded-For')
     if x_forwarded_for:
         # First IP in chain is the original client

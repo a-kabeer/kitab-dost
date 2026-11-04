@@ -81,10 +81,10 @@
             </a>
           </li>
           <li>
-            <a href="{{ url_for('teacher.requests') }}" class="sidebar-link {% if request.endpoint == 'teacher.requests' %}active{% endif %}">
+            <a href="{{ url_for('teacher.requests') }}" class="sidebar-link {% if request.endpoint in ('teacher.requests', 'teacher.request_detail') %}active{% endif %}">
               <span>📋</span>
               <span>Student Requests</span>
-              <span class="badge badge-primary sidebar-badge">0</span>
+              <span class="badge badge-primary sidebar-badge">{{ pending_requests_count }}</span>
             </a>
           </li>
           <li>

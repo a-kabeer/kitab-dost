@@ -10,8 +10,8 @@
 | **Phase 1** | **Foundation, WAL Concurrency & Dual-Portal Themes** | **COMPLETED & VERIFIED** | Day 1 | 2026-11-04 | Flask factory, Waitress, SQLite WAL, Dual-Portal Theme system, 100% offline assets verified. |
 | **Phase 2** | **Student Website & Book Discovery** | **COMPLETED & VERIFIED** | Day 2 | 2026-11-04 | Live stats, hero search, multi-faceted filtering, book detail view, 16 realistic textbooks (En/Ur/Sd) with local SVG covers. |
 | **Phase 3** | **Book Donations, Pillow Pipeline & Review Queue** | **COMPLETED & VERIFIED** | Day 3 | 2026-11-04 | Student donation form, secure reference tokens (KB-DON-), local Pillow re-encoding, teacher review queue, atomic approval (KB-BK-000001) & rejection reason ledger. |
-| **Phase 4** | Book Requests, Secure Tokens & Reservation Lock | READY TO START | Day 4 | — | Dependent on Phase 3 sign-off. |
-| **Phase 5** | Physical Handover Ledger & Circulation Defense | PENDING | Day 5 | — | Dependent on Phase 4. |
+| **Phase 4** | **Book Requests, Secure Tokens & Reservation Lock** | **COMPLETED & VERIFIED** | Day 4 | 2026-11-04 | Student book request form, cryptographically secure tracking code (KB-REQ-), atomic reservation lock (BEGIN IMMEDIATE), private tracking desk (/track) with strict PII masking, teacher review queue. |
+| **Phase 5** | **Physical Handover Ledger & Circulation Defense** | **READY TO START** | Day 5 | — | Dependent on Phase 4 sign-off. |
 | **Phase 6** | QR System, Label Printing & Android Tested Scanner | PENDING | Day 6 | — | Dependent on Phase 5. |
 | **Phase 7** | Teacher Dashboard, Analytics & Themed Admin Desk | PENDING | Day 7 | — | Dependent on Phase 6. |
 | **Phase 8** | Multilingual RTL, Hot Backups & Exhibition Mode | PENDING | Day 8 | — | Dependent on Phase 7. |
@@ -281,4 +281,83 @@ The following core improvements have been fully integrated into the architecture
 
 ### Stopping Point
 - **Phase 3 – Book Donation System is 100% COMPLETE & VERIFIED.**
-- **Phase 4 (Book Requests, Secure Tokens & Reservation Lock) has NOT been started.** Awaiting instructions to proceed to Phase 4.
+
+---
+
+## 9. Phase 4 Implementation & Verification Results
+
+**Implementation Status: COMPLETED & VERIFIED (2026-11-04)**
+
+### Implemented Components
+1. **Student Book Request Workflow (`/request` & `/request/<code_or_id>`):**
+   - Clean, accessible request form pre-populating selected book details (title, code, class, subject, cover thumbnail).
+   - Validation for student identifiers: Full Name, Class & Section (e.g. `Class 7-B`), Roll Number, and Contact phone.
+   - Availability check preventing request submissions for non-existent or already-reserved/borrowed books.
+   - Form rate limiting via sliding-window tracker (`RATE_LIMIT_REQUEST_PER_HOUR = 120`) suited for shared school Wi-Fi.
+   - Session CSRF token validation on every submission.
+
+2. **Cryptographically Secure Tracking Codes (`KB-REQ-XXXX-XXXX`):**
+   - Every submitted request generates an unpredictable, high-entropy token (e.g. `KB-REQ-6248-3RWG`) via `secrets.choice()` using ambiguity-free alphanumeric characters (`2-9`, `A-Z` minus `0/O/1/I`).
+   - SQLite `UNIQUE` constraint with collision retry loop guarantees zero duplicate tokens.
+
+3. **Request Confirmation Screen (`/request/success/<tracking_code>`):**
+   - Visual status badge: `⏳ Status: Awaiting Teacher Approval`.
+   - Prominent tracking code display with one-click clipboard copy.
+   - Summary of requested book and student details.
+   - Guidance explaining the teacher review and reservation process.
+
+4. **Public Request Tracking Desk (`/track`) & Strict PII Redaction:**
+   - Real-time status lookup by tracking code (`KB-REQ-XXXX-XXXX`).
+   - Visual progress timeline (`Request Submitted` → `Teacher Review` → `Approved & Book Reserved` → `Handed Over`).
+   - **Strict Privacy & Anti-Harassment Redaction:**
+     - Student full name is masked (`mask_student_name`, e.g., `Saad Rehman` → `Saad R***`).
+     - Student roll number and phone number are **100% EXCLUDED** from the public response HTML.
+     - Rate-limited lookup (`RATE_LIMIT_TRACK_PER_MINUTE = 30`) preventing token enumeration.
+
+5. **Teacher Administrative Request Queue (`/teacher/requests`):**
+   - Live badge counters and filter tabs: `Pending Review`, `Approved (Reserved)`, `Rejected`, `Handed Over`, and `All Records`.
+   - Dynamic search by student name, roll number, tracking code, or book code/title.
+   - Class grade dropdown filter (`Class 6`, `Class 7`, `Class 8`).
+   - Detailed inspection page (`/teacher/requests/<id>`) displaying unmasked student information for verified handovers.
+
+6. **Atomic Reservation Locking (`BEGIN IMMEDIATE`):**
+   - Implemented in `request_service.approve_request()`.
+   - Runs in a single SQLite transaction with an immediate write lock.
+   - Validates that request is still `pending` and book is still `available`.
+   - Atomically transitions book status from `available` to `reserved` (`UPDATE books SET status = 'reserved'`).
+   - Marks request as `approved`, recording reviewer ID, reviewer name, and review timestamp.
+   - **Race Condition Defense:** If two students request the same book simultaneously, the first approval locks the book; subsequent approval attempts are atomically blocked with a descriptive rejection message, completely eliminating double-booking hazards.
+
+7. **Teacher Rejection Workflow (`/teacher/requests/<id>/reject`):**
+   - Modal dialog with preset reasons ("Allocated to higher priority student", "Textbook quota exceeded", etc.) and custom reason input.
+   - Marks request as `rejected`, records reason and teacher reviewer timestamp.
+   - **Book remains `available`** for other students.
+   - Rejection reason is safely displayed to the student on `/track`.
+
+8. **Dynamic UI Synchronization:**
+   - Teacher navigation bar badge dynamically reflects live pending request count via context processor.
+   - Book detail page dynamically swaps CTA: displays active "Request This Book" button for available books, and a disabled "Currently Reserved" badge when reserved.
+
+### Automated & Browser Test Verification Summary
+| Test Suite | Scope | Result | Details |
+|---|---|---|---|
+| `tests/test_phase4.py` | Unit & Integration Suite | **PASS (12/12)** | Request form rendering, token generation, field validation, unavailable book guard, tracking lookup & PII masking, teacher auth guards, review queue & filtering, atomic approval & reservation locking, race-condition double-booking defense, teacher rejection workflow, duplicate approval guard, rate limiting defense |
+| `tests/test_phase3.py` | Phase 3 Unit Regression | **PASS (12/12)** | Book donation lifecycle and Pillow image processing |
+| `tests/test_phase2.py` | Phase 2 Unit Regression | **PASS (12/12)** | Student catalogue discovery, search, and multi-faceted filtering |
+| Full Test Suite (`tests/`) | Combined Test Suite | **PASS (36/36)** | 100% of unit and integration tests passing across all completed phases |
+| `test_phase1.py` | Foundation & Security Regression | **PASS (7/7)** | SQLite WAL mode, dual portals, 100% offline static assets, error handlers, and persistence |
+| `test_concurrency.py` | Concurrency & WAL Performance | **PASS (15/15)** | 15 concurrent student write operations committed without lock errors |
+| `test_browser_phase4.py` | Playwright Edge Browser Audit | **PASS** | Complete end-to-end user journey (student browse -> request -> success -> track -> teacher review -> approve & reserve -> book reserved in catalogue) verified on Desktop (1280x800) and Mobile (390x844) viewports with **0 console errors and 0 page exceptions** |
+
+### Network & Wi-Fi LAN Access Note
+- **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
+- **Current Machine Wi-Fi IP:** `192.168.100.14` (DHCP lease renewed from previous `172.31.161.179` and `10.0.0.35`).
+- **Connection Refused Explanation (`ERR_CONNECTION_REFUSED`):**
+  - The previous IP `172.31.161.179` is no longer assigned to this machine by the local router. Any browser attempting to connect to `172.31.161.179:5000` will fail with `ERR_CONNECTION_REFUSED`.
+- **Current Active URLs:**
+  - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://192.168.100.14:5000`**
+
+### Stopping Point
+- **Phase 4 – Book Request System & Atomic Reservation Lock is 100% COMPLETE & VERIFIED.**
+- **Phase 5 (Physical Handover Ledger & Circulation Defense) has NOT been started.** Awaiting instructions to proceed to Phase 5.

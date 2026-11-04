@@ -1,6 +1,6 @@
 from flask import render_template, request, abort, url_for, redirect, flash, current_app
 from . import student_bp
-from app.services import book_service, donation_service, rate_limiter
+from app.services import book_service, donation_service, request_service, rate_limiter
 
 @student_bp.route('/')
 def index():
@@ -125,14 +125,84 @@ def donation_success(donation_code):
         abort(404)
     return render_template('student/donation_success.html', donation=donation)
 
-@student_bp.route('/track')
-def track():
-    """Request tracker view (Phase 4 foundation)."""
+@student_bp.route('/request', methods=['GET', 'POST'])
+@student_bp.route('/request/<code_or_id>', methods=['GET', 'POST'])
+def request_book(code_or_id=None):
+    """Student book request workflow with atomic reservation check."""
+    book_param = code_or_id or request.args.get('book') or request.form.get('book_id') or request.form.get('book_code')
+    book = None
+    if book_param:
+        book = book_service.get_book_by_code_or_id(book_param)
+
+    if request.method == 'POST':
+        # Rate limit defense for shared school Wi-Fi
+        limit = current_app.config.get('RATE_LIMIT_REQUEST_PER_HOUR', 120)
+        if rate_limiter.is_rate_limited('request', limit, window_seconds=3600):
+            flash("You have submitted multiple book requests. Please wait a short while before requesting more.", "warning")
+            return render_template(
+                'student/request_book.html',
+                book=book,
+                form_data=request.form
+            ), 429
+
+        success, tracking_code, error_msg = request_service.create_book_request(request.form)
+        if not success:
+            flash(error_msg, "danger")
+            return render_template(
+                'student/request_book.html',
+                book=book,
+                form_data=request.form
+            ), 400
+
+        flash("Book request submitted successfully! Awaiting teacher review.", "success")
+        return redirect(url_for('student.request_success', tracking_code=tracking_code))
+
+    if not book:
+        flash("Please select a book from the catalogue to request.", "info")
+        return redirect(url_for('student.catalogue'))
+
     return render_template(
-        'student/placeholder.html',
-        title="Track Your Book Request",
-        icon="🔍",
-        description="The private request tracking desk using your unique Reference Code will be implemented in Phase 4."
+        'student/request_book.html',
+        book=book,
+        form_data={}
+    )
+
+@student_bp.route('/request/success/<tracking_code>')
+def request_success(tracking_code):
+    """Confirmation screen displaying unique Tracking Code."""
+    req = request_service.get_request_by_tracking_code(tracking_code)
+    if not req:
+        abort(404)
+    return render_template('student/request_success.html', request_item=req)
+
+@student_bp.route('/track', methods=['GET'])
+def track():
+    """Public tracking desk for checking live request status."""
+    tracking_code = request.args.get('code', '').strip().upper()
+    req = None
+    error_msg = None
+    masked_name = None
+
+    if tracking_code:
+        # Rate limit defense against brute-force token enumeration
+        limit = current_app.config.get('RATE_LIMIT_TRACK_PER_MINUTE', 30)
+        if rate_limiter.is_rate_limited('track', limit, window_seconds=60):
+            flash("Too many tracking code queries. Please wait a minute before searching again.", "warning")
+            return render_template('student/track.html', tracking_code=tracking_code, req=None), 429
+
+        req = request_service.get_request_by_tracking_code(tracking_code)
+        if not req:
+            error_msg = f"No active request found for code '{tracking_code}'. Please check the 16-character code and try again."
+        else:
+            # Mask student name for privacy protection
+            masked_name = request_service.mask_student_name(req['requester_name'])
+
+    return render_template(
+        'student/track.html',
+        tracking_code=tracking_code,
+        req=req,
+        masked_name=masked_name,
+        error_msg=error_msg
     )
 
 @student_bp.route('/scan')

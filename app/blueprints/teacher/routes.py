@@ -1,16 +1,21 @@
 from flask import render_template, session, redirect, url_for, flash, request, abort
 from . import teacher_bp
 from app.database import get_db
-from app.services import donation_service
+from app.services import donation_service, request_service
 
 @teacher_bp.context_processor
 def inject_teacher_globals():
     """Make pending counts available across all teacher templates for badges."""
     try:
-        pending_count = donation_service.get_pending_donations_count()
+        pending_donations = donation_service.get_pending_donations_count()
+        pending_requests = request_service.get_pending_requests_count()
     except Exception:
-        pending_count = 0
-    return dict(pending_donations_count=pending_count)
+        pending_donations = 0
+        pending_requests = 0
+    return dict(
+        pending_donations_count=pending_donations,
+        pending_requests_count=pending_requests
+    )
 
 @teacher_bp.before_request
 def require_teacher_login():
@@ -30,9 +35,7 @@ def dashboard():
     available_books = cur.fetchone()[0]
 
     pending_donations = donation_service.get_pending_donations_count()
-
-    cur.execute("SELECT COUNT(*) FROM requests WHERE status = 'pending'")
-    pending_requests = cur.fetchone()[0]
+    pending_requests = request_service.get_pending_requests_count()
 
     cur.execute("SELECT COUNT(*) FROM handovers")
     total_reused = cur.fetchone()[0]
@@ -122,12 +125,76 @@ def reject_donation(donation_id):
 
 @teacher_bp.route('/requests')
 def requests():
-    return render_template(
-        'student/placeholder.html',
-        title="Student Requests Desk",
-        icon="📋",
-        description="The request management desk with atomic reservation locking will be implemented in Phase 4."
+    """Teacher review queue for student book requests with atomic reservation."""
+    status_filter = request.args.get('status', 'pending').strip()
+    search_query = request.args.get('q', '').strip()
+    class_filter = request.args.get('class_grade', '').strip()
+
+    status_arg = None if status_filter == 'all' else (status_filter or 'pending')
+
+    requests_list, total_count = request_service.get_requests_for_teacher(
+        status=status_arg,
+        search_query=search_query,
+        class_grade=class_filter
     )
+
+    counts = {
+        'pending': request_service.get_pending_requests_count(),
+        'all': request_service.get_requests_for_teacher(status=None)[1],
+        'approved': request_service.get_requests_for_teacher(status='approved')[1],
+        'rejected': request_service.get_requests_for_teacher(status='rejected')[1],
+        'completed': request_service.get_requests_for_teacher(status='completed')[1]
+    }
+
+    return render_template(
+        'teacher/requests.html',
+        requests=requests_list,
+        total_count=total_count,
+        current_status=status_filter,
+        search_query=search_query,
+        class_filter=class_filter,
+        counts=counts
+    )
+
+@teacher_bp.route('/requests/<int:request_id>')
+def request_detail(request_id):
+    """Detailed inspection modal/page for a single student request."""
+    req = request_service.get_request_by_id(request_id)
+    if not req:
+        abort(404)
+    return render_template('teacher/request_detail.html', request_item=req)
+
+@teacher_bp.route('/requests/<int:request_id>/approve', methods=['POST'])
+def approve_request(request_id):
+    """Teacher approval action: atomically reserves the book for the student."""
+    teacher_id = session.get('teacher_id')
+    teacher_name = session.get('teacher_name') or 'Teacher'
+
+    success, book_code, err = request_service.approve_request(request_id, teacher_id, teacher_name)
+    if success:
+        flash(f"Request approved! Book '{book_code}' is now reserved for pickup.", "success")
+    else:
+        flash(f"Approval failed: {err}", "danger")
+
+    return redirect(url_for('teacher.requests', status=request.args.get('status', 'pending')))
+
+@teacher_bp.route('/requests/<int:request_id>/reject', methods=['POST'])
+def reject_request(request_id):
+    """Teacher rejection action: releases book reservation and records reason."""
+    teacher_id = session.get('teacher_id')
+    teacher_name = session.get('teacher_name') or 'Teacher'
+    reason = request.form.get('reason', '').strip()
+
+    if not reason:
+        reason = "Priority allocation or book no longer available for reservation."
+
+    success, _, err = request_service.reject_request(request_id, teacher_id, teacher_name, reason=reason)
+    if success:
+        flash("Request rejected and archived with recorded reason.", "warning")
+    else:
+        flash(f"Rejection failed: {err}", "danger")
+
+    return redirect(url_for('teacher.requests', status=request.args.get('status', 'pending')))
 
 @teacher_bp.route('/handovers')
 def handovers():

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Request Submitted - Kitaab Bank{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="success-container">
+    <div class="success-card">
+      <div class="success-icon-wrap" style="background-color: var(--primary-light); color: var(--primary);">
+        <span>📋</span>
+      </div>
+
+      <div class="badge badge-warning" style="font-size: 0.85rem; padding: 0.35rem 0.85rem; margin-bottom: 0.75rem;">
+        ⏳ Status: Awaiting Teacher Approval
+      </div>
+
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+        Request Received, {{ request_item.requester_name }}!
+      </h1>
+
+      <p class="text-muted" style="font-size: 1.05rem; max-width: 520px; margin: 0 auto 1.5rem;">
+        Your book request has been placed in the teacher review queue. Please note down your private tracking code below.
+      </p>
+
+      <!-- Tracking Code Box -->
+      <div class="code-display-box">
+        <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--primary-text); letter-spacing: 0.05em;">
+          Your Private Tracking Code
+        </span>
+        <span class="code-display-val" id="track-code">{{ request_item.tracking_code }}</span>
+        <button type="button" class="btn btn-sm btn-outline" onclick="copyTrackCode()" style="margin-top: 0.35rem; font-size: 0.75rem;">
+          📋 Copy Code
+        </button>
+      </div>
+
+      <!-- Requested Book Summary -->
+      <div style="background-color: var(--bg-muted); border-radius: var(--radius-md); padding: 1.25rem; text-align: left; margin-bottom: 2rem;">
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+          Book Request Summary
+        </h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; font-size: 0.9rem;">
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">REQUESTED BOOK</span>
+            <strong style="color: var(--text-primary);">{{ request_item.book_title }}</strong>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">BOOK CODE</span>
+            <code style="color: var(--primary); font-weight: 700;">{{ request_item.book_code }}</code>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">STUDENT</span>
+            <strong style="color: var(--text-primary);">{{ request_item.requester_name }} ({{ request_item.requester_class }})</strong>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">CLASS &amp; SUBJECT</span>
+            <strong style="color: var(--text-primary);">{{ request_item.book_class }} – {{ request_item.book_subject }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- What happens next -->
+      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; text-align: left; font-size: 0.875rem; color: var(--primary-text); margin-bottom: 2rem;">
+        <strong>🏫 Next Steps:</strong>
+        <p style="margin: 0.35rem 0 0; line-height: 1.5;">
+          A school teacher will review your request. Once approved, this book will be <strong>reserved exclusively for you</strong>. Bring your school Roll Number (<strong>{{ request_item.requester_roll_no }}</strong>) to the school library/teacher desk to collect the book.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('student.track', code=request_item.tracking_code) }}" class="btn btn-primary">
+          <span>🔍</span>
+          <span>Track Live Status</span>
+        </a>
+        <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline">
+          <span>📚</span>
+          <span>Explore Other Books</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyTrackCode() {
+  const code = document.getElementById('track-code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    alert('Tracking Code copied to clipboard: ' + code);
+  });
+}
+</script>
+{% endblock %}

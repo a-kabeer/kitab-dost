@@ -1,43 +1,74 @@
-from flask import render_template
+from flask import render_template, request, abort, url_for
 from . import student_bp
-from app.database import get_db
+from app.services import book_service
 
 @student_bp.route('/')
 def index():
-    """Homepage for students with real-time statistics from local SQLite database."""
-    db = get_db()
-    
-    # Real metrics queried directly from database records
-    cur = db.cursor()
-    cur.execute("SELECT COUNT(*) FROM donations WHERE status = 'approved'")
-    total_donated = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(*) FROM books WHERE status = 'available' AND is_approved = 1")
-    available_books = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(*) FROM handovers")
-    total_reused = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(DISTINCT recipient_roll_no) FROM handovers")
-    active_students = cur.fetchone()[0]
-
-    stats = {
-        'total_donated': total_donated,
-        'available_books': available_books,
-        'total_reused': total_reused,
-        'active_students': active_students
-    }
-    return render_template('student/index.html', stats=stats)
+    """Homepage for students with real-time statistics and featured books from local SQLite database."""
+    stats = book_service.get_live_catalogue_stats()
+    featured_books = book_service.get_recent_and_featured_books(limit=6)
+    return render_template('student/index.html', stats=stats, featured_books=featured_books)
 
 @student_bp.route('/catalogue')
 def catalogue():
-    """Book catalogue view (Phase 2 foundation)."""
-    return render_template(
-        'student/placeholder.html',
-        title="Public Book Catalogue",
-        icon="📚",
-        description="The full book discovery catalogue with class (6–8) and subject filters will be implemented in Phase 2."
+    """Public book catalogue with search and multi-faceted filtering."""
+    search_query = request.args.get('q', '').strip()
+    class_grade = request.args.get('class_grade', '').strip()
+    subject = request.args.get('subject', '').strip()
+    language = request.args.get('language', '').strip()
+    condition = request.args.get('condition', '').strip()
+    sort_by = request.args.get('sort', 'title_asc').strip()
+
+    books, total_count = book_service.get_available_books(
+        search_query=search_query,
+        class_grade=class_grade,
+        subject=subject,
+        language=language,
+        condition=condition,
+        sort_by=sort_by
     )
+
+    filter_options = book_service.get_filter_options()
+
+    selected_filters = {
+        'q': search_query,
+        'class_grade': class_grade,
+        'subject': subject,
+        'language': language,
+        'condition': condition,
+        'sort': sort_by
+    }
+
+    # Count active filters
+    active_filters_count = sum(1 for k in ['class_grade', 'subject', 'language', 'condition'] if selected_filters[k])
+    if search_query:
+        active_filters_count += 1
+
+    return render_template(
+        'student/catalogue.html',
+        books=books,
+        total_count=total_count,
+        filter_options=filter_options,
+        selected_filters=selected_filters,
+        active_filters_count=active_filters_count
+    )
+
+@student_bp.route('/book/<code_or_id>')
+def book_detail(code_or_id):
+    """Detailed view for an individual educational book."""
+    book = book_service.get_book_by_code_or_id(code_or_id)
+    if not book:
+        abort(404)
+
+    # Fetch up to 3 related books in the same class or subject
+    related_books, _ = book_service.get_available_books(
+        class_grade=book['class_grade'],
+        limit=4
+    )
+    # Exclude current book from related
+    related_books = [b for b in related_books if b['id'] != book['id']][:3]
+
+    return render_template('student/book_detail.html', book=book, related_books=related_books)
 
 @student_bp.route('/donate')
 def donate():

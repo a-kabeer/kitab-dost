@@ -11,8 +11,7 @@ def get_db():
 
         conn = sqlite3.connect(
             str(db_path),
-            timeout=timeout,
-            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+            timeout=timeout
         )
         conn.row_factory = sqlite3.Row
 

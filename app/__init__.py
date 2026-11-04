@@ -31,9 +31,10 @@ def create_app(config_name='default'):
         app.logger.info("Initializing new database...")
         init_db(app)
     else:
-        # Ensure default teacher exists in established database
+        # Ensure default teacher & sample books exist in established database
         with app.app_context():
             from app.database import get_db
+            from app.seed_data import seed_sample_books
             try:
                 db = get_db()
                 cur = db.cursor()
@@ -47,8 +48,11 @@ def create_app(config_name='default'):
                         ('teacher', pwd_hash, 'School Teacher / Incharge', 'teacher@school.edu.pk', 'admin')
                     )
                     db.commit()
+                
+                # Seed sample books if catalog empty
+                seed_sample_books()
             except Exception as e:
-                app.logger.warning(f"Teacher check error: {e}")
+                app.logger.warning(f"Database seed check error: {e}")
 
     # Simple session-based CSRF token generator
     @app.context_processor

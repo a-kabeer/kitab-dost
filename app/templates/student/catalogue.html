@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Book Catalogue - Kitaab Bank{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('student.index') }}">Home</a>
+    <span>/</span>
+    <span style="color: var(--text-primary); font-weight: 600;">Catalogue</span>
+  </nav>
+
+  <!-- Catalogue Header -->
+  <div class="catalogue-header">
+    <h1 class="catalogue-title">School Book Catalogue</h1>
+    <p class="text-muted" style="margin: 0; font-size: 1.05rem;">
+      Browse, search and filter verified curriculum books available for peer exchange across Classes 6, 7 &amp; 8.
+    </p>
+  </div>
+
+  <!-- Filter & Search Panel -->
+  <section class="filter-panel" aria-label="Book Filters">
+    <form action="{{ url_for('student.catalogue') }}" method="GET" id="catalogue-filter-form">
+      <div class="filter-grid">
+        <!-- Search Keyword -->
+        <div class="filter-group">
+          <label for="filter-q" class="filter-label">Search Books</label>
+          <input 
+            type="search" 
+            id="filter-q" 
+            name="q" 
+            class="filter-input" 
+            placeholder="Title, author, code..." 
+            value="{{ selected_filters.q }}"
+          >
+        </div>
+
+        <!-- Class / Grade -->
+        <div class="filter-group">
+          <label for="filter-class" class="filter-label">Class Level</label>
+          <select id="filter-class" name="class_grade" class="filter-select">
+            <option value="">All Classes</option>
+            {% for c in ['Class 6', 'Class 7', 'Class 8'] %}
+            <option value="{{ c }}" {% if selected_filters.class_grade == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Subject -->
+        <div class="filter-group">
+          <label for="filter-subject" class="filter-label">Subject</label>
+          <select id="filter-subject" name="subject" class="filter-select">
+            <option value="">All Subjects</option>
+            {% for s in filter_options.subjects %}
+            <option value="{{ s }}" {% if selected_filters.subject == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Language -->
+        <div class="filter-group">
+          <label for="filter-language" class="filter-label">Language</label>
+          <select id="filter-language" name="language" class="filter-select">
+            <option value="">All Languages</option>
+            {% for lang in filter_options.languages %}
+            <option value="{{ lang }}" {% if selected_filters.language == lang %}selected{% endif %}>{{ lang }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Condition -->
+        <div class="filter-group">
+          <label for="filter-condition" class="filter-label">Condition</label>
+          <select id="filter-condition" name="condition" class="filter-select">
+            <option value="">All Conditions</option>
+            {% for cond in filter_options.conditions %}
+            <option value="{{ cond }}" {% if selected_filters.condition == cond %}selected{% endif %}>{{ cond }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="filter-group">
+          <label for="filter-sort" class="filter-label">Sort By</label>
+          <select id="filter-sort" name="sort" class="filter-select">
+            <option value="title_asc" {% if selected_filters.sort == 'title_asc' %}selected{% endif %}>Title (A-Z)</option>
+            <option value="newest" {% if selected_filters.sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="class_asc" {% if selected_filters.sort == 'class_asc' %}selected{% endif %}>Class Level</option>
+          </select>
+        </div>
+
+        <!-- Actions -->
+        <div class="filter-actions">
+          <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.15rem; font-size: 0.9rem;">
+            <span>🔍</span>
+            <span>Filter</span>
+          </button>
+          {% if active_filters_count > 0 %}
+          <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline" style="padding: 0.6rem 0.9rem; font-size: 0.9rem;" title="Reset all filters">
+            ✕ Clear
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Active Filters & Result Count Sub-bar -->
+      <div class="filter-bar-sub">
+        <div>
+          <span>Showing <strong>{{ books|length }}</strong> available books</span>
+          {% if selected_filters.q %}
+          <span> matching "<em>{{ selected_filters.q }}</em>"</span>
+          {% endif %}
+        </div>
+
+        {% if active_filters_count > 0 %}
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Active Filters:</span>
+          {% if selected_filters.q %}
+          <span class="active-filter-pill">Keyword: {{ selected_filters.q }}</span>
+          {% endif %}
+          {% if selected_filters.class_grade %}
+          <span class="active-filter-pill">{{ selected_filters.class_grade }}</span>
+          {% endif %}
+          {% if selected_filters.subject %}
+          <span class="active-filter-pill">{{ selected_filters.subject }}</span>
+          {% endif %}
+          {% if selected_filters.language %}
+          <span class="active-filter-pill">{{ selected_filters.language }}</span>
+          {% endif %}
+          {% if selected_filters.condition %}
+          <span class="active-filter-pill">{{ selected_filters.condition }}</span>
+          {% endif %}
+          <a href="{{ url_for('student.catalogue') }}" style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-decoration: underline;">
+            Reset All
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+
+  <!-- Books Results Grid -->
+  {% if books and books|length > 0 %}
+  <div class="book-grid">
+    {% for book in books %}
+    <article class="book-card">
+      <div class="book-card-cover-wrap">
+        <img 
+          src="{{ url_for('static', filename=book.image_path) }}" 
+          alt="{{ book.title }} Cover" 
+          class="book-card-cover-img"
+          loading="lazy"
+        >
+        <div class="book-badge-overlay-top">
+          <span class="badge badge-primary">{{ book.class_grade }}</span>
+        </div>
+        <div class="book-badge-overlay-bottom">
+          <span class="badge {% if book.condition_state == 'Like New' %}badge-success{% elif book.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}">
+            {{ book.condition_state }}
+          </span>
+        </div>
+      </div>
+
+      <div class="book-card-body">
+        <div class="book-card-meta-top">
+          <span style="font-weight: 600; color: var(--primary);">{{ book.subject }}</span>
+          <span>{{ book.language }}</span>
+        </div>
+        <h3 class="book-card-title" title="{{ book.title }}">
+          <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" style="color: inherit; text-decoration: none;">
+            {{ book.title }}
+          </a>
+        </h3>
+        <p class="book-card-author" title="{{ book.author }}">
+          By {{ book.author }}
+        </p>
+
+        <div class="book-card-tags">
+          <span class="book-code-text">{{ book.book_code }}</span>
+          <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted);">{{ book.edition_year or 'Official' }}</span>
+        </div>
+      </div>
+
+      <div class="book-card-footer">
+        <span class="badge badge-success" style="font-size: 0.75rem;">● Available</span>
+        <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+          View Details
+        </a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <!-- Empty State -->
+  <div class="empty-state">
+    <div class="empty-state-icon">🔍</div>
+    <h2 class="empty-state-title">No Books Found</h2>
+    <p class="empty-state-text">
+      We couldn't find any available textbooks matching your current search query or filter selection.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary">
+        <span>🔄</span>
+        <span>Clear All Filters</span>
+      </a>
+      <a href="{{ url_for('student.donate') }}" class="btn btn-outline">
+        <span>📖</span>
+        <span>Donate a Book in this Category</span>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

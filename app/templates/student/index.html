@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Kitaab Bank - Smart School Book Exchange{% endblock %}
+{% block title %}Kitaab Bank - Smart School Book Exchange (کتاب بینک){% endblock %}
 
 {% block content %}
 <div class="container">
@@ -20,10 +20,28 @@
       Kitaab Bank connects school students to donate completed textbooks and request the books they need for the new academic session. Supervised by school teachers.
     </p>
 
+    <!-- Quick Search Bar -->
+    <div class="hero-search-wrap">
+      <form action="{{ url_for('student.catalogue') }}" method="GET" class="hero-search-form" role="search">
+        <input 
+          type="search" 
+          name="q" 
+          class="hero-search-input" 
+          placeholder="Search by title, author, subject (e.g. Science, Mathematics, اردو)..." 
+          aria-label="Search books"
+          autocomplete="off"
+        >
+        <button type="submit" class="hero-search-btn" aria-label="Search">
+          <span>🔍</span>
+          <span>Search</span>
+        </button>
+      </form>
+    </div>
+
     <div class="hero-actions">
       <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary">
-        <span>🔍</span>
-        <span>Explore Available Books</span>
+        <span>📚</span>
+        <span>Explore All Books</span>
       </a>
       <a href="{{ url_for('student.donate') }}" class="btn btn-outline">
         <span>📖</span>
@@ -52,8 +70,83 @@
     </div>
   </section>
 
+  <!-- Featured / Recently Added Books Section -->
+  {% if featured_books and featured_books|length > 0 %}
+  <section style="margin-top: 4rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+          Recently Added Educational Books
+        </h2>
+        <p class="text-muted" style="margin: 0;">
+          Verified textbooks ready for collection at the school desk.
+        </p>
+      </div>
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+        View Full Catalogue →
+      </a>
+    </div>
+
+    <div class="book-grid">
+      {% for book in featured_books %}
+      <article class="book-card">
+        <div class="book-card-cover-wrap">
+          <img 
+            src="{{ url_for('static', filename=book.image_path) }}" 
+            alt="{{ book.title }} Cover" 
+            class="book-card-cover-img"
+            loading="lazy"
+          >
+          <div class="book-badge-overlay-top">
+            <span class="badge badge-primary">{{ book.class_grade }}</span>
+          </div>
+          <div class="book-badge-overlay-bottom">
+            <span class="badge {% if book.condition_state == 'Like New' %}badge-success{% elif book.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}">
+              {{ book.condition_state }}
+            </span>
+          </div>
+        </div>
+
+        <div class="book-card-body">
+          <div class="book-card-meta-top">
+            <span style="font-weight: 600; color: var(--primary);">{{ book.subject }}</span>
+            <span>{{ book.language }}</span>
+          </div>
+          <h3 class="book-card-title" title="{{ book.title }}">
+            <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" style="color: inherit; text-decoration: none;">
+              {{ book.title }}
+            </a>
+          </h3>
+          <p class="book-card-author" title="{{ book.author }}">
+            By {{ book.author }}
+          </p>
+
+          <div class="book-card-tags">
+            <span class="book-code-text">{{ book.book_code }}</span>
+            <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted);">{{ book.edition_year or 'Official' }}</span>
+          </div>
+        </div>
+
+        <div class="book-card-footer">
+          <span class="badge badge-success" style="font-size: 0.75rem;">● Available</span>
+          <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+            View Details
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div style="text-align: center; margin-top: 2.5rem;">
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+        Explore All {{ stats.available_books }} Available Books →
+      </a>
+    </div>
+  </section>
+  {% endif %}
+
   <!-- How It Works Section -->
-  <section style="margin-top: 3.5rem;">
+  <section style="margin-top: 4.5rem; margin-bottom: 3rem;">
     <div class="text-center">
       <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
         How Kitaab Bank Works

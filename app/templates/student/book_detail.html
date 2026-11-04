@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - Kitaab Bank{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('student.index') }}">Home</a>
+    <span>/</span>
+    <a href="{{ url_for('student.catalogue') }}">Catalogue</a>
+    <span>/</span>
+    <span style="color: var(--text-primary); font-weight: 600;">{{ book.title }}</span>
+  </nav>
+
+  <!-- Book Detail Main Section -->
+  <section class="book-detail-wrapper" aria-label="Book Information">
+    <!-- Left Column: Cover & Quick Status -->
+    <div class="book-detail-cover-box">
+      <img 
+        src="{{ url_for('static', filename=book.image_path) }}" 
+        alt="{{ book.title }} Cover" 
+        class="book-detail-cover-img"
+      >
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">STATUS</span>
+          <span class="badge badge-success" style="font-size: 0.85rem;">● Available</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">CONDITION</span>
+          <span class="badge {% if book.condition_state == 'Like New' %}badge-success{% elif book.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}" style="font-size: 0.85rem;">
+            {{ book.condition_state }}
+          </span>
+        </div>
+
+        <div style="margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-color); text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">OFFICIAL REFERENCE CODE</div>
+          <code style="font-size: 1.05rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em;">{{ book.book_code }}</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Metadata & Descriptions -->
+    <div class="book-detail-info">
+      <header class="book-detail-header">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+          <span class="badge badge-primary">{{ book.class_grade }}</span>
+          <span class="badge badge-secondary">{{ book.subject }}</span>
+          <span class="badge badge-secondary">{{ book.language }}</span>
+        </div>
+
+        <h1 class="book-detail-title">{{ book.title }}</h1>
+        <p class="book-detail-author">
+          By <strong>{{ book.author }}</strong>
+        </p>
+      </header>
+
+      <!-- Key Metadata Grid -->
+      <div class="meta-table">
+        <div class="meta-item">
+          <span class="meta-item-label">Class Level</span>
+          <span class="meta-item-value">{{ book.class_grade }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item-label">Subject</span>
+          <span class="meta-item-value">{{ book.subject }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item-label">Language</span>
+          <span class="meta-item-value">{{ book.language }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item-label">Publisher / Board</span>
+          <span class="meta-item-value">{{ book.publisher or 'Textbook Board' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item-label">Publication Year</span>
+          <span class="meta-item-value">{{ book.edition_year or 'Official Curriculum' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-item-label">Teacher Verified</span>
+          <span class="meta-item-value" style="color: var(--success); display: inline-flex; align-items: center; gap: 0.25rem;">
+            ✓ Yes, Approved
+          </span>
+        </div>
+      </div>
+
+      <!-- Description & Syllabus Coverage -->
+      <article class="book-detail-desc-box">
+        <h2 class="book-detail-desc-title">Textbook Overview &amp; Curriculum Topics</h2>
+        <p class="book-detail-desc-text">
+          {{ book.description }}
+        </p>
+      </article>
+
+      <!-- Action Panel -->
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="margin: 0 0 0.25rem; font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">
+              Need this textbook for your studies?
+            </h3>
+            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+              Available at the school library / teacher desk. Teacher supervision ensures fair distribution.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline">
+              ← Back to Catalogue
+            </a>
+            <button 
+              type="button" 
+              class="btn btn-primary" 
+              disabled 
+              title="Book requesting opens in Phase 4"
+              style="opacity: 0.7; cursor: not-allowed;"
+            >
+              <span>📋</span>
+              <span>Request This Book</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="background-color: var(--bg-muted); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+          <span>ℹ️</span>
+          <span><strong>Note for Students:</strong> Digital request submission opens in Phase 4. Currently, you can note down the Reference Code (<strong>{{ book.book_code }}</strong>) and ask your class teacher directly.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Books Section -->
+  {% if related_books and related_books|length > 0 %}
+  <section style="margin-top: 4.5rem; margin-bottom: 3rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem;">
+      Other Available Books for {{ book.class_grade }}
+    </h2>
+
+    <div class="book-grid">
+      {% for rel in related_books %}
+      <article class="book-card">
+        <div class="book-card-cover-wrap">
+          <img 
+            src="{{ url_for('static', filename=rel.image_path) }}" 
+            alt="{{ rel.title }} Cover" 
+            class="book-card-cover-img"
+            loading="lazy"
+          >
+          <div class="book-badge-overlay-top">
+            <span class="badge badge-primary">{{ rel.class_grade }}</span>
+          </div>
+          <div class="book-badge-overlay-bottom">
+            <span class="badge {% if rel.condition_state == 'Like New' %}badge-success{% elif rel.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}">
+              {{ rel.condition_state }}
+            </span>
+          </div>
+        </div>
+
+        <div class="book-card-body">
+          <div class="book-card-meta-top">
+            <span style="font-weight: 600; color: var(--primary);">{{ rel.subject }}</span>
+            <span>{{ rel.language }}</span>
+          </div>
+          <h3 class="book-card-title" title="{{ rel.title }}">
+            <a href="{{ url_for('student.book_detail', code_or_id=rel.book_code) }}" style="color: inherit; text-decoration: none;">
+              {{ rel.title }}
+            </a>
+          </h3>
+          <p class="book-card-author" title="{{ rel.author }}">
+            By {{ rel.author }}
+          </p>
+
+          <div class="book-card-tags">
+            <span class="book-code-text">{{ rel.book_code }}</span>
+          </div>
+        </div>
+
+        <div class="book-card-footer">
+          <span class="badge badge-success" style="font-size: 0.75rem;">● Available</span>
+          <a href="{{ url_for('student.book_detail', code_or_id=rel.book_code) }}" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+            View Details
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

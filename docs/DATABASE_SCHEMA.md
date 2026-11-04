@@ -55,6 +55,7 @@ erDiagram
         int id PK
         string donation_code UK "e.g. KB-DON-XXXX-XXXX"
         string title
+        string author
         string subject
         string class_grade
         string language
@@ -198,6 +199,7 @@ CREATE TABLE IF NOT EXISTS donations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     donation_code TEXT UNIQUE NOT NULL, -- Cryptographically random: KB-DON-XXXX-XXXX
     title TEXT NOT NULL,
+    author TEXT,
     subject TEXT NOT NULL,
     class_grade TEXT NOT NULL,
     language TEXT NOT NULL DEFAULT 'Urdu',

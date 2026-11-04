@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS donations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     donation_code TEXT UNIQUE NOT NULL, -- Format: KB-DON-XXXX-XXXX
     title TEXT NOT NULL,
+    author TEXT,
     subject TEXT NOT NULL,
     class_grade TEXT NOT NULL,
     language TEXT NOT NULL DEFAULT 'Urdu',

@@ -1,0 +1,333 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Donation Review Queue - Teacher Desk{% endblock %}
+
+{% block teacher_content %}
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="dashboard-title">Donation Review Queue</h1>
+      <p class="dashboard-subtitle">
+        Review incoming student donations, verify physical condition and syllabus relevance, and publish approved books to the public catalogue.
+      </p>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Status Tabs -->
+  <div class="filter-tabs-bar">
+    <a href="{{ url_for('teacher.donations', status='pending') }}" class="filter-tab {% if current_status == 'pending' %}active{% endif %}">
+      <span>⏳</span>
+      <span>Pending Review</span>
+      <span class="badge {% if counts.pending > 0 %}badge-warning{% else %}badge-secondary{% endif %}">
+        {{ counts.pending }}
+      </span>
+    </a>
+    <a href="{{ url_for('teacher.donations', status='approved') }}" class="filter-tab {% if current_status == 'approved' %}active{% endif %}">
+      <span>✓</span>
+      <span>Approved</span>
+      <span class="badge badge-success">{{ counts.approved }}</span>
+    </a>
+    <a href="{{ url_for('teacher.donations', status='rejected') }}" class="filter-tab {% if current_status == 'rejected' %}active{% endif %}">
+      <span>✕</span>
+      <span>Rejected</span>
+      <span class="badge badge-danger">{{ counts.rejected }}</span>
+    </a>
+    <a href="{{ url_for('teacher.donations', status='all') }}" class="filter-tab {% if current_status == 'all' %}active{% endif %}">
+      <span>📋</span>
+      <span>All Records</span>
+      <span class="badge badge-primary">{{ counts.all }}</span>
+    </a>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem;">
+    <form action="{{ url_for('teacher.donations') }}" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+      <input type="hidden" name="status" value="{{ current_status }}">
+
+      <div style="flex: 2; min-width: 240px;">
+        <input 
+          type="search" 
+          name="q" 
+          class="form-control" 
+          placeholder="Search by title, author, donor name, roll no, or code..." 
+          value="{{ search_query }}"
+        >
+      </div>
+
+      <div style="flex: 1; min-width: 150px;">
+        <select name="class_grade" class="form-control">
+          <option value="">All Classes</option>
+          {% for c in ['Class 6', 'Class 7', 'Class 8'] %}
+          <option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
+        <span>🔍</span>
+        <span>Filter</span>
+      </button>
+
+      {% if search_query or class_filter %}
+      <a href="{{ url_for('teacher.donations', status=current_status) }}" class="btn btn-outline" style="padding: 0.65rem 1rem;">
+        Reset
+      </a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Donations Table -->
+  <div class="table-card">
+    {% if donations and donations|length > 0 %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Cover</th>
+            <th>Book Details</th>
+            <th>Class / Condition</th>
+            <th>Student Donor</th>
+            <th>Status</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in donations %}
+          <tr>
+            <!-- Code -->
+            <td>
+              <code style="font-weight: 700; color: var(--primary); font-size: 0.85rem;">
+                {{ d.donation_code }}
+              </code>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                {{ d.created_at[:10] if d.created_at else '' }}
+              </div>
+            </td>
+
+            <!-- Cover Photo Thumbnail -->
+            <td>
+              {% if d.temp_image_path %}
+              <a href="{{ url_for('static', filename=d.temp_image_path) }}" target="_blank" title="View full photograph">
+                <img 
+                  src="{{ url_for('static', filename=d.temp_image_path) }}" 
+                  alt="Book Photo" 
+                  class="table-thumb"
+                >
+              </a>
+              {% else %}
+              <div style="width: 48px; height: 64px; background-color: var(--bg-muted); border-radius: var(--radius-sm); border: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;" title="No photo uploaded">
+                📖
+              </div>
+              {% endif %}
+            </td>
+
+            <!-- Book Title & Author -->
+            <td>
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.2rem;">
+                {{ d.title }}
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                By {{ d.author or 'Unknown' }}
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                Subject: <strong>{{ d.subject }}</strong> • Medium: <strong>{{ d.language }}</strong>
+              </div>
+            </td>
+
+            <!-- Class & Condition -->
+            <td>
+              <div style="margin-bottom: 0.35rem;">
+                <span class="badge badge-primary">{{ d.class_grade }}</span>
+              </div>
+              <span class="badge {% if d.condition_state == 'Like New' %}badge-success{% elif d.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}">
+                {{ d.condition_state }}
+              </span>
+            </td>
+
+            <!-- Donor Information -->
+            <td>
+              <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">
+                {{ d.donor_name }}
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                Class: <strong>{{ d.donor_class }}</strong>
+                {% if d.donor_roll_no %}
+                • Roll: <strong>{{ d.donor_roll_no }}</strong>
+                {% endif %}
+              </div>
+              {% if d.donor_contact %}
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                📞 {{ d.donor_contact }}
+              </div>
+              {% endif %}
+            </td>
+
+            <!-- Review Status -->
+            <td>
+              {% if d.status == 'pending' %}
+              <span class="badge badge-warning">⏳ Pending</span>
+              {% elif d.status == 'approved' %}
+              <span class="badge badge-success">✓ Approved</span>
+              {% if d.approved_book_code %}
+              <div style="margin-top: 0.35rem;">
+                <a href="{{ url_for('student.book_detail', code_or_id=d.approved_book_code) }}" target="_blank" style="font-family: monospace; font-size: 0.8rem; font-weight: 700; color: var(--primary);">
+                  {{ d.approved_book_code }} ↗
+                </a>
+              </div>
+              {% endif %}
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+                By {{ d.reviewer_name or 'Teacher' }}
+              </div>
+              {% elif d.status == 'rejected' %}
+              <span class="badge badge-danger">✕ Rejected</span>
+              <div style="font-size: 0.75rem; color: var(--danger-text); margin-top: 0.25rem; max-width: 180px;">
+                {{ d.rejection_reason or 'Criteria not met' }}
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+                By {{ d.reviewer_name or 'Teacher' }}
+              </div>
+              {% endif %}
+            </td>
+
+            <!-- Action Buttons -->
+            <td style="text-align: right;">
+              <div class="btn-group-actions" style="justify-content: flex-end;">
+                <a href="{{ url_for('teacher.donation_detail', donation_id=d.id) }}" class="btn btn-sm btn-outline" title="Inspect full details">
+                  🔍 View
+                </a>
+
+                {% if d.status == 'pending' %}
+                <!-- Approve Form -->
+                <form action="{{ url_for('teacher.approve_donation', donation_id=d.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Approve donation \'{{ d.title }}\' and publish to public catalogue?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-primary" style="background-color: var(--success); border-color: var(--success);">
+                    ✓ Approve
+                  </button>
+                </form>
+
+                <!-- Reject Button (Opens Modal) -->
+                <button 
+                  type="button" 
+                  class="btn btn-sm" 
+                  style="background-color: var(--danger-bg); color: var(--danger-text); border-color: var(--danger);"
+                  onclick="openRejectModal({{ d.id }}, '{{ d.title|replace('\'', '\\\'') }}')"
+                >
+                  ✕ Reject
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div style="text-align: center; padding: 4rem 1.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 0.75rem;">📥</div>
+      <h3 style="font-size: 1.25rem; color: var(--text-primary); font-weight: 700; margin-bottom: 0.35rem;">
+        No Donations in this Queue
+      </h3>
+      <p class="text-muted" style="max-width: 420px; margin: 0 auto;">
+        {% if current_status == 'pending' %}
+        There are currently no pending student book donations awaiting teacher verification.
+        {% else %}
+        No donation records match the selected status or filter parameters.
+        {% endif %}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+<!-- Rejection Modal -->
+<div id="reject-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+      <h3 style="margin: 0; font-size: 1.2rem; color: var(--danger-text); font-weight: 700;">
+        Reject Book Donation
+      </h3>
+      <button type="button" onclick="closeRejectModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">
+        ✕
+      </button>
+    </div>
+
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+      Specify the reason for rejecting <strong id="reject-book-title"></strong>. This reason is recorded in school records.
+    </p>
+
+    <form id="reject-form" method="POST" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label class="form-label">Common Rejection Reasons</label>
+        <select class="form-control" onchange="setCommonReason(this.value)">
+          <option value="">-- Select a preset reason or type below --</option>
+          <option value="Pages torn, water damaged, or heavily soiled">Pages torn, water damaged, or heavily soiled</option>
+          <option value="Outdated syllabus edition no longer taught">Outdated syllabus edition no longer taught</option>
+          <option value="Incomplete book / missing essential chapters">Incomplete book / missing essential chapters</option>
+          <option value="Sufficient school inventory already available">Sufficient school inventory already available</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="reject-reason-input" class="form-label">
+          Detailed Reason <span class="required-star">*</span>
+        </label>
+        <textarea 
+          id="reject-reason-input" 
+          name="reason" 
+          class="form-control" 
+          placeholder="State clearly why this book cannot be accepted into the circulation catalogue..." 
+          required
+        ></textarea>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-outline" onclick="closeRejectModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-sm" style="background-color: var(--danger); color: #ffffff; padding: 0.6rem 1.25rem;">
+          Confirm Rejection
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openRejectModal(donationId, bookTitle) {
+  const modal = document.getElementById('reject-modal');
+  const form = document.getElementById('reject-form');
+  const titleSpan = document.getElementById('reject-book-title');
+  const reasonInput = document.getElementById('reject-reason-input');
+
+  form.action = '/teacher/donations/' + donationId + '/reject';
+  titleSpan.textContent = '"' + bookTitle + '"';
+  reasonInput.value = '';
+  modal.classList.add('show');
+}
+
+function closeRejectModal() {
+  document.getElementById('reject-modal').classList.remove('show');
+}
+
+function setCommonReason(val) {
+  if (val) {
+    document.getElementById('reject-reason-input').value = val;
+  }
+}
+</script>
+{% endblock %}

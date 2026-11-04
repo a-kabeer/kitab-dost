@@ -24,14 +24,14 @@
     <div class="metric-footer">Approved books in public catalogue</div>
   </div>
 
-  <div class="metric-card">
+  <a href="{{ url_for('teacher.donations') }}" class="metric-card" style="text-decoration: none; color: inherit;">
     <div class="metric-header">
       <span class="metric-title">Pending Donations</span>
       <div class="metric-icon">📥</div>
     </div>
     <div class="metric-value">{{ stats.pending_donations }}</div>
-    <div class="metric-footer">Awaiting teacher review</div>
-  </div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Review Queue →</div>
+  </a>
 
   <div class="metric-card">
     <div class="metric-header">

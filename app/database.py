@@ -45,6 +45,14 @@ def init_db(app):
             db.cursor().executescript(f.read())
         db.commit()
 
+        # Ensure author column exists in donations table (schema migration)
+        cur = db.cursor()
+        cur.execute("PRAGMA table_info(donations);")
+        donation_cols = [r[1] for r in cur.fetchall()]
+        if 'author' not in donation_cols:
+            cur.execute("ALTER TABLE donations ADD COLUMN author TEXT;")
+            db.commit()
+
         # Seed initial teacher account if none exists
         cur = db.cursor()
         cur.execute("SELECT COUNT(*) FROM teachers;")

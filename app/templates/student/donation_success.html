@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Donation Submitted - Kitaab Bank{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="success-container">
+    <div class="success-card">
+      <div class="success-icon-wrap">
+        <span>✓</span>
+      </div>
+
+      <div class="badge badge-warning" style="font-size: 0.85rem; padding: 0.35rem 0.85rem; margin-bottom: 0.75rem;">
+        ⏳ Status: Awaiting Teacher Approval
+      </div>
+
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+        Thank You, {{ donation.donor_name }}!
+      </h1>
+
+      <p class="text-muted" style="font-size: 1.05rem; max-width: 520px; margin: 0 auto 1.5rem;">
+        Your book donation has been successfully submitted to the school desk. Please note down your unique donation reference code below.
+      </p>
+
+      <!-- Reference Code Box -->
+      <div class="code-display-box">
+        <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--primary-text); letter-spacing: 0.05em;">
+          Your Donation Reference Code
+        </span>
+        <span class="code-display-val" id="ref-code">{{ donation.donation_code }}</span>
+        <button type="button" class="btn btn-sm btn-outline" onclick="copyRefCode()" style="margin-top: 0.35rem; font-size: 0.75rem;">
+          📋 Copy Code
+        </button>
+      </div>
+
+      <!-- Submitted Book Summary Card -->
+      <div style="background-color: var(--bg-muted); border-radius: var(--radius-md); padding: 1.25rem; text-align: left; margin-bottom: 2rem;">
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+          Donation Submission Summary
+        </h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; font-size: 0.9rem;">
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">BOOK TITLE</span>
+            <strong style="color: var(--text-primary);">{{ donation.title }}</strong>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">CLASS &amp; SUBJECT</span>
+            <strong style="color: var(--text-primary);">{{ donation.class_grade }} – {{ donation.subject }}</strong>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">LANGUAGE &amp; CONDITION</span>
+            <strong style="color: var(--text-primary);">{{ donation.language }} ({{ donation.condition_state }})</strong>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">DONOR INFO</span>
+            <strong style="color: var(--text-primary);">{{ donation.donor_name }} ({{ donation.donor_class }})</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanation of Teacher Approval Workflow -->
+      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; text-align: left; font-size: 0.875rem; color: var(--primary-text); margin-bottom: 2rem;">
+        <strong>🏫 What happens next?</strong>
+        <p style="margin: 0.35rem 0 0; line-height: 1.5;">
+          A school teacher will review this book. Once the condition and curriculum relevance are verified, the book will automatically receive an official code (e.g. <code>KB-BK-000017</code>) and appear in the public catalogue for fellow students to request.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('student.donate') }}" class="btn btn-outline">
+          <span>📖</span>
+          <span>Donate Another Book</span>
+        </a>
+        <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary">
+          <span>📚</span>
+          <span>Explore School Catalogue</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyRefCode() {
+  const code = document.getElementById('ref-code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    alert('Donation Reference Code copied to clipboard: ' + code);
+  });
+}
+</script>
+{% endblock %}

@@ -320,34 +320,46 @@ The following core improvements have been fully integrated into the architecture
    - Class grade dropdown filter (`Class 6`, `Class 7`, `Class 8`).
    - Detailed inspection page (`/teacher/requests/<id>`) displaying unmasked student information for verified handovers.
 
-6. **Atomic Reservation Locking (`BEGIN IMMEDIATE`):**
+6. **Atomic Reservation Locking & Competing Request Policy:**
    - Implemented in `request_service.approve_request()`.
-   - Runs in a single SQLite transaction with an immediate write lock.
+   - Runs in a single SQLite transaction with an immediate write lock (`BEGIN IMMEDIATE`).
    - Validates that request is still `pending` and book is still `available`.
    - Atomically transitions book status from `available` to `reserved` (`UPDATE books SET status = 'reserved'`).
    - Marks request as `approved`, recording reviewer ID, reviewer name, and review timestamp.
-   - **Race Condition Defense:** If two students request the same book simultaneously, the first approval locks the book; subsequent approval attempts are atomically blocked with a descriptive rejection message, completely eliminating double-booking hazards.
+   - **Competing Request Auto-Resolution Policy:** When multiple students request the same physical textbook, approving one immediately closes all other pending requests for that book with `status = 'rejected'`, records a clear reason ("This copy was allocated to another student who requested earlier or was prioritized by teacher review. Please browse the school catalogue for other available copies."), and logs the closure. **Zero orphaned pending requests remain.**
+   - **Race Condition & Double-Booking Defense:** Simultaneous approval attempts on the same book fail atomically because the book status is locked as `reserved` and competing requests are already transitioned out of `pending`.
 
-7. **Teacher Rejection Workflow (`/teacher/requests/<id>/reject`):**
+7. **Duplicate Request Prevention by Same Student:**
+   - When a student attempts to submit a second request for the same physical book (matched by class and roll number), the system blocks it with: `"You already have an active request (KB-REQ-...) for this textbook."`
+   - Prevents accidental double submissions and student request spamming while allowing requests for different books.
+
+8. **Strict Defense-in-Depth PII Redaction:**
+   - On the student tracking desk (`/track`), the dictionary is actively sanitized before template rendering: `requester_roll_no`, `requester_contact`, `requester_name`, and `notes` are removed completely.
+   - Only `masked_name` (e.g. `Saad R***`) is passed.
+
+9. **Teacher Rejection Workflow (`/teacher/requests/<id>/reject`):**
    - Modal dialog with preset reasons ("Allocated to higher priority student", "Textbook quota exceeded", etc.) and custom reason input.
    - Marks request as `rejected`, records reason and teacher reviewer timestamp.
    - **Book remains `available`** for other students.
    - Rejection reason is safely displayed to the student on `/track`.
 
-8. **Dynamic UI Synchronization:**
+10. **Dynamic UI Synchronization:**
    - Teacher navigation bar badge dynamically reflects live pending request count via context processor.
    - Book detail page dynamically swaps CTA: displays active "Request This Book" button for available books, and a disabled "Currently Reserved" badge when reserved.
+   - Direct `GET /request?book=...` for an unavailable book redirects to book detail with an explanatory flash message.
 
 ### Automated & Browser Test Verification Summary
 | Test Suite | Scope | Result | Details |
 |---|---|---|---|
-| `tests/test_phase4.py` | Unit & Integration Suite | **PASS (12/12)** | Request form rendering, token generation, field validation, unavailable book guard, tracking lookup & PII masking, teacher auth guards, review queue & filtering, atomic approval & reservation locking, race-condition double-booking defense, teacher rejection workflow, duplicate approval guard, rate limiting defense |
+| `tests/test_phase4.py` | Unit & Integration Suite | **PASS (14/14)** | Request form rendering, token generation, field validation, unavailable book guard, tracking lookup & PII masking, teacher auth guards on all endpoints, review queue & filtering, atomic approval & reservation locking, competing request auto-closure (0 orphaned requests), race-condition double-booking defense, teacher rejection workflow, duplicate approval guard, duplicate student request guard, rate limiting defense |
 | `tests/test_phase3.py` | Phase 3 Unit Regression | **PASS (12/12)** | Book donation lifecycle and Pillow image processing |
 | `tests/test_phase2.py` | Phase 2 Unit Regression | **PASS (12/12)** | Student catalogue discovery, search, and multi-faceted filtering |
-| Full Test Suite (`tests/`) | Combined Test Suite | **PASS (36/36)** | 100% of unit and integration tests passing across all completed phases |
+| Full Test Suite (`tests/`) | Combined Test Suite | **PASS (38/38)** | 100% of unit and integration tests passing across all completed phases |
 | `test_phase1.py` | Foundation & Security Regression | **PASS (7/7)** | SQLite WAL mode, dual portals, 100% offline static assets, error handlers, and persistence |
 | `test_concurrency.py` | Concurrency & WAL Performance | **PASS (15/15)** | 15 concurrent student write operations committed without lock errors |
-| `test_browser_phase4.py` | Playwright Edge Browser Audit | **PASS** | Complete end-to-end user journey (student browse -> request -> success -> track -> teacher review -> approve & reserve -> book reserved in catalogue) verified on Desktop (1280x800) and Mobile (390x844) viewports with **0 console errors and 0 page exceptions** |
+| `test_browser_phase2.py` | Phase 2 Playwright Audit | **PASS** | Desktop & Mobile viewports, multi-filter & search with **0 console errors and 0 page exceptions** |
+| `test_browser_phase3.py` | Phase 3 Playwright Audit | **PASS** | Complete donation lifecycle, inspection & approval with **0 console errors and 0 page exceptions** |
+| `test_browser_phase4.py` | Phase 4 Playwright Audit | **PASS** | Multi-student competing request submission, teacher review, atomic approval, auto-closure of competing request (0 orphaned requests), tracking desk privacy, and mobile viewport (390x844) with **0 console errors and 0 page exceptions** |
 
 ### Network & Wi-Fi LAN Access Note
 - **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.

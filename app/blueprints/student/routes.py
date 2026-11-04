@@ -161,6 +161,10 @@ def request_book(code_or_id=None):
         flash("Please select a book from the catalogue to request.", "info")
         return redirect(url_for('student.catalogue'))
 
+    if book['status'] != 'available':
+        flash(f"'{book['title']}' ({book['book_code']}) is currently {book['status']} and cannot be requested.", "warning")
+        return redirect(url_for('student.book_detail', code_or_id=book['book_code']))
+
     return render_template(
         'student/request_book.html',
         book=book,
@@ -196,6 +200,13 @@ def track():
         else:
             # Mask student name for privacy protection
             masked_name = request_service.mask_student_name(req['requester_name'])
+            # Strict defense-in-depth: purge private PII from dict before template rendering
+            safe_req = dict(req)
+            safe_req.pop('requester_roll_no', None)
+            safe_req.pop('requester_contact', None)
+            safe_req.pop('requester_name', None)
+            safe_req.pop('notes', None)
+            req = safe_req
 
     return render_template(
         'student/track.html',

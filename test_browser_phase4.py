@@ -99,6 +99,21 @@ def run_phase4_browser_audit():
         assert 'value="15"' not in content and ">15<" not in content, "CRITICAL: Roll number must NOT appear in public tracking HTML"
         print("  ✓ Public tracking desk verified: Status live, student name masked ('Saad R***'), ZERO phone/roll leakage!")
 
+        # 1.6b Second Student Requests the Same Physical Book Before Approval (Multiple Requesters)
+        print(f"  1.6b Submitting Competing Request for {book_code} from second student (Bilal Tariq)...")
+        page.goto(f"{BASE_URL}/request/{book_code}")
+        page.wait_for_load_state("networkidle")
+        page.fill("input[name='requester_name']", "Bilal Tariq")
+        page.fill("input[name='requester_class']", "Class 7-B")
+        page.fill("input[name='requester_roll_no']", "18")
+        page.fill("input[name='requester_contact']", "0300-8888888")
+        page.fill("textarea[name='notes']", "Also need this textbook for syllabus.")
+        page.click("button[type='submit']")
+        page.wait_for_load_state("networkidle")
+        assert "/request/success" in page.url
+        code2 = page.locator("#track-code").inner_text().strip()
+        print(f"  ✓ Competing request submitted! Tracking Code: {code2}")
+
         # 1.7 Teacher Authentication
         print("  1.7 Logging in as Teacher...")
         page.goto(f"{BASE_URL}/auth/login")
@@ -116,7 +131,9 @@ def run_phase4_browser_audit():
         content = page.content()
         assert tracking_code in content
         assert "Saad Rehman" in content
-        print(f"  ✓ Request {tracking_code} visible in teacher pending review queue")
+        assert code2 in content
+        assert "Bilal Tariq" in content
+        print(f"  ✓ Both competing requests ({tracking_code} and {code2}) visible in teacher pending review queue")
 
         # 1.9 Search by Student Name in Queue
         print("  1.9 Testing Search Filter in Request Queue ('Saad Rehman')...")
@@ -126,13 +143,21 @@ def run_phase4_browser_audit():
         assert "Saad Rehman" in page.content()
         print("  ✓ Search filter verified")
 
-        # 1.10 Approve the Request (Atomic Reservation)
-        print(f"  1.10 Approving Request {tracking_code}...")
-        approve_button = page.locator("form[action*='/approve'] button[type='submit']").first
+        # 1.10 Approve Student 1's Request (Atomic Reservation & Competing Policy)
+        print(f"  1.10 Approving Request {tracking_code} (Atomic Reservation)...")
+        approve_button = page.locator(f"form[action*='/requests/'] button[type='submit']").first
         approve_button.click()
         page.wait_for_load_state("networkidle")
         assert "Request approved" in page.content()
         print("  ✓ Request approved successfully")
+
+        # 1.10b Verify Zero Orphaned Requests in Pending Queue for this Book
+        print(f"  1.10b Verifying competing request {code2} is no longer pending (Policy: auto-closed)...")
+        page.goto(f"{BASE_URL}/teacher/requests?status=pending")
+        page.wait_for_load_state("networkidle")
+        pending_content = page.content()
+        assert code2 not in pending_content, f"Request {code2} should NOT be in pending queue after book was reserved"
+        print(f"  ✓ Verified: Zero orphaned pending requests for {book_code} remain in pending queue!")
 
         # 1.11 Verify Book Status Changed to Reserved in Public Detail
         print(f"  1.11 Verifying Book {book_code} is now RESERVED in Public Detail...")
@@ -142,13 +167,22 @@ def run_phase4_browser_audit():
         assert "Currently Reserved" in detail_content
         print(f"  ✓ Book {book_code} is now marked 'Currently Reserved' and cannot be requested again")
 
-        # 1.12 Verify Tracking Desk Updates to 'Approved & Reserved'
-        print(f"  1.12 Verifying Student Tracking Desk after approval...")
+        # 1.12 Verify Tracking Desk for Approved Student
+        print(f"  1.12 Verifying Student 1 ({tracking_code}) Tracking Desk after approval...")
         page.goto(f"{BASE_URL}/track?code={tracking_code}")
         page.wait_for_load_state("networkidle")
         track_content = page.content()
         assert "Reserved" in track_content or "Approved" in track_content
-        print("  ✓ Student tracking desk displays approved/reserved status")
+        print("  ✓ Student 1 tracking desk displays approved/reserved status")
+
+        # 1.13 Verify Tracking Desk for Competing Student (Auto-closed with clear reason)
+        print(f"  1.13 Verifying Student 2 ({code2}) Tracking Desk shows clear closure reason...")
+        page.goto(f"{BASE_URL}/track?code={code2}")
+        page.wait_for_load_state("networkidle")
+        track2_content = page.content()
+        assert "Not Approved" in track2_content or "Could Not Be Fulfilled" in track2_content
+        assert "allocated to another student" in track2_content.lower()
+        print("  ✓ Student 2 tracking desk displays respectful closure explanation (no false pending state)")
 
         context.close()
 

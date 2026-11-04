@@ -105,6 +105,23 @@ def create_book_request(form_data):
     try:
         with db_transaction(db):
             cur = db.cursor()
+
+            # 2b. Prevent duplicate pending/approved requests from same student for same book
+            cur.execute(
+                """
+                SELECT tracking_code FROM requests 
+                WHERE book_id = ? 
+                  AND requester_roll_no = ? 
+                  AND requester_class = ?
+                  AND status IN ('pending', 'approved')
+                LIMIT 1;
+                """,
+                (book_id, requester_roll_no, requester_class)
+            )
+            duplicate_req = cur.fetchone()
+            if duplicate_req:
+                return False, None, f"You already have an active request ({duplicate_req['tracking_code']}) for this textbook."
+
             cur.execute(
                 """
                 INSERT INTO requests (
@@ -290,6 +307,11 @@ def approve_request(request_id: int, teacher_id: int, teacher_name: str = 'Teach
 
             req = dict(req_row)
             if req['status'] != 'pending':
+                # Check if associated book was already reserved by policy
+                cur.execute("SELECT status FROM books WHERE id = ?;", (req['book_id'],))
+                b_check = cur.fetchone()
+                if b_check and b_check['status'] == 'reserved':
+                    return False, None, f"Cannot approve request: Current status is '{req['status']}' because book is already reserved."
                 return False, None, f"Cannot approve request: Current status is '{req['status']}'."
 
             # 2. Fetch associated book and verify it is available for reservation
@@ -320,7 +342,51 @@ def approve_request(request_id: int, teacher_id: int, teacher_name: str = 'Teach
                 (teacher_id, req['id'])
             )
 
-            # 5. Log activity
+            # 5. Clear all competing pending requests for this physical book
+            # Policy: Competing requests for the exact same physical copy are auto-closed with
+            # status 'rejected' and a transparent explanation. Zero orphaned pending requests remain.
+            cur.execute(
+                """
+                SELECT id, tracking_code, requester_name 
+                FROM requests 
+                WHERE book_id = ? AND id != ? AND status = 'pending';
+                """,
+                (book['id'], req['id'])
+            )
+            competing_requests = cur.fetchall()
+
+            if competing_requests:
+                competing_reason = (
+                    "This copy was allocated to another student who requested earlier or was prioritized by teacher review. "
+                    "Please browse the school catalogue for other available copies."
+                )
+                cur.execute(
+                    """
+                    UPDATE requests
+                    SET status = 'rejected',
+                        rejection_reason = ?,
+                        reviewed_by = ?,
+                        reviewed_at = CURRENT_TIMESTAMP
+                    WHERE book_id = ? AND id != ? AND status = 'pending';
+                    """,
+                    (competing_reason, teacher_id, book['id'], req['id'])
+                )
+
+                for cr in competing_requests:
+                    cur.execute(
+                        """
+                        INSERT INTO activity_logs (
+                            action, entity_type, entity_id, actor_type, actor_name, details
+                        ) VALUES ('request_auto_closed', 'request', ?, 'system', ?, ?);
+                        """,
+                        (
+                            cr['id'],
+                            teacher_name,
+                            f"Request {cr['tracking_code']} auto-closed: physical book {book['book_code']} reserved for {req['requester_name']}."
+                        )
+                    )
+
+            # 6. Log activity for the approved request
             cur.execute(
                 """
                 INSERT INTO activity_logs (

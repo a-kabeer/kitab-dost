@@ -37,8 +37,8 @@ class Phase4RequestSystemTests(unittest.TestCase):
     def _reset_test_state(cls):
         with cls.app.app_context():
             db = get_db()
-            db.execute("DELETE FROM requests WHERE requester_name IN ('Fatima Noor', 'Zeeshan Ahmed', 'Candidate One', 'Candidate Two', 'Test Requester');")
-            db.execute("UPDATE books SET status = 'available' WHERE book_code IN ('KB-BK-000001', 'KB-BK-000002', 'KB-BK-000003', 'KB-BK-000004');")
+            db.execute("DELETE FROM requests;")
+            db.execute("UPDATE books SET status = 'available';")
             db.commit()
 
     def setUp(self):
@@ -186,22 +186,33 @@ class Phase4RequestSystemTests(unittest.TestCase):
         self.assertNotIn('42', html)
 
     def test_06_unauthenticated_teacher_routes_blocked(self):
-        """Verify unauthenticated requests to teacher queues are redirected to login."""
+        """Verify all unauthenticated teacher request management routes redirect to login."""
         with self.client.session_transaction() as sess:
             sess.clear()
 
-        res_get = self.client.get('/teacher/requests')
-        self.assertEqual(res_get.status_code, 302)
-        self.assertIn('/auth/login', res_get.headers['Location'])
+        # 1. Review queue list
+        res_list = self.client.get('/teacher/requests')
+        self.assertEqual(res_list.status_code, 302)
+        self.assertIn('/auth/login', res_list.headers['Location'])
 
-        # With CSRF
+        # 2. Detailed inspection view
+        res_detail = self.client.get('/teacher/requests/1')
+        self.assertEqual(res_detail.status_code, 302)
+        self.assertIn('/auth/login', res_detail.headers['Location'])
+
+        # 3. Approve endpoint (POST)
         self.client.get('/')
         with self.client.session_transaction() as sess:
             csrf_token = sess.get('csrf_token')
 
-        res_post = self.client.post('/teacher/requests/1/approve', data={'csrf_token': csrf_token})
-        self.assertEqual(res_post.status_code, 302)
-        self.assertIn('/auth/login', res_post.headers['Location'])
+        res_approve = self.client.post('/teacher/requests/1/approve', data={'csrf_token': csrf_token})
+        self.assertEqual(res_approve.status_code, 302)
+        self.assertIn('/auth/login', res_approve.headers['Location'])
+
+        # 4. Reject endpoint (POST)
+        res_reject = self.client.post('/teacher/requests/1/reject', data={'csrf_token': csrf_token, 'reason': 'Test'})
+        self.assertEqual(res_reject.status_code, 302)
+        self.assertIn('/auth/login', res_reject.headers['Location'])
 
     def test_07_teacher_review_queue_and_filtering(self):
         """Verify teacher can inspect requests, filter by status, and search."""
@@ -315,6 +326,17 @@ class Phase4RequestSystemTests(unittest.TestCase):
             self.assertTrue(ok1)
             self.assertEqual(bk_code1, book_code)
 
+            # Policy Verification: Zero orphaned pending requests must remain
+            cur.execute("SELECT COUNT(*) FROM requests WHERE book_id = ? AND status = 'pending';", (book['id'],))
+            pending_count = cur.fetchone()[0]
+            self.assertEqual(pending_count, 0, "No orphaned pending requests should remain after approval.")
+
+            # Candidate Two's request must be auto-closed with clear explanatory reason
+            cur.execute("SELECT status, rejection_reason FROM requests WHERE id = ?;", (id2,))
+            c2_row = cur.fetchone()
+            self.assertEqual(c2_row['status'], 'rejected')
+            self.assertIn('allocated to another student', c2_row['rejection_reason'].lower())
+
             # Teacher attempts to approve Candidate Two for the now-reserved book
             ok2, bk_code2, err2 = request_service.approve_request(id2, 1, 'Teacher Tariq')
             # MUST BE REJECTED BY ATOMIC RESERVATION LOCK
@@ -401,6 +423,69 @@ class Phase4RequestSystemTests(unittest.TestCase):
         # HTTP request to /track should return 429
         res = self.client.get('/track?code=KB-REQ-TEST-1234')
         self.assertEqual(res.status_code, 429)
+
+    def test_13_duplicate_student_request_for_same_book_blocked(self):
+        """Verify the same student cannot submit duplicate requests for the same book."""
+        with self.app.app_context():
+            # First request succeeds
+            ok1, code1, _ = request_service.create_book_request({
+                'book_code': 'KB-BK-000004',
+                'requester_name': 'Hamza Khan',
+                'requester_class': 'Class 8-A',
+                'requester_roll_no': '7',
+                'requester_contact': '0300-7777777'
+            })
+            self.assertTrue(ok1)
+            self.assertIsNotNone(code1)
+
+            # Second request by same student (same class & roll number) for same book MUST be blocked
+            ok2, code2, err2 = request_service.create_book_request({
+                'book_code': 'KB-BK-000004',
+                'requester_name': 'Hamza Khan',
+                'requester_class': 'Class 8-A',
+                'requester_roll_no': '7',
+                'requester_contact': '0300-7777777'
+            })
+            self.assertFalse(ok2)
+            self.assertIn('already have an active request', err2)
+
+            # Same student requesting a DIFFERENT available book is permitted
+            ok3, code3, _ = request_service.create_book_request({
+                'book_code': 'KB-BK-000005',
+                'requester_name': 'Hamza Khan',
+                'requester_class': 'Class 8-A',
+                'requester_roll_no': '7',
+                'requester_contact': '0300-7777777'
+            })
+            self.assertTrue(ok3)
+
+    def test_14_cannot_request_reserved_book_via_get_or_post(self):
+        """Verify students cannot request an already-reserved book via GET or POST."""
+        with self.app.app_context():
+            db = get_db()
+            db.execute("UPDATE books SET status = 'reserved' WHERE book_code = 'KB-BK-000006';")
+            db.commit()
+
+        # GET /request for reserved book should redirect back to book detail
+        res_get = self.client.get('/request?book=KB-BK-000006')
+        self.assertEqual(res_get.status_code, 302)
+        self.assertIn('/book/KB-BK-000006', res_get.headers['Location'])
+
+        # POST /request for reserved book should return 400 Bad Request
+        self.client.get('/')
+        with self.client.session_transaction() as sess:
+            csrf_token = sess.get('csrf_token')
+
+        res_post = self.client.post('/request', data={
+            'csrf_token': csrf_token,
+            'book_code': 'KB-BK-000006',
+            'requester_name': 'Late Student',
+            'requester_class': 'Class 6-A',
+            'requester_roll_no': '10',
+            'requester_contact': '0300-0000000'
+        })
+        self.assertEqual(res_post.status_code, 400)
+        self.assertIn('reserved', res_post.get_data(as_text=True).lower())
 
 if __name__ == '__main__':
     unittest.main()

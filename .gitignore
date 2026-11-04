@@ -1,0 +1,39 @@
+# Environment & Secret Configurations
+.env
+.env.*
+*.env
+instance/
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+env/
+venv/
+ENV/
+
+# SQLite Database Files & WAL Logs
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Backup Snapshots
+backups/*.db
+
+# Uploaded Student & Book Photos (Preserve directories via .gitkeep)
+app/static/uploads/books/*
+!app/static/uploads/books/.gitkeep
+app/static/uploads/qr/*
+!app/static/uploads/qr/.gitkeep
+
+# OS & Editor Artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

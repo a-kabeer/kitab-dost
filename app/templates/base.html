@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Kitaab Bank - Smart School Book Exchange{% endblock %}</title>
+
+  <!-- Zero-FOUC Theme Guard: Must execute before CSS renders -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('kb_theme') || 'system';
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-theme-preference', saved);
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- 100% Offline Local CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/student.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="{{ url_for('student.index') }}" class="brand-link">
+        <div class="brand-logo-icon">📖</div>
+        <div class="brand-meta">
+          <span class="brand-title">Kitaab Bank</span>
+          <span class="brand-subtitle">Smart School Book Exchange</span>
+        </div>
+      </a>
+
+      <!-- Desktop & Mobile Navigation Links -->
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="{{ url_for('student.index') }}" class="nav-link {% if request.endpoint == 'student.index' %}active{% endif %}">Home</a></li>
+          <li><a href="{{ url_for('student.catalogue') }}" class="nav-link {% if request.endpoint == 'student.catalogue' %}active{% endif %}">Browse Books</a></li>
+          <li><a href="{{ url_for('student.donate') }}" class="nav-link {% if request.endpoint == 'student.donate' %}active{% endif %}">Donate a Book</a></li>
+          <li><a href="{{ url_for('student.track') }}" class="nav-link {% if request.endpoint == 'student.track' %}active{% endif %}">Track Request</a></li>
+          <li><a href="{{ url_for('student.scan') }}" class="nav-link {% if request.endpoint == 'student.scan' %}active{% endif %}">Scan QR</a></li>
+          <li><a href="{{ url_for('student.about') }}" class="nav-link {% if request.endpoint == 'student.about' %}active{% endif %}">About</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right Header Actions (Theme Switcher + Teacher Login) -->
+      <div class="nav-actions">
+        <!-- Theme Switcher Dropdown -->
+        <div class="theme-selector-wrap">
+          <button type="button" class="theme-btn" data-theme-toggle aria-label="Toggle Theme">
+            <span data-theme-icon>☀️</span>
+            <span data-theme-label>Theme</span>
+            <span style="font-size: 0.65rem;">▼</span>
+          </button>
+          <div class="theme-dropdown-menu">
+            <button type="button" class="theme-option" data-theme-set="light">☀️ Light Mode</button>
+            <button type="button" class="theme-option" data-theme-set="dark">🌙 Dark Mode</button>
+            <button type="button" class="theme-option" data-theme-set="system">💻 System Default</button>
+          </div>
+        </div>
+
+        {% if session.get('teacher_id') %}
+          <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-outline btn-sm">Teacher Desk</a>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-sm" style="color: var(--text-muted); font-size: 0.8rem;">Sign Out</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm">Teacher Sign In</a>
+        {% endif %}
+
+        <!-- Mobile Navigation Toggle -->
+        <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">
+          ☰
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages Notifications -->
+  <div class="container mt-2">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+            <span>ℹ️</span>
+            <div>{{ message }}</div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Application Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-top">
+        <div>
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Kitaab Bank (کتاب بینک)</h3>
+          <p class="text-muted" style="font-size: 0.9rem; margin-top: 0.25rem;">
+            Empowering students to share, reuse, and discover educational books.
+          </p>
+        </div>
+        <div>
+          <span class="badge badge-success">● Local School Server Active</span>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Government Model High School. Built for Students & Teachers.</span>
+        <span>Runs 100% Offline on School Wi-Fi</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Offline Local JavaScript -->
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script>
+    // Mobile navigation toggle
+    const navToggle = document.getElementById('mobileNavToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (navToggle && navLinks) {
+      navToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('show');
+      });
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Teacher Desk - Kitaab Bank{% endblock %}</title>
+
+  <!-- Zero-FOUC Theme Guard: Must execute before CSS renders -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('kb_theme') || 'system';
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-theme-preference', saved);
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- 100% Offline Local CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Teacher Top Navbar -->
+  <header class="navbar">
+    <div class="container navbar-inner" style="max-width: 100%; padding: 0 1.5rem;">
+      <a href="{{ url_for('teacher.dashboard') }}" class="brand-link">
+        <div class="brand-logo-icon" style="background: linear-gradient(135deg, var(--accent), var(--primary));">👨‍🏫</div>
+        <div class="brand-meta">
+          <span class="brand-title">Teacher Dashboard</span>
+          <span class="brand-subtitle">Kitaab Bank Administrative Desk</span>
+        </div>
+      </a>
+
+      <!-- Right Header Actions (Theme Switcher + Student View Switch) -->
+      <div class="nav-actions">
+        <!-- Theme Switcher Dropdown -->
+        <div class="theme-selector-wrap">
+          <button type="button" class="theme-btn" data-theme-toggle aria-label="Toggle Theme">
+            <span data-theme-icon>☀️</span>
+            <span data-theme-label>Theme</span>
+            <span style="font-size: 0.65rem;">▼</span>
+          </button>
+          <div class="theme-dropdown-menu">
+            <button type="button" class="theme-option" data-theme-set="light">☀️ Light Mode</button>
+            <button type="button" class="theme-option" data-theme-set="dark">🌙 Dark Mode</button>
+            <button type="button" class="theme-option" data-theme-set="system">💻 System Default</button>
+          </div>
+        </div>
+
+        <a href="{{ url_for('student.index') }}" class="btn btn-outline btn-sm">Public Portal ↗</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm" style="color: var(--danger-text); background-color: var(--danger-bg); border-color: var(--danger); font-size: 0.85rem;">Sign Out</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Teacher Workspace Shell -->
+  <div class="teacher-shell">
+    <!-- Sidebar Navigation -->
+    <aside class="teacher-sidebar">
+      <div>
+        <div class="sidebar-heading">Circulation & Review</div>
+        <ul class="sidebar-nav">
+          <li>
+            <a href="{{ url_for('teacher.dashboard') }}" class="sidebar-link {% if request.endpoint == 'teacher.dashboard' %}active{% endif %}">
+              <span>📊</span>
+              <span>Overview</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('teacher.donations') }}" class="sidebar-link {% if request.endpoint == 'teacher.donations' %}active{% endif %}">
+              <span>📥</span>
+              <span>Donation Queue</span>
+              <span class="badge badge-warning sidebar-badge">0</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('teacher.requests') }}" class="sidebar-link {% if request.endpoint == 'teacher.requests' %}active{% endif %}">
+              <span>📋</span>
+              <span>Student Requests</span>
+              <span class="badge badge-primary sidebar-badge">0</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('teacher.handovers') }}" class="sidebar-link {% if request.endpoint == 'teacher.handovers' %}active{% endif %}">
+              <span>🤝</span>
+              <span>Book Handover</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="sidebar-heading">Management & Tools</div>
+        <ul class="sidebar-nav">
+          <li>
+            <a href="{{ url_for('teacher.inventory') }}" class="sidebar-link {% if request.endpoint == 'teacher.inventory' %}active{% endif %}">
+              <span>📚</span>
+              <span>Book Inventory</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('teacher.reports') }}" class="sidebar-link {% if request.endpoint == 'teacher.reports' %}active{% endif %}">
+              <span>📈</span>
+              <span>Reports & Stats</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('teacher.settings') }}" class="sidebar-link {% if request.endpoint == 'teacher.settings' %}active{% endif %}">
+              <span>⚙️</span>
+              <span>Settings & Backup</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem;">
+          👤 {{ session.get('teacher_name', 'Teacher') }}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+          <span>Staff Access: Authenticated (Local)</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="teacher-main">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+              <span>ℹ️</span>
+              <div>{{ message }}</div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block teacher_content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Offline Local JavaScript -->
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

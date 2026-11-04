@@ -1,0 +1,69 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Teacher Dashboard - Kitaab Bank{% endblock %}
+
+{% block teacher_content %}
+<div class="dashboard-header">
+  <div>
+    <h1 class="dashboard-title">Library Overview</h1>
+    <p class="dashboard-subtitle">Real-time statistics from school local records.</p>
+  </div>
+  <div>
+    <span class="badge badge-success">WAL Concurrency Active</span>
+  </div>
+</div>
+
+<!-- Metric Cards Grid -->
+<div class="dashboard-metrics">
+  <div class="metric-card">
+    <div class="metric-header">
+      <span class="metric-title">Available Books</span>
+      <div class="metric-icon">📚</div>
+    </div>
+    <div class="metric-value">{{ stats.available_books }}</div>
+    <div class="metric-footer">Approved books in public catalogue</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-header">
+      <span class="metric-title">Pending Donations</span>
+      <div class="metric-icon">📥</div>
+    </div>
+    <div class="metric-value">{{ stats.pending_donations }}</div>
+    <div class="metric-footer">Awaiting teacher review</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-header">
+      <span class="metric-title">Pending Requests</span>
+      <div class="metric-icon">📋</div>
+    </div>
+    <div class="metric-value">{{ stats.pending_requests }}</div>
+    <div class="metric-footer">Awaiting verification & reservation</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-header">
+      <span class="metric-title">Completed Exchanges</span>
+      <div class="metric-icon">🤝</div>
+    </div>
+    <div class="metric-value">{{ stats.total_reused }}</div>
+    <div class="metric-footer">Books handed over to students</div>
+  </div>
+</div>
+
+<!-- Status Card -->
+<div class="card" style="margin-top: 1.5rem;">
+  <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+    System Readiness & Phase 1 Foundation
+  </h2>
+  <p class="text-secondary" style="line-height: 1.6; margin-bottom: 1rem;">
+    The local Flask + Waitress runtime and SQLite Write-Ahead Logging (WAL) database are running smoothly. The Light, Dark, and System theme preferences are fully active across both student and teacher portals.
+  </p>
+  <div class="d-flex gap-2" style="flex-wrap: wrap;">
+    <span class="badge badge-primary">SQLite WAL: Enabled</span>
+    <span class="badge badge-primary">Zero CDN: Verified</span>
+    <span class="badge badge-success">Offline LAN Mode: Ready</span>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Kitaab Bank - Smart School Book Exchange{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-pill">
+      <span>🎒</span>
+      <span>Classes 6, 7 & 8 Book Sharing Program</span>
+    </div>
+    
+    <h1 class="hero-title">
+      Don't Let Old Books Sit on Shelves.<br>
+      <span class="hero-title-gradient">Pass Knowledge Forward.</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Kitaab Bank connects school students to donate completed textbooks and request the books they need for the new academic session. Supervised by school teachers.
+    </p>
+
+    <div class="hero-actions">
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary">
+        <span>🔍</span>
+        <span>Explore Available Books</span>
+      </a>
+      <a href="{{ url_for('student.donate') }}" class="btn btn-outline">
+        <span>📖</span>
+        <span>Donate an Unused Book</span>
+      </a>
+    </div>
+
+    <!-- Live Impact Metrics Strip -->
+    <div class="stats-strip">
+      <div class="stat-box">
+        <div class="stat-number">{{ stats.total_donated }}</div>
+        <div class="stat-label">Total Books Donated</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">{{ stats.available_books }}</div>
+        <div class="stat-label">Currently Available</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">{{ stats.total_reused }}</div>
+        <div class="stat-label">Successfully Reused</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">{{ stats.active_students }}</div>
+        <div class="stat-label">Student Beneficiaries</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section style="margin-top: 3.5rem;">
+    <div class="text-center">
+      <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+        How Kitaab Bank Works
+      </h2>
+      <p class="text-muted" style="max-width: 580px; margin: 0 auto;">
+        A simple, four-step process to give educational books a second life in our school.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrap">1</div>
+        <h3 class="feature-title">Student Donates</h3>
+        <p class="feature-desc">
+          Enter details of an unused textbook you no longer need and submit it for teacher review.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap">2</div>
+        <h3 class="feature-title">Teacher Verifies</h3>
+        <p class="feature-desc">
+          School teachers check the condition and syllabus relevance before publishing to the catalogue.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap">3</div>
+        <h3 class="feature-title">Student Requests</h3>
+        <p class="feature-desc">
+          Browse available books for Class 6, 7, or 8 and request what you need without complex registration.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap">4</div>
+        <h3 class="feature-title">School Handover</h3>
+        <p class="feature-desc">
+          Collect your verified book directly from the school teacher's desk and start learning.
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

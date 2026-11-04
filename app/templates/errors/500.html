@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error (500) - Kitaab Bank{% endblock %}
+
+{% block content %}
+<div class="container text-center" style="padding: 4rem 1rem;">
+  <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+  <h1 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">500 - Internal Server Error</h1>
+  <p class="text-muted" style="max-width: 480px; margin: 0 auto 2rem; line-height: 1.6;">
+    An unexpected error occurred on the school local server. The event has been logged for teacher review.
+  </p>
+  <a href="{{ url_for('student.index') }}" class="btn btn-primary">Return to Homepage</a>
+</div>
+{% endblock %}

@@ -122,9 +122,10 @@ The following core improvements have been fully integrated into the architecture
 | `test_phase1.py` [Test 5] | Error Handlers | **PASS** | Custom 404 page renders cleanly |
 | `test_phase1.py` [Test 6] | Immediate Transactions | **PASS** | `BEGIN IMMEDIATE` transaction committed successfully |
 | `test_phase1.py` [Test 7] | App Restart Persistence | **PASS** | Data preserved across app context teardown and restart |
-| `test_server_live.py` | Live Waitress Server | **PASS** | Localhost `127.0.0.1:5000` & LAN Wi-Fi `172.31.161.179:5000` (HTTP 200) |
+| `test_server_live.py` | Live Waitress Server | **PASS** | Localhost `127.0.0.1:5000` & Active LAN Wi-Fi `172.17.109.179:5000` (HTTP 200) |
 | `test_concurrency.py` | Concurrency & Simultaneous Submissions | **PASS** | 15 concurrent threads submitted simultaneously; 100% success, 0 lock errors |
 | `test_ui_audit.py` | UI, Assets & Responsiveness Audit | **PASS** | 100% internal links resolved, 0 external CDN links, responsive meta viewport verified |
+| `test_browser_live_edge.py` | Real Chromium (Edge) Browser Audit | **PASS** | 0 console errors, 0 runtime JS errors, 390px mobile viewport, theme persistence verified |
 
 ---
 
@@ -133,18 +134,28 @@ The following core improvements have been fully integrated into the architecture
 1. **Teacher Route Access Protection (Defect Resolved):**
    - *Defect Found:* Initial implementation allowed direct unauthenticated access to `/teacher/dashboard`.
    - *Fix Applied:* Built `app/blueprints/auth/` with secure password hashing (`check_password_hash`), seeded default teacher account (`teacher` / `Teacher@123`), and attached `@teacher_bp.before_request` hook redirecting all unauthenticated requests to `/auth/login`. Added CSRF token validation on login.
-2. **Git Exclusion Hardening (Defect Resolved):**
-   - *Defect Found:* Initial `.gitignore` did not exclude `.env` files, `*.db`, `backups/*.db`, or uploaded photos.
-   - *Fix Applied:* Updated `.gitignore` to explicitly ignore `.env`, `*.db`, `backups/*.db`, and `app/static/uploads/books/*` while retaining directories with `.gitkeep`.
-3. **LAN Reachability & Testing Reality:**
-   - *Automated Server Test:* Verified Waitress binds to `0.0.0.0:5000`, successfully serves on `http://172.31.161.179:5000` and `http://127.0.0.1:5000`.
-   - *Physical Device Note:* Machine is connected to Wi-Fi hotspot (`TECNO CAMON 20 2`). Host tests automated loopback reachability. For physical separate phone testing, user navigates to `http://172.31.161.179:5000/`.
-4. **Theme Integrity & Zero-FOUC:**
-   - Verified Light Mode, Dark Mode, and System Default across both Student and Teacher interfaces.
-   - Verified that `<head>` inline script prevents screen flashing on reload.
-5. **No Features Outside Phase 1:**
-   - Donation submissions, request reservations, and physical handovers remain placeholders until their respective phases.
+2. **Git Initialization & Exclusion Hardening (Completed):**
+   - *Action:* Git repository initialized (`master` branch).
+   - *Exclusions Verified:* Updated `.gitignore` to explicitly ignore `.env`, `*.db`, `backups/*.db`, and `app/static/uploads/books/*` while retaining directory structures with `.gitkeep`.
+   - *Baseline Commits:*
+     - `7611ea2` – `feat(phase-1): application foundation, dual-portal theme system and SQLite WAL setup`
+     - `3b1686d` – `fix(phase-1): add local svg favicon, eliminate browser console 404, add Playwright Edge browser audit`
+3. **Browser Console 404 Defect (Resolved):**
+   - *Defect Found:* Browsers automatically request `/favicon.ico`, which returned a 404 in the console.
+   - *Fix Applied:* Added local SVG book favicon (`app/static/img/favicon.svg`), wired into `<link rel="icon">`, and added `/favicon.ico` route in `app/__init__.py`. Result: **0 Console Errors / Warnings**.
+4. **Real Browser Headless Audit (Completed via Playwright + Microsoft Edge):**
+   - Verified on both Desktop (1280x800) and Mobile (390x844 with touch enabled and Android user agent).
+   - Theme switching (Light, Dark, System Default) confirmed with persistence across reloads.
+   - Mobile hamburger navigation toggle confirmed working cleanly on tap.
+   - Student navigation flow (5 routes) confirmed loading HTTP 200.
+   - Teacher authentication lifecycle (guard, invalid login rejection, valid login, theme toggle, sign out, re-locking) confirmed.
+5. **LAN IP & Wi-Fi Access Testing:**
+   - *Automated Server Test:* Verified Waitress binds to `0.0.0.0:5000` and serves on `http://172.17.109.179:5000` and `http://127.0.0.1:5000`.
+   - *IP Update Note:* Active Wi-Fi DHCP lease updated the host IP to `172.17.109.179`.
+   - *Physical Device Access:* Android phone connects via `http://172.17.109.179:5000/`. If Windows Firewall on Public network blocks incoming TCP traffic, profile must be set to Private network in Windows Wi-Fi settings.
+6. **Zero External Dependencies Confirmed:**
+   - Verified that all assets load 100% offline without active internet.
 
 ### Stopping Point
-- **Phase 1 Final Verification Audit is COMPLETE.**
+- **Phase 1 Final Verification Audit is 100% COMPLETE.**
 - **Phase 2 has NOT been started.** Awaiting instructions to proceed to Phase 2.

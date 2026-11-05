@@ -526,13 +526,13 @@ The following core improvements have been fully integrated into the architecture
 
 ### Network & Wi-Fi LAN Access Note
 - **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
-- **Current Machine Wi-Fi IP:** `10.0.0.36` (network `bbrouter`).
+- **Current Machine Wi-Fi IP:** `192.168.100.14` (Gateway: `192.168.100.1`). Note: IP addresses dynamically assign per router/DHCP; run `python run_server.py` or `ipconfig` to check.
 - **Connection Diagnostics:**
-  - `Test-NetConnection -ComputerName 10.0.0.36 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
-  - `http://10.0.0.36:5000`: **HTTP 200 OK** (Verified responsive).
+  - `Test-NetConnection -ComputerName 192.168.100.14 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
+  - `http://192.168.100.14:5000`: **HTTP 200 OK** (Verified responsive).
 - **Current Active URLs:**
   - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
-  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://10.0.0.36:5000`**
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://192.168.100.14:5000`**
 
 ### Stopping Point
 - **Phase 6 – QR System, Label Printing & Android Tested Scanner is 100% COMPLETE & VERIFIED.**
@@ -609,13 +609,13 @@ The following core improvements have been fully integrated into the architecture
 
 ### Network & Wi-Fi LAN Access Note
 - **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
-- **Current Machine Wi-Fi IP:** `10.0.0.36` (network `bbrouter`).
+- **Current Machine Wi-Fi IP:** `192.168.100.14` (Gateway: `192.168.100.1`). Note: IP addresses dynamically assign per router/DHCP; run `python run_server.py` or `ipconfig` to check.
 - **Connection Diagnostics:**
-  - `Test-NetConnection -ComputerName 10.0.0.36 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
-  - `http://10.0.0.36:5000`: **HTTP 200 OK** (Verified responsive).
+  - `Test-NetConnection -ComputerName 192.168.100.14 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
+  - `http://192.168.100.14:5000`: **HTTP 200 OK** (Verified responsive).
 - **Current Active URLs:**
   - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
-  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://10.0.0.36:5000`**
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://192.168.100.14:5000`**
 
 ### Stopping Point
 - **Phase 7 – Teacher Dashboard, Analytics & Themed Admin Desk is 100% COMPLETE & VERIFIED.**
@@ -687,13 +687,13 @@ Phase 8 was implemented, audited, and verified on 2026-11-05.
 
 ### Network & Wi-Fi LAN Access Note
 - **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
-- **Current Machine Wi-Fi IP:** `10.0.0.36` (network `bbrouter`).
+- **Current Machine Wi-Fi IP:** `192.168.100.14` (Gateway: `192.168.100.1`). Note: IP addresses dynamically assign per router/DHCP; run `python run_server.py` or `ipconfig` to check.
 - **Connection Diagnostics:**
-  - `Test-NetConnection -ComputerName 10.0.0.36 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
-  - `http://10.0.0.36:5000`: **HTTP 200 OK** (Verified responsive).
+  - `Test-NetConnection -ComputerName 192.168.100.14 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
+  - `http://192.168.100.14:5000`: **HTTP 200 OK** (Verified responsive).
 - **Current Active URLs:**
   - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
-  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://10.0.0.36:5000`**
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://192.168.100.14:5000`**
 
 ### Stopping Point
 - **Phase 8 – Multilingual RTL, Live Snapshot Backups & Exhibition Mode is 100% COMPLETE & VERIFIED.**

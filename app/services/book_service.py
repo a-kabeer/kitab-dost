@@ -160,3 +160,53 @@ def get_live_catalogue_stats():
         'total_reused': total_reused,
         'active_students': active_students
     }
+
+def get_books_for_labels(
+    class_grade=None,
+    subject=None,
+    status=None,
+    search_query=None,
+    limit=None,
+    offset=None
+):
+    """
+    Retrieve books for QR sticker label generation.
+    Supports filtering by class level, subject, status (available/reserved/handed_over/all),
+    and keyword search.
+    """
+    db = get_db()
+    cur = db.cursor()
+
+    sql = ["SELECT * FROM books WHERE 1=1"]
+    params = []
+
+    if class_grade and class_grade.strip():
+        sql.append("AND class_grade = ?")
+        params.append(class_grade.strip())
+
+    if subject and subject.strip():
+        sql.append("AND subject = ?")
+        params.append(subject.strip())
+
+    if status and status.strip() and status != 'all':
+        sql.append("AND status = ?")
+        params.append(status.strip())
+
+    if search_query and search_query.strip():
+        term = f"%{search_query.strip()}%"
+        sql.append("AND (title LIKE ? OR author LIKE ? OR book_code LIKE ?)")
+        params.extend([term, term, term])
+
+    sql.append("ORDER BY id ASC")
+
+    if limit is not None:
+        sql.append("LIMIT ?")
+        params.append(int(limit))
+    if offset is not None:
+        sql.append("OFFSET ?")
+        params.append(int(offset))
+
+    cur.execute(" ".join(sql), params)
+    rows = cur.fetchall()
+    return [dict(r) for r in rows]
+

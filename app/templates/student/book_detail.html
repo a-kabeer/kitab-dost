@@ -39,6 +39,22 @@
         <div style="margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-color); text-align: center;">
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">OFFICIAL REFERENCE CODE</div>
           <code style="font-size: 1.05rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em;">{{ book.book_code }}</code>
+          
+          <div style="margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-color);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.35rem;">OFFICIAL QR STICKER</div>
+            <img 
+              src="{{ url_for('student.book_qr_image', book_code=book.book_code) }}" 
+              alt="QR Code for {{ book.book_code }}" 
+              style="width: 80px; height: 80px; margin: 0 auto; display: block; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; background: #ffffff;"
+            >
+            {% if session.get('teacher_id') %}
+            <div style="margin-top: 0.5rem;">
+              <a href="{{ url_for('teacher.book_qr_label', code_or_id=book.book_code) }}" class="btn btn-sm btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+                🏷️ Print Label
+              </a>
+            </div>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>

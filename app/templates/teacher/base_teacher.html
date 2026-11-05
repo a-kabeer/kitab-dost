@@ -106,6 +106,12 @@
             </a>
           </li>
           <li>
+            <a href="{{ url_for('teacher.qr_sheet') }}" class="sidebar-link {% if request.endpoint in ('teacher.qr_sheet', 'teacher.book_qr_label') %}active{% endif %}">
+              <span>🏷️</span>
+              <span>Print QR Labels</span>
+            </a>
+          </li>
+          <li>
             <a href="{{ url_for('teacher.reports') }}" class="sidebar-link {% if request.endpoint == 'teacher.reports' %}active{% endif %}">
               <span>📈</span>
               <span>Reports & Stats</span>

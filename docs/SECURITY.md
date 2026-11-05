@@ -150,3 +150,29 @@ Uploaded book photographs represent a common attack vector if left unconstrained
 - **Consistent Live Snapshot:** It produces a byte-consistent live snapshot while concurrent reads proceed smoothly. Rather than promising completely lock-free operation, it briefly acquires shared read locks per incremental page chunk (`step()`), pausing writes for only microseconds without causing timeouts.
 - Generated backup files are automatically verified using `PRAGMA integrity_check;` and schema validation before being cataloged in `backup_records`.
 - Restorations create an automatic pre-restore safety snapshot before touching live data.
+
+---
+
+## 8. QR Code Security, Camera Hardware Safeguards & Code Normalization
+
+### 8.1 Camera Hardware Privacy & Anti-Surveillance Lifecycle
+- Mobile browser cameras represent a sensitive hardware sensor. Kitab Bank enforces strict hardware stream teardown in `app/static/js/qr_scanner.js`.
+- Whenever a camera modal is closed, the user switches browser tabs (`visibilitychange` with `document.hidden`), or navigates away (`pagehide`, `beforeunload`), every active `MediaStreamTrack` is explicitly terminated via `track.stop()`.
+- This guarantees that device camera hardware and green/orange indicator lights are immediately powered down, preventing background surveillance or battery drain.
+
+### 8.2 Secure Context Restrictions & Local Network Protection
+- In compliance with W3C web security standards, camera access (`navigator.mediaDevices.getUserMedia`) is strictly restricted to Secure Contexts (`https://` or `localhost`).
+- When accessed over unencrypted local school Wi-Fi (e.g. `http://10.0.0.36:5000`), the application detects insecure origins via `window.isSecureContext` and presents an educational notice instead of throwing unhandled exceptions or attempting insecure capture.
+- Prominent manual 6-digit Book Code lookup (`KB-BK-000001`) ensures full student functionality even when HTTPS certificates are not deployed on local school intranets.
+
+### 8.3 Input Normalization & Anti-Injection on Scanner Lookups
+- Scanned inputs and manual queries on `/scan` pass through a robust parser (`qr_service.parse_scanned_book_code`):
+  - Strips leading/trailing whitespace and control characters.
+  - Safely extracts codes from full URLs or relative paths using Python standard library URL parsing.
+  - Enforces strict regex validation (`KB-BK-\d{6}` or numeric expansion).
+  - Sanitizes user input before parameterized SQLite queries, completely preventing SQL injection.
+- Failed lookups return generic user-friendly messages without leaking database internals or stack traces.
+
+### 8.4 Zero-Storage QR Generation & Teacher Auth Guards
+- Dynamic QR code generation (`/qr/<book_code>.png`) generates images in-memory via Pillow/qrcode, preventing disk fill attacks or filesystem race conditions.
+- Single book sticker labels (`/teacher/books/<code_or_id>/qr`) and bulk A4 label printing (`/teacher/qr-sheet`) are strictly protected behind teacher session authentication (`@teacher_bp.before_request`). Unauthenticated users cannot view batch label sheets or teacher administration tools.

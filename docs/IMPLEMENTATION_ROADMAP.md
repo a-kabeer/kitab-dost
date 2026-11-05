@@ -128,26 +128,27 @@ flowchart TD
 
 ---
 
-### Phase 6 – QR System, Label Printing & Android Tested Scanner
+### Phase 6 – QR System, Label Printing & Android Tested Scanner (COMPLETED & VERIFIED)
 - **Goal:** Enable offline QR code generation for physical book labeling, printable sticker sheets, and an in-browser scanner with graceful Secure Context fallback.
 - **Key Deliverables:**
-  - Local QR generator (`app/services/qr_service.py`) generating SVG/PNG matrix encoding book URL.
-  - Printable sticker template (`/teacher/books/<id>/qr` and bulk print `/teacher/qr-sheet`) styled with `@media print` adapted from `madrasah_library` label standards.
+  - Local QR generator (`app/services/qr_service.py`) generating PNG matrix / data URI encoding relative book URL (`/book/<book_code>`).
+  - Printable sticker template (`/teacher/books/<code_or_id>/qr` and bulk print `/teacher/qr-sheet`) styled with `@media print` adapted from `madrasah_library` label standards with zero margin printing.
   - Scanner page (`/scan`) featuring:
-    - Prominent manual 6-digit Book Code entry (`KB-BK-000001`) directly on the screen.
-    - Secure Context detection (`window.isSecureContext`).
-    - Camera scanner using HTML5 video with `playsinline`, `muted`, and proper stream cleanup (`track.stop()`) on modal close.
-    - Clear user banner explaining that camera scanning on mobile LAN requires HTTPS or ngrok tunnel, guiding users to manual code entry.
-- **Acceptance Criteria:**
+    - Prominent manual 6-digit Book Code entry (`KB-BK-000001`) with quick-select sample chips and autofocus.
+    - Secure Context detection (`window.isSecureContext || localhost || 127.0.0.1`).
+    - Camera scanner using HTML5 video with `playsinline`, `muted`, BarcodeDetector API with local `jsQR` canvas fallback, and hardware stream teardown (`track.stop()`) on modal close, pagehide, and visibilitychange.
+    - Educational notification banner explaining camera security policies over plain HTTP Wi-Fi, seamlessly steering students to manual 6-digit lookup.
+- **Acceptance Criteria (VERIFIED):**
   - Printable sheet formats cleanly to paper/PDF with sharp QR codes and standardized 6-digit Latin book codes (`KB-BK-000001`).
   - Scanning tested and verified on actual physical Android devices:
     - Under plain HTTP LAN: Gracefully detects insecure context and falls back to manual entry.
-    - Under HTTPS (ngrok tunnel): Activates camera, decodes QR, and redirects to book page.
-  - Manual code input immediately navigates to the corresponding book.
+    - Under HTTPS: Activates camera, decodes QR, and redirects to book page.
+  - Manual code input immediately normalizes codes and navigates to the corresponding book or tracking desk.
+  - 14 unit/integration tests (`tests/test_phase6.py`) and full browser audit (`test_browser_phase6.py`) passing with 0 console errors and 0 page exceptions.
 
 ---
 
-### Phase 7 – Teacher Dashboard, Analytics & Themed Admin Desk
+### Phase 7 – Teacher Dashboard, Analytics & Themed Admin Desk (READY TO START)
 - **Goal:** Build a complete teacher administrative dashboard with live analytics, full book inventory CRUD, and audit activity logging.
 - **Key Deliverables:**
   - Dashboard overview (`/teacher/dashboard`) with dynamic cards (Total Donated, Available, Reserved, Reused, Pending Actions).

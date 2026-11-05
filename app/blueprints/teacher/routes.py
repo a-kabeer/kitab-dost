@@ -1,7 +1,7 @@
 from flask import render_template, session, redirect, url_for, flash, request, abort, current_app
 from . import teacher_bp
 from app.database import get_db
-from app.services import donation_service, request_service, handover_service
+from app.services import donation_service, request_service, handover_service, book_service, qr_service
 
 @teacher_bp.context_processor
 def inject_teacher_globals():
@@ -323,6 +323,75 @@ def handover_receipt(handover_id):
     school_name = setting_row['value'] if setting_row else current_app.config.get('SCHOOL_NAME', 'Government High School')
 
     return render_template('teacher/handover_receipt.html', handover=handover, school_name=school_name)
+
+@teacher_bp.route('/books/<code_or_id>/qr')
+def book_qr_label(code_or_id):
+    """Printable single textbook sticker label with high-contrast QR code."""
+    book = book_service.get_book_by_code_or_id(code_or_id)
+    if not book:
+        abort(404)
+
+    payload = qr_service.get_book_qr_payload(book['book_code'])
+    qr_data_uri = qr_service.generate_qr_data_uri(payload, box_size=8, border=2)
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT value FROM system_settings WHERE key = 'school_name' LIMIT 1;")
+    row = cur.fetchone()
+    school_name = row['value'] if row else current_app.config.get('SCHOOL_NAME', 'Government High School')
+
+    return render_template(
+        'teacher/book_qr_label.html',
+        book=book,
+        qr_data_uri=qr_data_uri,
+        school_name=school_name
+    )
+
+@teacher_bp.route('/qr-sheet')
+def qr_sheet():
+    """Bulk QR sticker printing center formatted for standard A4 sticker paper."""
+    class_filter = request.args.get('class_grade', '').strip()
+    subject_filter = request.args.get('subject', '').strip()
+    status_filter = request.args.get('status', 'available').strip()
+    search_query = request.args.get('q', '').strip()
+
+    books = book_service.get_books_for_labels(
+        class_grade=class_filter,
+        subject=subject_filter,
+        status=status_filter,
+        search_query=search_query,
+        limit=48
+    )
+
+    # Generate QR data URI for each book for offline zero-roundtrip printing
+    label_items = []
+    for b in books:
+        payload = qr_service.get_book_qr_payload(b['book_code'])
+        data_uri = qr_service.generate_qr_data_uri(payload, box_size=6, border=2)
+        label_items.append({
+            'book': b,
+            'qr_data_uri': data_uri
+        })
+
+    filter_options = book_service.get_filter_options()
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT value FROM system_settings WHERE key = 'school_name' LIMIT 1;")
+    row = cur.fetchone()
+    school_name = row['value'] if row else current_app.config.get('SCHOOL_NAME', 'Government High School')
+
+    return render_template(
+        'teacher/qr_sheet.html',
+        books=books,
+        label_items=label_items,
+        filter_options=filter_options,
+        selected_class=class_filter,
+        selected_subject=subject_filter,
+        selected_status=status_filter,
+        search_query=search_query,
+        school_name=school_name
+    )
 
 @teacher_bp.route('/inventory')
 def inventory():

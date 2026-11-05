@@ -12,8 +12,8 @@
 | **Phase 3** | **Book Donations, Pillow Pipeline & Review Queue** | **COMPLETED & VERIFIED** | Day 3 | 2026-11-04 | Student donation form, secure reference tokens (KB-DON-), local Pillow re-encoding, teacher review queue, atomic approval (KB-BK-000001) & rejection reason ledger. |
 | **Phase 4** | **Book Requests, Secure Tokens & Reservation Lock** | **COMPLETED & VERIFIED** | Day 4 | 2026-11-04 | Student book request form, cryptographically secure tracking code (KB-REQ-), atomic reservation lock (BEGIN IMMEDIATE), private tracking desk (/track) with strict PII masking, teacher review queue. |
 | **Phase 5** | **Physical Handover Ledger & Circulation Defense** | **COMPLETED & VERIFIED** | Day 5 | 2026-11-05 | Handover verification form, dual confirmation checkboxes, sequential KB-HO-000001 ledger, printable A4 receipt, student tracking timeline, reservation release/cancellation, and 55 unit tests + 4 browser tests passing. |
-| **Phase 6** | **QR System, Label Printing & Android Tested Scanner** | **READY TO START** | Day 6 | — | Dependent on Phase 5 sign-off. |
-| **Phase 7** | Teacher Dashboard, Analytics & Themed Admin Desk | PENDING | Day 7 | — | Dependent on Phase 6. |
+| **Phase 6** | **QR System, Label Printing & Android Tested Scanner** | **COMPLETED & VERIFIED** | Day 6 | 2026-11-05 | Offline QR generator, printable single/bulk labels, dual-mode /scan with prominent manual entry, Secure Context detection, camera stream cleanup (track.stop()), 69 unit tests + 5 browser tests passing. |
+| **Phase 7** | Teacher Dashboard, Analytics & Themed Admin Desk | READY TO START | Day 7 | — | Dependent on Phase 6. |
 | **Phase 8** | Multilingual RTL, Hot Backups & Exhibition Mode | PENDING | Day 8 | — | Dependent on Phase 7. |
 | **Phase 9** | Comprehensive QA, Multi-Device Hardening & Release | PENDING | Day 9 | — | Final sign-off milestone. |
 
@@ -462,4 +462,78 @@ The following core improvements have been fully integrated into the architecture
 
 ### Stopping Point
 - **Phase 5 – Physical Handover Ledger & Circulation Defense is 100% COMPLETE & VERIFIED.**
-- **Phase 6 (QR System, Label Printing & Android Tested Scanner) has NOT been started.** Awaiting instructions to proceed to Phase 6.
+
+---
+
+## 8. Phase 6 Implementation & Verification Details
+
+### Features Implemented
+1. **Offline QR Code Generation Service (`app/services/qr_service.py`):**
+   - Implemented using Python `qrcode` library (version 8.2) with Pillow backend.
+   - Generates high-contrast, error-corrected (Medium level, 15% recovery) QR matrices.
+   - Generates base64 data URIs for immediate inline HTML rendering (`generate_qr_data_uri`) and binary PNG bytes for dynamic endpoints (`generate_qr_png_bytes`).
+   - Generates relative payload URLs (`/book/<book_code>`), keeping QR codes compact and immune to server IP/domain migrations.
+   - Multi-format code normalization (`parse_scanned_book_code`): seamlessly parses full URLs (`http://.../book/KB-BK-000001`), relative paths, standard codes (`KB-BK-000001`), lowercase strings (`kb-bk-1`), integer shortcuts (`1` -> `KB-BK-000001`), and request/donation tracking tokens (`KB-REQ-XXXX-XXXX`).
+
+2. **Dynamic QR Image Endpoint (`GET /qr/<book_code>.png`):**
+   - Renders on-the-fly QR code images without touching disk or polluting database tables.
+   - Sets cache headers (`Cache-Control: public, max-age=86400`) for high-performance browser caching.
+   - Automatically sanitizes book codes and returns 404 for non-existent books.
+
+3. **Single Book QR Sticker Label View (`GET /teacher/books/<code_or_id>/qr`):**
+   - Authenticated teacher view generating a crisp, high-density physical textbook sticker.
+   - Includes school brand ("کتاب بینک - KITAAB BANK"), high-contrast QR code, bold 6-digit Latin Book Code (`KB-BK-000001`), Title, Author, Subject, Class Grade, and physical condition.
+   - Provides clear scan instructions and dual-mode print buttons.
+   - Adapted `@media print` rules from `madrasah_library`: hides navigation, sidebar, and buttons; centers sticker card on page with clean cut-out borders.
+
+4. **Bulk A4 QR Label Sheet (`GET /teacher/qr-sheet`):**
+   - Multi-label layout formatted for standard A4 sticker paper grids (2 columns x 4 rows = 8 labels per page, or responsive grid).
+   - Filter toolbar: Class Grade (All, Class 6, 7, 8), Subject (All, English, Urdu, Sindhi, Mathematics, General Science, Social Studies, Computer Science, Islamiat), Status (All, Available, Reserved, Handed Over), and text search.
+   - Bulk print stylesheet with `@media print`: sets page margin to 8mm, prevents page breaks inside stickers (`break-inside: avoid`), forces exact dimensions (92mm x 62mm), and removes browser header/footer artifacts.
+
+5. **Student Textbook Scanner & Direct Lookup (`GET` & `POST /scan`):**
+   - **Prominent Manual 6-Digit Lookup:** Positioned prominently at the top of the screen with autofocus, large numerical input keypad, clear validation feedback, and quick-select sample book chips.
+   - **Secure Context Detection:** Client-side JavaScript detects `window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'`.
+   - **Educational Mobile LAN Insecure Notice:** When accessed over plain HTTP via Wi-Fi (`http://10.0.0.36:5000`), the camera scanner gracefully transitions to an informative banner explaining that mobile browsers block camera access on unencrypted LAN connections, seamlessly guiding students to enter the 6-digit Book Code.
+   - **Hardware Stream Lifecycle Management:** Camera streams strictly invoke `track.stop()` upon dialog close, tab visibility change (`visibilitychange`), or page navigation (`pagehide`, `beforeunload`), preventing camera indicator lights from staying active.
+   - **Dual Decoding Engine:** Utilizes the ultra-fast native Android `BarcodeDetector` API when available, with automatic fallback to local `jsQR` (canvas analysis) bundled completely offline.
+   - **Web Audio Feedback:** Synthesizes a pleasant audio chime via the HTML5 Web Audio API on successful scan without requiring any external audio files.
+
+6. **100% Offline Client-Side Dependencies:**
+   - Bundled official `jsQR.js` locally in `app/static/js/jsqr.js` (256 KB). Zero external CDN or cloud calls.
+   - Dedicated vanilla JavaScript controller in `app/static/js/qr_scanner.js`.
+
+7. **Template & Navigation Enhancements:**
+   - `app/templates/student/book_detail.html`: Added visual QR code sticker card preview with a direct "Print Label" shortcut for teachers.
+   - `app/templates/teacher/base_teacher.html`: Added "🏷️ Print QR Labels" link under Management & Tools.
+
+### Automated & Browser Test Verification Summary
+| Test Suite | Scope | Result | Details |
+|---|---|---|---|
+| `tests/test_phase6.py` | Unit & Integration Suite | **PASS (14/14)** | QR PNG bytes generation, data URI generation, URL parsing, numeric code expansion, request code redirect, invalid code handling, student lookup GET/POST, dynamic /qr endpoint, teacher auth guard on QR views, single sticker rendering, bulk label sheet filtering, 100% offline static asset integrity |
+| `tests/test_phase5.py` | Phase 5 Unit Regression | **PASS (17/17)** | Physical handover ledger, atomic locks, receipt printing, timeline synchronization |
+| `tests/test_phase4.py` | Phase 4 Unit Regression | **PASS (14/14)** | Book request workflow, competing request resolution, reservation locking |
+| `tests/test_phase3.py` | Phase 3 Unit Regression | **PASS (12/12)** | Book donation lifecycle and Pillow image processing |
+| `tests/test_phase2.py` | Phase 2 Unit Regression | **PASS (12/12)** | Student catalogue discovery, search, and multi-faceted filtering |
+| Full Test Suite (`tests/`) | Combined Test Suite | **PASS (69/69)** | 100% of unit and integration tests passing across all completed phases (Exit code 0, 17.19s) |
+| `test_phase1.py` | Foundation & Security Regression | **PASS (7/7)** | SQLite WAL mode, dual portals, 100% offline static assets, error handlers, and persistence |
+| `test_concurrency.py` | Concurrency & WAL Performance | **PASS (15/15)** | 15 concurrent student write operations committed without lock errors |
+| `test_browser_phase6.py` | Phase 6 Playwright Audit | **PASS** | Desktop & Mobile viewports: `/scan` manual code lookup, invalid code error banners, sample book chips, dynamic `/qr/<code_or_id>.png` rendering, single sticker label view, bulk A4 label sheet with filtering, print preview styles with **0 console errors and 0 page exceptions** |
+| `test_browser_phase5.py` | Phase 5 Playwright Audit | **PASS** | Complete handover lifecycle with **0 console errors and 0 page exceptions** |
+| `test_browser_phase4.py` | Phase 4 Playwright Audit | **PASS** | Request lifecycle and anti-enumeration with **0 console errors and 0 page exceptions** |
+| `test_browser_phase3.py` | Phase 3 Playwright Audit | **PASS** | Donation lifecycle and image upload with **0 console errors and 0 page exceptions** |
+| `test_browser_phase2.py` | Phase 2 Playwright Audit | **PASS** | Catalogue discovery and filtering with **0 console errors and 0 page exceptions** |
+
+### Network & Wi-Fi LAN Access Note
+- **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
+- **Current Machine Wi-Fi IP:** `10.0.0.36` (network `bbrouter`).
+- **Connection Diagnostics:**
+  - `Test-NetConnection -ComputerName 10.0.0.36 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
+  - `http://10.0.0.36:5000`: **HTTP 200 OK** (Verified responsive).
+- **Current Active URLs:**
+  - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://10.0.0.36:5000`**
+
+### Stopping Point
+- **Phase 6 – QR System, Label Printing & Android Tested Scanner is 100% COMPLETE & VERIFIED.**
+- **Phase 7 (Teacher Dashboard, Analytics & Themed Admin Desk) has NOT been started.** Awaiting instructions to proceed to Phase 7.

@@ -243,6 +243,17 @@ Rather than treating manual code entry as a hidden secondary fallback, the scann
      The manual input field receives instant focus.
 4. **Android Device Testing:** The scanning interface must be explicitly tested on physical Android hardware across both LAN HTTP (verifying graceful fallback) and ngrok HTTPS (verifying camera stream decoding).
 
+### 5.3 Offline Dynamic QR Generation & Hardware Teardown
+1. **Zero-Storage Dynamic QR Architecture:** QR codes do not require filesystem storage or database blobs. They are synthesized on demand using Python's `qrcode` library with Medium error correction (15% redundancy).
+   - Data URIs (`data:image/png;base64,...`) are generated directly for printable templates.
+   - Dynamic HTTP endpoints (`/qr/<book_code>.png`) serve binary PNG streams with client caching (`Cache-Control: public, max-age=86400`).
+2. **Dual-Engine Client Decoding:**
+   - Primary: Hardware-accelerated native `window.BarcodeDetector` (modern Android Chrome).
+   - Fallback: Offline canvas-based decoding via locally bundled `jsQR.js` (256 KB, zero CDN).
+3. **Camera Stream Lifecycle & Anti-Surveillance Safeguards:**
+   - Active MediaStreams capture camera hardware resources. To prevent device battery drain and camera indicator LEDs remaining lit:
+   - All `MediaStreamTrack` instances are actively stopped (`track.stop()`) on modal close, tab visibility change (`visibilitychange`), and window navigation (`pagehide`, `beforeunload`).
+
 ---
 
 ## 6. Standardized Book Codes & Secure Tracking Code Generation

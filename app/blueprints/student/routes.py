@@ -1,6 +1,6 @@
-from flask import render_template, request, abort, url_for, redirect, flash, current_app
+from flask import render_template, request, abort, url_for, redirect, flash, current_app, Response
 from . import student_bp
-from app.services import book_service, donation_service, request_service, rate_limiter
+from app.services import book_service, donation_service, request_service, rate_limiter, qr_service
 
 @student_bp.route('/')
 def index():
@@ -216,15 +216,60 @@ def track():
         error_msg=error_msg
     )
 
-@student_bp.route('/scan')
+@student_bp.route('/scan', methods=['GET', 'POST'])
 def scan():
-    """QR Code scanner view (Phase 6 foundation)."""
+    """
+    QR Code & Book Code Scanner View.
+    Supports camera decoding and prominent manual 6-digit Book Code lookup.
+    """
+    raw_code = request.args.get('code') or (request.form.get('code') if request.method == 'POST' else None)
+    error_msg = None
+
+    if raw_code:
+        parsed = qr_service.parse_scanned_book_code(raw_code)
+
+        if parsed['type'] == 'request':
+            flash(f"Tracking code detected ({parsed['code']}). Redirected to Tracking Desk.", "info")
+            return redirect(url_for('student.track', code=parsed['code']))
+
+        if parsed['type'] == 'donation':
+            flash(f"Donation reference detected ({parsed['code']}).", "info")
+            return redirect(url_for('student.index'))
+
+        # Look up book in SQLite
+        book = book_service.get_book_by_code_or_id(parsed['code'])
+        if book:
+            return redirect(url_for('student.book_detail', code_or_id=book['book_code']))
+        else:
+            error_msg = f"No textbook found matching code '{raw_code.strip()}'. Please check the 6-digit code on the label."
+
+    # Fetch recent books for quick sample chips
+    sample_books = book_service.get_recent_and_featured_books(limit=6)
+
     return render_template(
-        'student/placeholder.html',
-        title="QR Code & Book Scanner",
-        icon="📷",
-        description="The offline camera scanner and direct 6-digit Book Code lookup will be implemented in Phase 6."
+        'student/scan.html',
+        code_query=raw_code if error_msg else '',
+        error_msg=error_msg,
+        sample_books=sample_books
     )
+
+@student_bp.route('/qr/<book_code>.png')
+def book_qr_image(book_code):
+    """
+    Dynamic 100% offline PNG QR generator endpoint for a specific book code.
+    Returns high-contrast, scalable PNG bytes with caching headers.
+    """
+    clean_code = str(book_code).strip().upper()
+    book = book_service.get_book_by_code_or_id(clean_code)
+    if not book:
+        abort(404)
+
+    payload = qr_service.get_book_qr_payload(book['book_code'])
+    png_bytes = qr_service.generate_qr_png_bytes(payload, box_size=8, border=2)
+
+    response = Response(png_bytes, mimetype='image/png')
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
 
 @student_bp.route('/about')
 def about():

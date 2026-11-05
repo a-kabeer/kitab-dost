@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Book QR Code & Direct Lookup - Kitaab Bank{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 820px; padding: 2rem 1rem;">
+
+  <!-- Breadcrumb -->
+  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+    <a href="{{ url_for('student.index') }}" style="color: var(--text-secondary);">Home</a>
+    <span> / </span>
+    <span style="color: var(--text-primary); font-weight: 600;">Scan Book QR</span>
+  </div>
+
+  <!-- Page Header -->
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <div style="font-size: 2.75rem; margin-bottom: 0.5rem;">📷</div>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: -0.02em;">
+      Textbook Scanner &amp; Direct Lookup
+    </h1>
+    <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.5; font-size: 1rem;">
+      Point your phone camera at a Kitaab Bank QR sticker label, or enter the 6-digit Book Code on the book's spine to view details or request a copy.
+    </p>
+  </div>
+
+  <!-- Error / Notification Alert -->
+  {% if error_msg %}
+  <div class="alert alert-danger" style="margin-bottom: 1.75rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+    <span style="font-size: 1.25rem; line-height: 1;">✕</span>
+    <div>
+      <strong>Textbook Not Found:</strong> {{ error_msg }}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Dual Mode Container -->
+  <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+    <!-- 1. First-Class Manual Code Entry Card -->
+    <div style="background-color: var(--bg-surface); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+          <span>🔢</span>
+          <span>Manual 6-Digit Book Code Entry</span>
+        </h2>
+        <span class="badge badge-primary" style="font-size: 0.75rem;">Fastest on School Wi-Fi</span>
+      </div>
+
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+        Every cataloged textbook has an official 6-digit identifier (e.g. <code>KB-BK-000001</code>). Type the code or just the number below:
+      </p>
+
+      <form action="{{ url_for('student.scan') }}" method="POST" id="manual-scan-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="display: flex; gap: 0.75rem; align-items: stretch; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 240px;">
+            <input 
+              type="text" 
+              name="code" 
+              id="manual-code-input" 
+              class="form-control" 
+              value="{{ code_query or '' }}"
+              placeholder="e.g. KB-BK-000001 or 1" 
+              style="font-family: monospace; font-size: 1.15rem; font-weight: 700; text-transform: uppercase; padding: 0.75rem 1rem;"
+              autocomplete="off"
+              autofocus
+              required
+            >
+          </div>
+          <button 
+            type="submit" 
+            id="manual-lookup-btn"
+            class="btn btn-primary" 
+            style="padding: 0.75rem 1.75rem; font-weight: 700; font-size: 1rem; white-space: nowrap;"
+          >
+            <span>🔍</span>
+            <span>View Textbook</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Sample / Quick Test Chips -->
+      {% if sample_books %}
+      <div style="margin-top: 1.25rem; pt: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          QUICK SAMPLE BOOK CODES (Click to Test):
+        </span>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          {% for b in sample_books %}
+          <a 
+            href="{{ url_for('student.scan', code=b.book_code) }}" 
+            class="badge badge-secondary" 
+            style="text-decoration: none; font-family: monospace; font-size: 0.8rem; padding: 0.35rem 0.65rem;"
+            title="{{ b.title }} ({{ b.class_grade }})"
+          >
+            {{ b.book_code }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- 2. Interactive Camera QR Scanner Card -->
+    <div style="background-color: var(--bg-surface); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+          <span>📷</span>
+          <span>Live Camera QR Scanner</span>
+        </h2>
+        <span id="scanner-status" class="badge badge-secondary">Ready</span>
+      </div>
+
+      <!-- Insecure Context Banner (Visible when on plain HTTP over Wi-Fi on phone) -->
+      <div id="insecure-context-banner" style="display: none; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+          <span style="font-size: 1.5rem; line-height: 1;">ℹ️</span>
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.25rem;">
+              Mobile Camera Requires HTTPS or ngrok Tunnel
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 0.75rem; line-height: 1.4;">
+              Mobile web browsers (Google Chrome on Android) restrict direct camera access to <strong>Secure Contexts</strong> (<code>https://</code> or <code>localhost</code>). On plain local Wi-Fi, camera hardware is protected by browser policy.
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+              <button 
+                type="button" 
+                class="btn btn-sm btn-primary"
+                onclick="document.getElementById('manual-code-input').focus();"
+              >
+                ✏️ Enter 6-Digit Code Above
+              </button>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">
+                (Exhibition mode: Run <code>run_tunnel.py</code> to activate camera scanning on phones)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secure Context Live Camera Viewport -->
+      <div id="secure-scanner-wrap" style="display: none;">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Allow camera access when prompted. Center the book's QR sticker inside the frame below.
+        </p>
+
+        <!-- Viewport Container with Reticle -->
+        <div style="position: relative; max-width: 440px; margin: 0 auto 1.25rem; background-color: #000000; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 4/3; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
+          <video 
+            id="qr-video" 
+            playsinline 
+            muted 
+            style="width: 100%; height: 100%; object-fit: cover;"
+          ></video>
+          <canvas id="qr-canvas" style="display: none;"></canvas>
+
+          <!-- Reticle Scanner Overlay -->
+          <div style="position: absolute; inset: 15%; border: 2px dashed rgba(255, 255, 255, 0.75); border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);">
+            <!-- Corner Accents -->
+            <div style="position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border-top: 4px solid var(--primary); border-left: 4px solid var(--primary);"></div>
+            <div style="position: absolute; top: -2px; right: -2px; width: 20px; height: 20px; border-top: 4px solid var(--primary); border-right: 4px solid var(--primary);"></div>
+            <div style="position: absolute; bottom: -2px; left: -2px; width: 20px; height: 20px; border-bottom: 4px solid var(--primary); border-left: 4px solid var(--primary);"></div>
+            <div style="position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; border-bottom: 4px solid var(--primary); border-right: 4px solid var(--primary);"></div>
+          </div>
+        </div>
+
+        <!-- Camera Controls -->
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <button 
+            type="button" 
+            id="start-camera-btn" 
+            class="btn btn-primary"
+            style="padding: 0.6rem 1.5rem;"
+          >
+            <span>📹</span>
+            <span>Start Camera Scanner</span>
+          </button>
+
+          <button 
+            type="button" 
+            id="stop-camera-btn" 
+            class="btn btn-outline"
+            style="display: none; padding: 0.6rem 1.5rem;"
+          >
+            <span>⏹</span>
+            <span>Stop Camera</span>
+          </button>
+
+          <button 
+            type="button" 
+            id="switch-camera-btn" 
+            class="btn btn-outline"
+            style="display: none; padding: 0.6rem 1rem;"
+            title="Switch front / rear camera"
+          >
+            <span>🔄</span>
+            <span>Flip</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 100% Offline Client-Side QR Libraries -->
+<script src="{{ url_for('static', filename='js/jsqr.js') }}"></script>
+<script src="{{ url_for('static', filename='js/qr_scanner.js') }}"></script>
+{% endblock %}

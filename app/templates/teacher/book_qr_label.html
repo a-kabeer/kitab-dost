@@ -1,0 +1,228 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Book Sticker Label - {{ book.book_code }} - Teacher Desk{% endblock %}
+
+{% block teacher_content %}
+<!-- Screen-only Header & Actions -->
+<div class="no-print">
+  <!-- Breadcrumb -->
+  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
+    <span> / </span>
+    <a href="{{ url_for('teacher.qr_sheet') }}" style="color: var(--text-secondary);">QR Label Center</a>
+    <span> / </span>
+    <span style="color: var(--text-primary); font-weight: 600;">Label {{ book.book_code }}</span>
+  </div>
+
+  <div class="dashboard-header" style="margin-bottom: 2rem;">
+    <div>
+      <h1 class="dashboard-title">🏷️ Physical Textbook QR Label</h1>
+      <p class="dashboard-subtitle">
+        Print this label to stick on the spine or inside cover of physical book <strong>{{ book.book_code }}</strong>.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline" target="_blank">
+        View Book ↗
+      </a>
+      <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-outline">
+        ← All Labels Sheet
+      </a>
+      <button type="button" onclick="window.print()" class="btn btn-primary" style="padding: 0.6rem 1.5rem; font-weight: 700;">
+        <span>🖨️</span>
+        <span>Print Label</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Printable Sticker Container -->
+<div class="single-label-wrapper">
+  <div class="book-sticker-card">
+    <div class="sticker-header">
+      <span class="sticker-school">{{ school_name }}</span>
+      <span class="sticker-brand">کتاب بینک • Kitaab Bank</span>
+    </div>
+
+    <div class="sticker-body">
+      <!-- QR Matrix -->
+      <div class="sticker-qr-wrap">
+        <img src="{{ qr_data_uri }}" alt="QR Code for {{ book.book_code }}" class="sticker-qr-img">
+      </div>
+
+      <!-- Book Identifiers -->
+      <div class="sticker-info">
+        <div class="sticker-code">{{ book.book_code }}</div>
+        <div class="sticker-title">{{ book.title }}</div>
+        <div class="sticker-meta">
+          <span class="sticker-badge">{{ book.class_grade }}</span>
+          <span class="sticker-badge">{{ book.subject }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sticker-footer">
+      <span>Scan to View Details or Request</span>
+      <span class="sticker-cond">Condition: {{ book.condition_state }}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Screen Layout */
+  .single-label-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+
+  .book-sticker-card {
+    width: 380px;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #111827;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-md);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .sticker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .sticker-school {
+    color: #111827;
+  }
+
+  .sticker-brand {
+    color: #4b5563;
+  }
+
+  .sticker-body {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .sticker-qr-wrap {
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sticker-qr-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .sticker-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sticker-code {
+    font-family: monospace;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #000000;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+    line-height: 1.1;
+  }
+
+  .sticker-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.25;
+    margin-bottom: 0.4rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sticker-meta {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .sticker-badge {
+    display: inline-block;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .sticker-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed #6b7280;
+    padding-top: 0.4rem;
+    font-size: 0.7rem;
+    color: #4b5563;
+    font-weight: 600;
+  }
+
+  /* Print Media Rules */
+  @media print {
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .no-print,
+    .teacher-header,
+    .teacher-sidebar,
+    .theme-selector-wrap {
+      display: none !important;
+    }
+
+    .teacher-shell,
+    .teacher-main {
+      padding: 0 !important;
+      margin: 0 !important;
+      display: block !important;
+    }
+
+    .single-label-wrapper {
+      padding: 0 !important;
+      display: block !important;
+    }
+
+    .book-sticker-card {
+      box-shadow: none !important;
+      border: 1.5px solid #000000 !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      margin: 0 !important;
+      width: 320px !important;
+    }
+  }
+</style>
+{% endblock %}

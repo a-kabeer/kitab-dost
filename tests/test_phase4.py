@@ -37,6 +37,7 @@ class Phase4RequestSystemTests(unittest.TestCase):
     def _reset_test_state(cls):
         with cls.app.app_context():
             db = get_db()
+            db.execute("DELETE FROM handovers;")
             db.execute("DELETE FROM requests;")
             db.execute("UPDATE books SET status = 'available';")
             db.commit()

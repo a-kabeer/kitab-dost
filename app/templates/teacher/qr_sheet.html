@@ -1,0 +1,331 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Bulk QR Label Printing Sheet - Teacher Desk{% endblock %}
+
+{% block teacher_content %}
+<!-- Controls & Filter Toolbar (Hidden on Print) -->
+<div class="no-print">
+  <!-- Breadcrumb -->
+  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
+    <span> / </span>
+    <span style="color: var(--text-primary); font-weight: 600;">QR Label Center</span>
+  </div>
+
+  <!-- Header -->
+  <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+    <div>
+      <h1 class="dashboard-title">🏷️ Physical Textbook QR Label Sheet</h1>
+      <p class="dashboard-subtitle">
+        Generate and print high-contrast adhesive sticker sheets for physical textbook labeling. Formatted for standard A4 paper.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <button type="button" onclick="window.print()" class="btn btn-primary" style="padding: 0.65rem 1.75rem; font-weight: 700; font-size: 1rem;">
+        <span>🖨️</span>
+        <span>Print Sheet (A4)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+    <form method="GET" action="{{ url_for('teacher.qr_sheet') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+      
+      <!-- Class Filter -->
+      <div style="min-width: 140px;">
+        <label for="class_grade" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">CLASS LEVEL</label>
+        <select name="class_grade" id="class_grade" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
+          <option value="">All Classes</option>
+          {% for c in filter_options.classes %}
+          <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Subject Filter -->
+      <div style="min-width: 150px;">
+        <label for="subject" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">SUBJECT</label>
+        <select name="subject" id="subject" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
+          <option value="">All Subjects</option>
+          {% for s in filter_options.subjects %}
+          <option value="{{ s }}" {% if selected_subject == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div style="min-width: 140px;">
+        <label for="status" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">STATUS</label>
+        <select name="status" id="status" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
+          <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All Inventory</option>
+          <option value="available" {% if selected_status == 'available' or not selected_status %}selected{% endif %}>Available Only</option>
+          <option value="reserved" {% if selected_status == 'reserved' %}selected{% endif %}>Reserved</option>
+          <option value="handed_over" {% if selected_status == 'handed_over' %}selected{% endif %}>Handed Over</option>
+        </select>
+      </div>
+
+      <!-- Search Query -->
+      <div style="flex: 1; min-width: 180px;">
+        <label for="q" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">SEARCH</label>
+        <input 
+          type="text" 
+          name="q" 
+          id="q" 
+          class="form-control" 
+          placeholder="Title, author, or book code..." 
+          value="{{ search_query }}"
+          style="padding: 0.5rem 0.75rem; font-size: 0.9rem;"
+        >
+      </div>
+
+      <!-- Filter Buttons -->
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary" style="padding: 0.55rem 1.25rem;">
+          Filter
+        </button>
+        <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-outline" style="padding: 0.55rem 1rem;">
+          Reset
+        </a>
+      </div>
+
+    </form>
+
+    <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+      <span>Displaying <strong>{{ books|length }}</strong> labels ready for printing.</span>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">Tip: In the print dialog, set margins to "None" or "Minimum" for exact alignment.</span>
+    </div>
+  </div>
+</div>
+
+<!-- Printable Sheet Container -->
+<div class="qr-print-sheet">
+  {% if books %}
+  <div class="labels-grid">
+    {% for item in label_items %}
+    <div class="sheet-sticker-card">
+      <div class="sticker-header">
+        <span class="sticker-school">{{ school_name }}</span>
+        <span class="sticker-brand">کتاب بینک</span>
+      </div>
+
+      <div class="sticker-body">
+        <div class="sticker-qr-wrap">
+          <img src="{{ item.qr_data_uri }}" alt="QR {{ item.book.book_code }}" class="sticker-qr-img">
+        </div>
+
+        <div class="sticker-info">
+          <div class="sticker-code">{{ item.book.book_code }}</div>
+          <div class="sticker-title">{{ item.book.title }}</div>
+          <div class="sticker-meta">
+            <span class="sticker-badge">{{ item.book.class_grade }}</span>
+            <span class="sticker-badge">{{ item.book.subject }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sticker-footer">
+        <span>Scan QR or view details</span>
+        <span class="sticker-cond">{{ item.book.condition_state }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 4rem 1rem; background-color: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: var(--radius-lg);">
+    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏷️</div>
+    <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">No Textbooks Found</h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Adjust your filter criteria to display textbooks for label printing.
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  /* Screen Layout */
+  .qr-print-sheet {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .labels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .sheet-sticker-card {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1.5px solid #1f2937;
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    box-shadow: var(--shadow-sm);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .sticker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1.5px solid #000000;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .sticker-school {
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sticker-brand {
+    color: #4b5563;
+  }
+
+  .sticker-body {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .sticker-qr-wrap {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    background: #ffffff;
+  }
+
+  .sticker-qr-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .sticker-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sticker-code {
+    font-family: monospace;
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #000000;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+    line-height: 1.1;
+  }
+
+  .sticker-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.25;
+    margin-bottom: 0.35rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sticker-meta {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .sticker-badge {
+    display: inline-block;
+    border: 1px solid #000000;
+    border-radius: 3px;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .sticker-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed #6b7280;
+    padding-top: 0.3rem;
+    font-size: 0.65rem;
+    color: #4b5563;
+    font-weight: 600;
+  }
+
+  /* Print Media Rules for A4 Sticker Paper */
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 8mm;
+    }
+
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .no-print,
+    .teacher-header,
+    .teacher-sidebar,
+    .theme-selector-wrap {
+      display: none !important;
+    }
+
+    .teacher-shell,
+    .teacher-main,
+    .qr-print-sheet {
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: 100% !important;
+      display: block !important;
+    }
+
+    .labels-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 6mm !important;
+    }
+
+    .sheet-sticker-card {
+      box-shadow: none !important;
+      border: 1px solid #000000 !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      margin: 0 !important;
+      padding: 4mm 5mm !important;
+      background: #ffffff !important;
+    }
+
+    .sticker-qr-wrap {
+      width: 24mm !important;
+      height: 24mm !important;
+    }
+
+    .sticker-code {
+      font-size: 1.1rem !important;
+    }
+
+    .sticker-title {
+      font-size: 0.85rem !important;
+    }
+  }
+</style>
+{% endblock %}

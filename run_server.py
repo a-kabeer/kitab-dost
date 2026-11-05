@@ -1,5 +1,12 @@
 import sys
+import os
 import socket
+
+# Ensure venv site-packages are available when running via base python
+venv_site = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.venv', 'Lib', 'site-packages')
+if os.path.exists(venv_site) and venv_site not in sys.path:
+    sys.path.insert(0, venv_site)
+
 from waitress import serve
 from app import create_app
 

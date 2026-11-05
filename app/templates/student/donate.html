@@ -3,276 +3,274 @@
 {% block title %}Donate a Textbook - Kitaab Bank{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-xxl py-4">
+  {% from 'macros/icons.html' import icon %}
+
   <!-- Breadcrumbs -->
-  <nav class="breadcrumbs" aria-label="Breadcrumb">
-    <a href="{{ url_for('student.index') }}">Home</a>
-    <span>/</span>
-    <span style="color: var(--text-primary); font-weight: 600;">Donate a Textbook</span>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('student.index') }}" class="text-decoration-none">{{ icon('house') }} Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Donate a Textbook</li>
+    </ol>
   </nav>
 
-  <div class="donation-form-wrap">
+  <div class="mx-auto" style="max-width: 840px;">
     <!-- Header -->
-    <div style="text-align: center; margin-bottom: 2rem;">
-      <div class="hero-pill" style="margin-bottom: 0.75rem;">
-        <span>📖</span>
+    <div class="text-center mb-4">
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-semibold mb-3 shadow-xs">
+        {{ icon('book-open-reader') }}
         <span>Pass Knowledge Forward</span>
       </div>
-      <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+      <h1 class="h2 fw-bold text-body mb-2">
         Donate an Unused Educational Book
       </h1>
-      <p class="text-muted" style="max-width: 580px; margin: 0 auto; font-size: 1.05rem;">
+      <p class="text-body-secondary mx-auto mb-0" style="max-width: 620px;">
         Give your completed textbooks a second life. School teachers supervise and inspect every donation before listing it in the school exchange catalogue.
       </p>
     </div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            <span>{{ message }}</span>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    <!-- Main Card -->
+    <div class="card border shadow-xs">
+      <div class="card-body p-3 p-md-4 p-lg-5">
+        <form action="{{ url_for('student.donate') }}" method="POST" enctype="multipart/form-data" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <div class="donation-card">
-      <form action="{{ url_for('student.donate') }}" method="POST" enctype="multipart/form-data" novalidate>
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-        <!-- SECTION 1: Textbook Details -->
-        <div class="donation-section">
-          <div class="section-title">
-            <span>📚</span>
-            <span>1. Textbook Information</span>
-          </div>
-          <p class="section-desc">
-            Provide the details of the school book you wish to donate.
-          </p>
-
-          <!-- Book Title -->
-          <div class="form-group">
-            <label for="book-title" class="form-label">
-              Book Title <span class="required-star">*</span>
-            </label>
-            <input 
-              type="text" 
-              id="book-title" 
-              name="title" 
-              class="form-control" 
-              placeholder="e.g. Mathematics for Class 7, جنرل سائنس, سنڌي سليس"
-              value="{{ form_data.get('title', '') }}" 
-              required
-              maxlength="200"
-            >
-            <span class="form-hint">Official book title as printed on the front cover.</span>
-          </div>
-
-          <div class="form-grid-2">
-            <!-- Author -->
-            <div class="form-group">
-              <label for="book-author" class="form-label">Author / Board</label>
-              <input 
-                type="text" 
-                id="book-author" 
-                name="author" 
-                class="form-control" 
-                placeholder="e.g. Sindh Textbook Board, Prof. Memon"
-                value="{{ form_data.get('author', '') }}"
-                maxlength="150"
-              >
+          <!-- SECTION 1: Textbook Details -->
+          <div class="mb-4 pb-4 border-bottom">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="fs-5 text-primary">{{ icon('book') }}</span>
+              <h2 class="h5 fw-bold text-body mb-0">1. Textbook Information</h2>
             </div>
+            <p class="small text-body-secondary mb-3">
+              Provide the details of the school book you wish to donate.
+            </p>
 
-            <!-- Class Level -->
-            <div class="form-group">
-              <label for="book-class" class="form-label">
-                Class Level <span class="required-star">*</span>
-              </label>
-              <select id="book-class" name="class_grade" class="form-control" required>
-                <option value="">Select Class Level</option>
-                {% for c in classes %}
-                <option value="{{ c }}" {% if form_data.get('class_grade') == c %}selected{% endif %}>{{ c }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-
-          <div class="form-grid-3">
-            <!-- Subject -->
-            <div class="form-group">
-              <label for="book-subject" class="form-label">
-                Subject <span class="required-star">*</span>
-              </label>
-              <select id="book-subject" name="subject" class="form-control" required>
-                <option value="">Select Subject</option>
-                {% for s in subjects %}
-                <option value="{{ s }}" {% if form_data.get('subject') == s %}selected{% endif %}>{{ s }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <!-- Language -->
-            <div class="form-group">
-              <label for="book-lang" class="form-label">
-                Medium / Language <span class="required-star">*</span>
-              </label>
-              <select id="book-lang" name="language" class="form-control" required>
-                {% for l in languages %}
-                <option value="{{ l }}" {% if form_data.get('language', 'Urdu') == l %}selected{% endif %}>{{ l }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <!-- Condition -->
-            <div class="form-group">
-              <label for="book-condition" class="form-label">
-                Physical Condition <span class="required-star">*</span>
-              </label>
-              <select id="book-condition" name="condition_state" class="form-control" required>
-                <option value="Good" {% if form_data.get('condition_state', 'Good') == 'Good' %}selected{% endif %}>Good (Clean, minor shelf wear)</option>
-                <option value="Like New" {% if form_data.get('condition_state') == 'Like New' %}selected{% endif %}>Like New (Crisp, intact pages)</option>
-                <option value="Fair" {% if form_data.get('condition_state') == 'Fair' %}selected{% endif %}>Fair (Usable, study marks/notes)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Description / Remarks -->
-          <div class="form-group">
-            <label for="book-desc" class="form-label">
-              Description / Topics Covered (Optional)
-            </label>
-            <textarea 
-              id="book-desc" 
-              name="description" 
-              class="form-control" 
-              placeholder="Mention syllabus edition year, included chapters, or any notes that help teachers and fellow students..."
-              maxlength="1000"
-            >{{ form_data.get('description', '') }}</textarea>
-          </div>
-
-          <!-- Photograph Upload -->
-          <div class="form-group">
-            <label for="book-photo" class="form-label">
-              Book Photograph (Optional)
-            </label>
-            <div class="file-dropzone" onclick="document.getElementById('book-photo').click()">
-              <div style="font-size: 2rem; margin-bottom: 0.5rem;">📸</div>
-              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">
-                Click to attach a clear picture of the book cover
-              </div>
-              <div style="font-size: 0.8rem; color: var(--text-muted);">
-                Supported formats: JPG, PNG, WEBP (Max 3 MB). Helps teachers verify condition faster.
-              </div>
-              <input 
-                type="file" 
-                id="book-photo" 
-                name="book_image" 
-                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" 
-                style="display: none;"
-                onchange="updateFileName(this)"
-              >
-            </div>
-            <div id="file-name-preview" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 0.35rem; display: none;"></div>
-          </div>
-        </div>
-
-        <!-- SECTION 2: Student Donor Information -->
-        <div class="donation-section">
-          <div class="section-title">
-            <span>👤</span>
-            <span>2. Student Donor Information</span>
-          </div>
-          <p class="section-desc">
-            Your name is recorded for school acknowledgement and teacher supervision. Contact details remain strictly private and will never appear in the public catalogue.
-          </p>
-
-          <div class="form-grid-2">
-            <!-- Donor Name -->
-            <div class="form-group">
-              <label for="donor-name" class="form-label">
-                Your Full Name <span class="required-star">*</span>
+            <!-- Book Title -->
+            <div class="mb-3">
+              <label for="book-title" class="form-label">
+                Book Title <span class="text-danger">*</span>
               </label>
               <input 
                 type="text" 
-                id="donor-name" 
-                name="donor_name" 
+                id="book-title" 
+                name="title" 
                 class="form-control" 
-                placeholder="e.g. Zeeshan Ahmed"
-                value="{{ form_data.get('donor_name', '') }}" 
+                placeholder="e.g. Mathematics for Class 7, جنرل سائنس, سنڌي سليس"
+                value="{{ form_data.get('title', '') }}" 
                 required
-                maxlength="100"
+                maxlength="200"
               >
+              <div class="form-text">Official book title as printed on the front cover.</div>
             </div>
 
-            <!-- Class & Section -->
-            <div class="form-group">
-              <label for="donor-class" class="form-label">
-                Class &amp; Section <span class="required-star">*</span>
+            <div class="row g-3 mb-3">
+              <!-- Author -->
+              <div class="col-12 col-md-6">
+                <label for="book-author" class="form-label">Author / Board</label>
+                <input 
+                  type="text" 
+                  id="book-author" 
+                  name="author" 
+                  class="form-control" 
+                  placeholder="e.g. Sindh Textbook Board, Prof. Memon"
+                  value="{{ form_data.get('author', '') }}"
+                  maxlength="150"
+                >
+              </div>
+
+              <!-- Class Level -->
+              <div class="col-12 col-md-6">
+                <label for="book-class" class="form-label">
+                  Class Level <span class="text-danger">*</span>
+                </label>
+                <select id="book-class" name="class_grade" class="form-select" required>
+                  <option value="">Select Class Level</option>
+                  {% for c in classes %}
+                  <option value="{{ c }}" {% if form_data.get('class_grade') == c %}selected{% endif %}>{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- Subject -->
+              <div class="col-12 col-sm-6 col-md-4">
+                <label for="book-subject" class="form-label">
+                  Subject <span class="text-danger">*</span>
+                </label>
+                <select id="book-subject" name="subject" class="form-select" required>
+                  <option value="">Select Subject</option>
+                  {% for s in subjects %}
+                  <option value="{{ s }}" {% if form_data.get('subject') == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Language -->
+              <div class="col-12 col-sm-6 col-md-4">
+                <label for="book-lang" class="form-label">
+                  Medium / Language <span class="text-danger">*</span>
+                </label>
+                <select id="book-lang" name="language" class="form-select" required>
+                  {% for l in languages %}
+                  <option value="{{ l }}" {% if form_data.get('language', 'Urdu') == l %}selected{% endif %}>{{ l }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Condition -->
+              <div class="col-12 col-md-4">
+                <label for="book-condition" class="form-label">
+                  Physical Condition <span class="text-danger">*</span>
+                </label>
+                <select id="book-condition" name="condition_state" class="form-select" required>
+                  <option value="Good" {% if form_data.get('condition_state', 'Good') == 'Good' %}selected{% endif %}>Good (Clean, minor wear)</option>
+                  <option value="Like New" {% if form_data.get('condition_state') == 'Like New' %}selected{% endif %}>Like New (Crisp, intact pages)</option>
+                  <option value="Fair" {% if form_data.get('condition_state') == 'Fair' %}selected{% endif %}>Fair (Usable, study marks)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <label for="book-desc" class="form-label">
+                Description / Topics Covered (Optional)
               </label>
-              <input 
-                type="text" 
-                id="donor-class" 
-                name="donor_class" 
+              <textarea 
+                id="book-desc" 
+                name="description" 
                 class="form-control" 
-                placeholder="e.g. Class 8-A, 7-Green"
-                value="{{ form_data.get('donor_class', '') }}" 
-                required
-                maxlength="50"
-              >
+                rows="3"
+                placeholder="Mention syllabus edition year, included chapters, or any notes that help teachers and fellow students..."
+                maxlength="1000"
+              >{{ form_data.get('description', '') }}</textarea>
+            </div>
+
+            <!-- Photograph Upload -->
+            <div>
+              <label for="book-photo" class="form-label">
+                Book Photograph (Optional)
+              </label>
+              <div class="border rounded-3 p-4 text-center bg-body-tertiary card-hover" style="cursor: pointer;" onclick="document.getElementById('book-photo').click()">
+                <div class="fs-1 text-body-secondary mb-2">
+                  {{ icon('camera') }}
+                </div>
+                <div class="fw-semibold text-body mb-1">
+                  Click to attach a clear picture of the book cover
+                </div>
+                <div class="small text-body-secondary">
+                  Supported formats: JPG, PNG, WEBP (Max 3 MB). Helps teachers verify condition faster.
+                </div>
+                <input 
+                  type="file" 
+                  id="book-photo" 
+                  name="book_image" 
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" 
+                  class="d-none"
+                  onchange="updateFileName(this)"
+                >
+              </div>
+              <div id="file-name-preview" class="small text-primary fw-semibold mt-2" style="display: none;"></div>
             </div>
           </div>
 
-          <div class="form-grid-2">
-            <!-- Roll No -->
-            <div class="form-group">
-              <label for="donor-roll" class="form-label">School Roll Number</label>
-              <input 
-                type="text" 
-                id="donor-roll" 
-                name="donor_roll_no" 
-                class="form-control" 
-                placeholder="e.g. 24"
-                value="{{ form_data.get('donor_roll_no', '') }}"
-                maxlength="50"
-              >
+          <!-- SECTION 2: Student Donor Information -->
+          <div class="mb-4 pb-4 border-bottom">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="fs-5 text-primary">{{ icon('user') }}</span>
+              <h2 class="h5 fw-bold text-body mb-0">2. Student Donor Information</h2>
+            </div>
+            <p class="small text-body-secondary mb-3">
+              Your name is recorded for school acknowledgement and teacher supervision. Contact details remain strictly private and will never appear in the public catalogue.
+            </p>
+
+            <div class="row g-3 mb-3">
+              <!-- Donor Name -->
+              <div class="col-12 col-md-6">
+                <label for="donor-name" class="form-label">
+                  Your Full Name <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="donor-name" 
+                  name="donor_name" 
+                  class="form-control" 
+                  placeholder="e.g. Zeeshan Ahmed"
+                  value="{{ form_data.get('donor_name', '') }}" 
+                  required
+                  maxlength="100"
+                >
+              </div>
+
+              <!-- Class & Section -->
+              <div class="col-12 col-md-6">
+                <label for="donor-class" class="form-label">
+                  Class &amp; Section <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="donor-class" 
+                  name="donor_class" 
+                  class="form-control" 
+                  placeholder="e.g. Class 8-A, 7-Green"
+                  value="{{ form_data.get('donor_class', '') }}" 
+                  required
+                  maxlength="50"
+                >
+              </div>
             </div>
 
-            <!-- Contact -->
-            <div class="form-group">
-              <label for="donor-contact" class="form-label">Contact / Parent Phone (Optional)</label>
-              <input 
-                type="tel" 
-                id="donor-contact" 
-                name="donor_contact" 
-                class="form-control" 
-                placeholder="e.g. 0300-1234567"
-                value="{{ form_data.get('donor_contact', '') }}"
-                maxlength="50"
-              >
+            <div class="row g-3">
+              <!-- Roll No -->
+              <div class="col-12 col-md-6">
+                <label for="donor-roll" class="form-label">School Roll Number</label>
+                <input 
+                  type="text" 
+                  id="donor-roll" 
+                  name="donor_roll_no" 
+                  class="form-control" 
+                  placeholder="e.g. 24"
+                  value="{{ form_data.get('donor_roll_no', '') }}"
+                  maxlength="50"
+                >
+              </div>
+
+              <!-- Contact -->
+              <div class="col-12 col-md-6">
+                <label for="donor-contact" class="form-label">Contact / Parent Phone (Optional)</label>
+                <input 
+                  type="tel" 
+                  id="donor-contact" 
+                  name="donor_contact" 
+                  class="form-control" 
+                  placeholder="e.g. 0300-1234567"
+                  value="{{ form_data.get('donor_contact', '') }}"
+                  maxlength="50"
+                >
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Privacy & Policy Notice -->
-        <div style="background-color: var(--bg-muted); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 2rem; display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.85rem; color: var(--text-secondary);">
-          <span style="font-size: 1.25rem; line-height: 1;">🛡️</span>
-          <div>
-            <strong>Teacher Supervision &amp; Quality Guarantee:</strong> Every submitted textbook is verified by school teachers. If approved, the book is cataloged with an official reference code. Your phone and roll numbers are never published.
+          <!-- Privacy & Policy Notice -->
+          <div class="alert alert-secondary d-flex align-items-start gap-2 mb-4 p-3 small shadow-xs">
+            <span class="fs-5 text-secondary flex-shrink-0">{{ icon('shield-halved') }}</span>
+            <div>
+              <strong>Teacher Supervision &amp; Quality Guarantee:</strong> Every submitted textbook is verified by school teachers. If approved, the book is cataloged with an official reference code. Your phone and roll numbers are never published.
+            </div>
           </div>
-        </div>
 
-        <!-- Submit Button -->
-        <div style="display: flex; gap: 1rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
-          <a href="{{ url_for('student.index') }}" class="btn btn-outline">
-            Cancel
-          </a>
-          <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem; font-size: 1.05rem;">
-            <span>📤</span>
-            <span>Submit Donation for Teacher Review</span>
-          </button>
-        </div>
-      </form>
+          <!-- Action Buttons -->
+          <div class="d-flex flex-wrap justify-content-end align-items-center gap-2">
+            <a href="{{ url_for('student.index') }}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary px-4 shadow-xs d-inline-flex align-items-center gap-2">
+              {{ icon('paper-plane') }}
+              <span>Submit Donation for Teacher Review</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>

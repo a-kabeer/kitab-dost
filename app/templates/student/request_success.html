@@ -3,78 +3,92 @@
 {% block title %}Request Submitted - Kitaab Bank{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="success-container">
-    <div class="success-card">
-      <div class="success-icon-wrap" style="background-color: var(--primary-light); color: var(--primary);">
-        <span>📋</span>
+<div class="container-xxl py-4">
+  {% from 'macros/icons.html' import icon %}
+
+  <div class="mx-auto" style="max-width: 680px;">
+    <div class="card border text-center p-4 p-md-5 shadow-xs">
+      <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+        {{ icon('clipboard-check', extra_class='fs-2') }}
       </div>
 
-      <div class="badge badge-warning" style="font-size: 0.85rem; padding: 0.35rem 0.85rem; margin-bottom: 0.75rem;">
-        ⏳ Status: Awaiting Teacher Approval
+      <div class="mb-3">
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1">
+          {{ icon('clock') }} Status: Awaiting Teacher Approval
+        </span>
       </div>
 
-      <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+      <h1 class="h3 fw-bold text-body mb-2">
         Request Received, {{ request_item.requester_name }}!
       </h1>
 
-      <p class="text-muted" style="font-size: 1.05rem; max-width: 520px; margin: 0 auto 1.5rem;">
+      <p class="text-body-secondary mx-auto mb-4" style="max-width: 520px;">
         Your book request has been placed in the teacher review queue. Please note down your private tracking code below.
       </p>
 
       <!-- Tracking Code Box -->
-      <div class="code-display-box">
-        <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--primary-text); letter-spacing: 0.05em;">
+      <div class="card border bg-body-tertiary p-3 mb-4 mx-auto w-100" style="max-width: 440px;">
+        <span class="small text-uppercase fw-bold text-primary mb-1 d-block" style="letter-spacing: 0.05em;">
           Your Private Tracking Code
         </span>
-        <span class="code-display-val" id="track-code">{{ request_item.tracking_code }}</span>
-        <button type="button" class="btn btn-sm btn-outline" onclick="copyTrackCode()" style="margin-top: 0.35rem; font-size: 0.75rem;">
-          📋 Copy Code
-        </button>
+        <div class="kb-code fs-3 fw-bold text-body my-1" id="track-code">
+          {{ request_item.tracking_code }}
+        </div>
+        <div>
+          <button type="button" class="btn btn-outline-secondary btn-sm mt-1 d-inline-flex align-items-center gap-1" onclick="copyTrackCode()">
+            {{ icon('copy') }}
+            <span>Copy Code</span>
+          </button>
+        </div>
       </div>
 
       <!-- Requested Book Summary -->
-      <div style="background-color: var(--bg-muted); border-radius: var(--radius-md); padding: 1.25rem; text-align: left; margin-bottom: 2rem;">
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+      <div class="card border text-start p-3 p-md-4 mb-4 bg-body">
+        <h3 class="h6 fw-bold text-body mb-3 pb-2 border-bottom">
           Book Request Summary
         </h3>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; font-size: 0.9rem;">
-          <div>
-            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">REQUESTED BOOK</span>
-            <strong style="color: var(--text-primary);">{{ request_item.book_title }}</strong>
+        <div class="row g-3 small">
+          <div class="col-6 col-sm-6">
+            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">REQUESTED BOOK</span>
+            <strong class="text-body">{{ request_item.book_title }}</strong>
           </div>
-          <div>
-            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">BOOK CODE</span>
-            <code style="color: var(--primary); font-weight: 700;">{{ request_item.book_code }}</code>
+          <div class="col-6 col-sm-6">
+            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">BOOK CODE</span>
+            <span class="kb-code fw-bold text-primary">{{ request_item.book_code }}</span>
           </div>
-          <div>
-            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">STUDENT</span>
-            <strong style="color: var(--text-primary);">{{ request_item.requester_name }} ({{ request_item.requester_class }})</strong>
+          <div class="col-6 col-sm-6">
+            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">STUDENT</span>
+            <strong class="text-body">{{ request_item.requester_name }} ({{ request_item.requester_class }})</strong>
           </div>
-          <div>
-            <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">CLASS &amp; SUBJECT</span>
-            <strong style="color: var(--text-primary);">{{ request_item.book_class }} – {{ request_item.book_subject }}</strong>
+          <div class="col-6 col-sm-6">
+            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">CLASS &amp; SUBJECT</span>
+            <strong class="text-body">{{ request_item.book_class }} – {{ request_item.book_subject }}</strong>
           </div>
         </div>
       </div>
 
       <!-- What happens next -->
-      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; text-align: left; font-size: 0.875rem; color: var(--primary-text); margin-bottom: 2rem;">
-        <strong>🏫 Next Steps:</strong>
-        <p style="margin: 0.35rem 0 0; line-height: 1.5;">
-          A school teacher will review your request. Once approved, this book will be <strong>reserved exclusively for you</strong>. Bring your school Roll Number (<strong>{{ request_item.requester_roll_no }}</strong>) to the school library/teacher desk to collect the book.
-        </p>
+      <div class="alert alert-info text-start p-3 mb-4 small shadow-xs">
+        <div class="d-flex align-items-start gap-2">
+          <span class="fs-5 flex-shrink-0">{{ icon('school') }}</span>
+          <div>
+            <strong>Next Steps:</strong>
+            <p class="mb-0 mt-1">
+              A school teacher will review your request. Once approved, this book will be <strong>reserved exclusively for you</strong>. Bring your school Roll Number (<strong>{{ request_item.requester_roll_no }}</strong>) to the school library/teacher desk to collect the book.
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- Action Buttons -->
-      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-        <a href="{{ url_for('student.track', code=request_item.tracking_code) }}" class="btn btn-primary">
-          <span>🔍</span>
+      <div class="d-flex flex-wrap justify-content-center gap-2">
+        <a href="{{ url_for('student.track', code=request_item.tracking_code) }}" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-xs">
+          {{ icon('magnifying-glass') }}
           <span>Track Live Status</span>
         </a>
-        <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline">
-          <span>📚</span>
+        <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+          {{ icon('book-bookmark') }}
           <span>Explore Other Books</span>
         </a>
       </div>
@@ -84,7 +98,7 @@
 
 <script>
 function copyTrackCode() {
-  const code = document.getElementById('track-code').textContent;
+  const code = document.getElementById('track-code').textContent.trim();
   navigator.clipboard.writeText(code).then(() => {
     alert('Tracking Code copied to clipboard: ' + code);
   });

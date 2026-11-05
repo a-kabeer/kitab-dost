@@ -162,11 +162,11 @@
 
         <!-- Theme Switcher Dropdown -->
         <div class="dropdown">
-          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Toggle Theme">
+          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Toggle Theme">
             <span data-theme-icon>{{ icon('sun', extra_class='text-warning') }}</span>
             <span class="d-none d-sm-inline" data-theme-label>Theme</span>
           </button>
-          <ul class="dropdown-menu {% if is_rtl %}dropdown-menu-start{% else %}dropdown-menu-end{% endif %} shadow-sm border-subtle">
+          <ul class="dropdown-menu {% if is_rtl %}dropdown-menu-start{% else %}dropdown-menu-end{% endif %} shadow-sm border-subtle" aria-labelledby="themeDropdown">
             <li><button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2" data-theme-set="light">{{ icon('sun', extra_class='text-warning') }} Light Mode</button></li>
             <li><button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2" data-theme-set="dark">{{ icon('moon', extra_class='text-info') }} Dark Mode</button></li>
             <li><button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2" data-theme-set="system">{{ icon('desktop', extra_class='text-secondary') }} System Default</button></li>

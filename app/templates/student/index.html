@@ -3,190 +3,249 @@
 {% block title %}Kitaab Bank - Smart School Book Exchange (کتاب بینک){% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-xxl py-4">
+  {% from 'macros/icons.html' import icon %}
+
   <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-pill">
-      <span>🎒</span>
+  <section class="text-center py-4 py-lg-5">
+    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-semibold mb-3 shadow-xs">
+      {{ icon('graduation-cap') }}
       <span>Classes 6, 7 & 8 Book Sharing Program</span>
     </div>
     
-    <h1 class="hero-title">
+    <h1 class="display-5 fw-bold text-body mb-3 tracking-tight">
       Don't Let Old Books Sit on Shelves.<br>
-      <span class="hero-title-gradient">Pass Knowledge Forward.</span>
+      <span class="text-primary">Pass Knowledge Forward.</span>
     </h1>
 
-    <p class="hero-subtitle">
-      Kitaab Bank connects school students to donate completed textbooks and request the books they need for the new academic session. Supervised by school teachers.
+    <p class="lead text-body-secondary mx-auto mb-4" style="max-width: 680px;">
+      {{ _t('hero_subtitle', 'Kitaab Bank connects school students to donate completed textbooks and request the books they need for the new academic session. Supervised by school teachers.') }}
     </p>
 
     <!-- Quick Search Bar -->
-    <div class="hero-search-wrap">
-      <form action="{{ url_for('student.catalogue') }}" method="GET" class="hero-search-form" role="search">
+    <div class="mx-auto mb-4" style="max-width: 620px;">
+      <form action="{{ url_for('student.catalogue') }}" method="GET" class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border bg-body" role="search">
+        <span class="input-group-text bg-transparent border-0 ps-3 ps-sm-4 text-body-secondary">
+          {{ icon('magnifying-glass') }}
+        </span>
         <input 
           type="search" 
           name="q" 
-          class="hero-search-input" 
-          placeholder="Search by title, author, subject (e.g. Science, Mathematics, اردو)..." 
+          class="form-control border-0 bg-transparent shadow-none fs-6" 
+          placeholder="{{ _t('search_placeholder', 'Search by title, author, subject (e.g. Science, Mathematics, اردو)...') }}" 
           aria-label="Search books"
           autocomplete="off"
         >
-        <button type="submit" class="hero-search-btn" aria-label="Search">
-          <span>🔍</span>
-          <span>Search</span>
+        <button type="submit" class="btn btn-primary px-3 px-sm-4 fw-semibold border-0 d-inline-flex align-items-center gap-2">
+          {{ icon('magnifying-glass') }}
+          <span class="d-none d-sm-inline">Search</span>
         </button>
       </form>
     </div>
 
-    <div class="hero-actions">
-      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary">
-        <span>📚</span>
+    <!-- Quick Action Buttons -->
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary btn-lg px-4 shadow-xs d-inline-flex align-items-center gap-2">
+        {{ icon('book-bookmark') }}
         <span>Explore All Books</span>
       </a>
-      <a href="{{ url_for('student.donate') }}" class="btn btn-outline">
-        <span>📖</span>
+      <a href="{{ url_for('student.donate') }}" class="btn btn-outline-secondary btn-lg px-4 d-inline-flex align-items-center gap-2">
+        {{ icon('hand-holding-heart') }}
         <span>Donate an Unused Book</span>
       </a>
     </div>
 
     <!-- Live Impact Metrics Strip -->
-    <div class="stats-strip">
-      <div class="stat-box">
-        <div class="stat-number">{{ stats.total_donated }}</div>
-        <div class="stat-label">Total Books Donated</div>
+    <div class="row g-3 row-cols-2 row-cols-md-4 mt-2">
+      <div class="col">
+        <div class="card h-100 border text-center p-3 shadow-xs card-hover">
+          <div class="text-primary fs-3 mb-2">
+            {{ icon('book-bookmark') }}
+          </div>
+          <div class="fs-2 fw-bold text-body mb-1">{{ stats.total_donated }}</div>
+          <div class="small text-body-secondary fw-medium">Total Books Donated</div>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-number">{{ stats.available_books }}</div>
-        <div class="stat-label">Currently Available</div>
+      <div class="col">
+        <div class="card h-100 border text-center p-3 shadow-xs card-hover">
+          <div class="text-success fs-3 mb-2">
+            {{ icon('book-open-reader') }}
+          </div>
+          <div class="fs-2 fw-bold text-body mb-1">{{ stats.available_books }}</div>
+          <div class="small text-body-secondary fw-medium">Currently Available</div>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-number">{{ stats.total_reused }}</div>
-        <div class="stat-label">Successfully Reused</div>
+      <div class="col">
+        <div class="card h-100 border text-center p-3 shadow-xs card-hover">
+          <div class="text-info fs-3 mb-2">
+            {{ icon('rotate') }}
+          </div>
+          <div class="fs-2 fw-bold text-body mb-1">{{ stats.total_reused }}</div>
+          <div class="small text-body-secondary fw-medium">Successfully Reused</div>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-number">{{ stats.active_students }}</div>
-        <div class="stat-label">Student Beneficiaries</div>
+      <div class="col">
+        <div class="card h-100 border text-center p-3 shadow-xs card-hover">
+          <div class="text-warning fs-3 mb-2">
+            {{ icon('users') }}
+          </div>
+          <div class="fs-2 fw-bold text-body mb-1">{{ stats.active_students }}</div>
+          <div class="small text-body-secondary fw-medium">Student Beneficiaries</div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Featured / Recently Added Books Section -->
   {% if featured_books and featured_books|length > 0 %}
-  <section style="margin-top: 4rem;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+  <section class="my-5 pt-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 mb-4">
       <div>
-        <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+        <h2 class="h3 fw-bold text-body mb-1">
           Recently Added Educational Books
         </h2>
-        <p class="text-muted" style="margin: 0;">
+        <p class="text-body-secondary mb-0">
           Verified textbooks ready for collection at the school desk.
         </p>
       </div>
-      <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
-        View Full Catalogue →
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
+        <span>View Full Catalogue</span>
+        {{ icon('arrow-right') }}
       </a>
     </div>
 
-    <div class="book-grid">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
       {% for book in featured_books %}
-      <article class="book-card">
-        <div class="book-card-cover-wrap">
-          <img 
-            src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 
-            alt="{{ book.title }} Cover" 
-            class="book-card-cover-img"
-            loading="lazy"
-          >
-          <div class="book-badge-overlay-top">
-            <span class="badge badge-primary">{{ book.class_grade }}</span>
+      <div class="col">
+        <article class="card h-100 border shadow-xs card-hover overflow-hidden">
+          <div class="position-relative bg-body-secondary ratio ratio-3x4 border-bottom overflow-hidden">
+            <img 
+              src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 
+              alt="{{ book.title }} Cover" 
+              class="w-100 h-100 object-fit-cover"
+              loading="lazy"
+            >
+            <div class="position-absolute top-0 start-0 m-2 z-1">
+              <span class="badge bg-primary text-white shadow-xs">{{ book.class_grade }}</span>
+            </div>
+            <div class="position-absolute top-0 end-0 m-2 z-1">
+              {% if book.condition_state == 'Like New' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle shadow-xs">{{ book.condition_state }}</span>
+              {% elif book.condition_state == 'Good' %}
+                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle shadow-xs">{{ book.condition_state }}</span>
+              {% else %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle shadow-xs">{{ book.condition_state }}</span>
+              {% endif %}
+            </div>
           </div>
-          <div class="book-badge-overlay-bottom">
-            <span class="badge {% if book.condition_state == 'Like New' %}badge-success{% elif book.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}">
-              {{ book.condition_state }}
+
+          <div class="card-body d-flex flex-column p-3">
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2 small">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ book.subject }}</span>
+              <span class="text-body-secondary">{{ book.language }}</span>
+            </div>
+
+            <h3 class="h6 card-title fw-bold text-body mb-1" title="{{ book.title }}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; min-height: 2.7rem;">
+              <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="text-decoration-none text-body">
+                {{ book.title }}
+              </a>
+            </h3>
+
+            <p class="small text-body-secondary mb-3 text-truncate" title="{{ book.author }}">
+              By {{ book.author }}
+            </p>
+
+            <div class="d-flex align-items-center justify-content-between gap-2 pt-2 mt-auto border-top border-dashed small">
+              <span class="kb-code bg-body-tertiary px-2 py-1 rounded text-body-secondary">{{ book.book_code }}</span>
+              <span class="text-body-secondary">{{ book.edition_year or 'Official' }}</span>
+            </div>
+          </div>
+
+          <div class="card-footer bg-body-tertiary border-top p-3 d-flex align-items-center justify-content-between">
+            <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+              {{ icon('circle-dot') }} Available
             </span>
-          </div>
-        </div>
-
-        <div class="book-card-body">
-          <div class="book-card-meta-top">
-            <span style="font-weight: 600; color: var(--primary);">{{ book.subject }}</span>
-            <span>{{ book.language }}</span>
-          </div>
-          <h3 class="book-card-title" title="{{ book.title }}">
-            <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" style="color: inherit; text-decoration: none;">
-              {{ book.title }}
+            <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+              {{ icon('circle-info') }}
+              <span>Details</span>
             </a>
-          </h3>
-          <p class="book-card-author" title="{{ book.author }}">
-            By {{ book.author }}
-          </p>
-
-          <div class="book-card-tags">
-            <span class="book-code-text">{{ book.book_code }}</span>
-            <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted);">{{ book.edition_year or 'Official' }}</span>
           </div>
-        </div>
-
-        <div class="book-card-footer">
-          <span class="badge badge-success" style="font-size: 0.75rem;">● Available</span>
-          <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.85rem;">
-            View Details
-          </a>
-        </div>
-      </article>
+        </article>
+      </div>
       {% endfor %}
     </div>
 
-    <div style="text-align: center; margin-top: 2.5rem;">
-      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary" style="padding: 0.75rem 2rem;">
-        Explore All {{ stats.available_books }} Available Books →
+    <div class="text-center mt-4 pt-2">
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary px-4 py-2 shadow-xs d-inline-flex align-items-center gap-2">
+        <span>Explore All {{ stats.available_books }} Available Books</span>
+        {{ icon('arrow-right') }}
       </a>
     </div>
   </section>
   {% endif %}
 
   <!-- How It Works Section -->
-  <section style="margin-top: 4.5rem; margin-bottom: 3rem;">
-    <div class="text-center">
-      <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+  <section class="my-5 py-4 border-top">
+    <div class="text-center mb-4 pb-2">
+      <h2 class="h3 fw-bold text-body mb-2">
         How Kitaab Bank Works
       </h2>
-      <p class="text-muted" style="max-width: 580px; margin: 0 auto;">
+      <p class="text-body-secondary mx-auto mb-0" style="max-width: 580px;">
         A simple, four-step process to give educational books a second life in our school.
       </p>
     </div>
 
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon-wrap">1</div>
-        <h3 class="feature-title">Student Donates</h3>
-        <p class="feature-desc">
-          Enter details of an unused textbook you no longer need and submit it for teacher review.
-        </p>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+      <div class="col">
+        <div class="card h-100 border text-center p-4 shadow-xs card-hover">
+          <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
+            {{ icon('hand-holding-heart', extra_class='fs-4') }}
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 1</span>
+          <h3 class="h6 fw-bold text-body mb-2">Student Donates</h3>
+          <p class="small text-body-secondary mb-0">
+            Enter details of an unused textbook you no longer need and submit it for teacher review.
+          </p>
+        </div>
       </div>
 
-      <div class="feature-card">
-        <div class="feature-icon-wrap">2</div>
-        <h3 class="feature-title">Teacher Verifies</h3>
-        <p class="feature-desc">
-          School teachers check the condition and syllabus relevance before publishing to the catalogue.
-        </p>
+      <div class="col">
+        <div class="card h-100 border text-center p-4 shadow-xs card-hover">
+          <div class="rounded-circle bg-info-subtle text-info-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
+            {{ icon('user-check', extra_class='fs-4') }}
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 2</span>
+          <h3 class="h6 fw-bold text-body mb-2">Teacher Verifies</h3>
+          <p class="small text-body-secondary mb-0">
+            School teachers check the condition and syllabus relevance before publishing to the catalogue.
+          </p>
+        </div>
       </div>
 
-      <div class="feature-card">
-        <div class="feature-icon-wrap">3</div>
-        <h3 class="feature-title">Student Requests</h3>
-        <p class="feature-desc">
-          Browse available books for Class 6, 7, or 8 and request what you need without complex registration.
-        </p>
+      <div class="col">
+        <div class="card h-100 border text-center p-4 shadow-xs card-hover">
+          <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
+            {{ icon('book-bookmark', extra_class='fs-4') }}
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 3</span>
+          <h3 class="h6 fw-bold text-body mb-2">Student Requests</h3>
+          <p class="small text-body-secondary mb-0">
+            Browse available books for Class 6, 7, or 8 and request what you need without complex registration.
+          </p>
+        </div>
       </div>
 
-      <div class="feature-card">
-        <div class="feature-icon-wrap">4</div>
-        <h3 class="feature-title">School Handover</h3>
-        <p class="feature-desc">
-          Collect your verified book directly from the school teacher's desk and start learning.
-        </p>
+      <div class="col">
+        <div class="card h-100 border text-center p-4 shadow-xs card-hover">
+          <div class="rounded-circle bg-warning-subtle text-warning-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
+            {{ icon('handshake', extra_class='fs-4') }}
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 4</span>
+          <h3 class="h6 fw-bold text-body mb-2">School Handover</h3>
+          <p class="small text-body-secondary mb-0">
+            Collect your verified book directly from the school teacher's desk and start learning.
+          </p>
+        </div>
       </div>
     </div>
   </section>

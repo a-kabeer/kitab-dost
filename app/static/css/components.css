@@ -8,6 +8,15 @@
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
 }
 
+.ratio-3x4 {
+  --bs-aspect-ratio: 133.333333%;
+  aspect-ratio: 3 / 4;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
 /* 2. Brand Identity Tokens & Elements */
 .brand-link {
   display: inline-flex;

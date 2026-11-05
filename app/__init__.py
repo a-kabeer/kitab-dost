@@ -101,6 +101,23 @@ def create_app(config_name='default'):
         resp.set_cookie('kb_lang', lang_code, max_age=30*24*3600, samesite='Lax')
         return resp
 
+    # Track in-flight requests for deterministic connection draining
+    @app.before_request
+    def track_in_flight_request():
+        from app.services import maintenance_service
+        from flask import g
+        import uuid
+        g.request_id = str(uuid.uuid4())
+        maintenance_service.register_request(g.request_id)
+
+    @app.teardown_request
+    def untrack_in_flight_request(exception=None):
+        from app.services import maintenance_service
+        from flask import g
+        req_id = getattr(g, 'request_id', None)
+        if req_id:
+            maintenance_service.unregister_request(req_id)
+
     # Database Maintenance Concurrency Protection
     @app.before_request
     def check_maintenance():

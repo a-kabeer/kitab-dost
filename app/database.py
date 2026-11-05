@@ -1,5 +1,7 @@
+import os
 import sqlite3
 import time
+from pathlib import Path
 from contextlib import contextmanager
 from flask import g, current_app
 
@@ -24,6 +26,11 @@ def get_db():
         cursor.close()
 
         g.db = conn
+        try:
+            from app.services import maintenance_service
+            maintenance_service.register_db_connection()
+        except Exception:
+            pass
 
     return g.db
 
@@ -32,12 +39,58 @@ def close_db(e=None):
     db = g.pop('db', None)
     if db is not None:
         db.close()
+    try:
+        from app.services import maintenance_service
+        maintenance_service.unregister_db_connection()
+    except Exception:
+        pass
+
+def check_and_recover_interrupted_restore(app):
+    """Detect and recover from an interrupted database restore upon application startup."""
+    try:
+        from app.services import maintenance_service
+        info = maintenance_service.get_interrupted_restore_info()
+        if not info:
+            return
+
+        rollback_path = info.get("rollback_snapshot")
+        if not rollback_path or not os.path.exists(rollback_path):
+            app.logger.error(f"Interrupted restore detected, but rollback snapshot '{rollback_path}' not found!")
+            return
+
+        app.logger.warning(f"CRITICAL: Interrupted database restoration detected from previous session! Auto-recovering live database from rollback snapshot: {rollback_path}")
+
+        db_path = app.config['DATABASE_PATH']
+        src_conn = sqlite3.connect(rollback_path)
+        dest_conn = sqlite3.connect(str(db_path), timeout=10.0)
+        src_conn.backup(dest_conn)
+        try:
+            dest_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+        except Exception:
+            pass
+        dest_conn.close()
+        src_conn.close()
+
+        # Verify integrity
+        chk = sqlite3.connect(str(db_path))
+        res = chk.execute("PRAGMA integrity_check;").fetchone()
+        chk.close()
+        if res and res[0] == 'ok':
+            maintenance_service.clear_restore_in_progress()
+            app.logger.info("Successfully recovered live database from rollback snapshot after interrupted restore.")
+        else:
+            app.logger.error(f"Rollback recovery integrity check failed: {res}")
+    except Exception as e:
+        app.logger.error(f"Failed to recover interrupted restore: {e}")
 
 def init_db(app):
     """Initialize the SQLite database schema, enforce WAL mode, and seed default teacher."""
     db_path = app.config['DATABASE_PATH']
     # Ensure parent directory exists
     db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # 0. Crash Resilience: Check and recover from any previously interrupted restore
+    check_and_recover_interrupted_restore(app)
 
     with app.app_context():
         db = get_db()

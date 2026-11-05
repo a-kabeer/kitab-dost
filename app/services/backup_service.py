@@ -48,10 +48,22 @@ def calculate_sha256(filepath):
             hasher.update(chunk)
     return hasher.hexdigest()
 
+# Required schema structure for strict backup validation
+REQUIRED_SCHEMA = {
+    'teachers': {'id', 'username', 'password_hash', 'full_name', 'email', 'role', 'is_active', 'created_at'},
+    'books': {'id', 'book_code', 'title', 'subject', 'class_grade', 'language', 'condition_state', 'status'},
+    'donations': {'id', 'donation_code', 'donor_name', 'title', 'subject', 'class_grade', 'status'},
+    'requests': {'id', 'tracking_code', 'book_id', 'requester_name', 'status'},
+    'handovers': {'id', 'handover_code', 'request_id', 'book_id', 'handed_over_by', 'status'},
+    'activity_logs': {'id', 'action', 'entity_type', 'actor_name', 'created_at'},
+    'system_settings': {'key', 'value'},
+    'backup_records': {'id', 'filename', 'file_size_bytes', 'checksum_sha256', 'verification_status'}
+}
+
 def verify_backup_integrity(filepath, expected_checksum=None):
     """
     Validate backup file consistency using SHA-256 comparison,
-    SQLite integrity_check, and core schema verification.
+    SQLite integrity_check, and strict schema & column verification.
     """
     filepath = Path(filepath)
     if not filepath.exists():
@@ -72,14 +84,28 @@ def verify_backup_integrity(filepath, expected_checksum=None):
             conn.close()
             return False, f"Integrity check failed: {res[0] if res else 'Unknown error'}"
 
-        # Verify core tables
+        # Verify all required tables and columns
         cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = {r[0] for r in cur.fetchall()}
-        required_tables = {'teachers', 'books', 'donations', 'requests', 'handovers', 'activity_logs'}
-        if not required_tables.issubset(tables):
-            missing = required_tables - tables
+
+        missing_tables = set(REQUIRED_SCHEMA.keys()) - tables
+        if missing_tables:
             conn.close()
-            return False, f"Missing required tables in backup: {missing}"
+            return False, f"Missing required tables in backup schema: {missing_tables}"
+
+        for table_name, req_cols in REQUIRED_SCHEMA.items():
+            cur.execute(f"PRAGMA table_info({table_name});")
+            existing_cols = {row[1] for row in cur.fetchall()}
+            if not req_cols.issubset(existing_cols):
+                missing = req_cols - existing_cols
+                conn.close()
+                return False, f"Table '{table_name}' is missing required schema column(s): {missing}"
+
+        # Schema content validation: system_settings must contain settings
+        cur.execute("SELECT COUNT(*) FROM system_settings;")
+        if cur.fetchone()[0] == 0:
+            conn.close()
+            return False, "Backup system_settings table is empty."
 
         conn.close()
         return True, "VALID"
@@ -232,18 +258,23 @@ def delete_backup(backup_id, teacher_id=None, teacher_name=None, force=False):
     except Exception as e:
         return False, f"Failed to delete backup: {str(e)}"
 
-def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expected_checksum=None):
+def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expected_checksum=None, drain_timeout=5.0):
     """
     Safely restore database from a verified backup with complete rollback protection.
-    1. Pre-validates target backup (checksum match, PRAGMA integrity_check, schema presence).
-    2. Encapsulates restoration in maintenance_context() blocking incoming requests with 503.
+    1. Pre-validates target backup (checksum match, PRAGMA integrity_check, schema & column presence).
+    2. Encapsulates restoration in maintenance_context() with deterministic connection draining.
     3. Checkpoints WAL on live database.
     4. Creates verified pre-restore rollback snapshot before any live database mutation.
-    5. Streams backup pages using sqlite3.Connection.backup() with WAL truncation.
-    6. Verifies live database integrity.
-    7. Automatically rolls back to the pre-restore snapshot if post-restore verification fails.
+    5. Sets .restore_in_progress marker on disk for crash resilience.
+    6. Streams backup pages using sqlite3.Connection.backup() with WAL truncation.
+    7. Verifies live database integrity.
+    8. Clears .restore_in_progress marker upon verification; rolls back on failure.
     """
-    from app.services.maintenance_service import maintenance_context
+    from app.services.maintenance_service import (
+        maintenance_context,
+        mark_restore_in_progress,
+        clear_restore_in_progress
+    )
 
     bck_dir = get_backups_dir()
     record = None
@@ -267,7 +298,7 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expec
     if not backup_path.exists():
         return False, None, f"Backup file '{filename}' does not exist on server disk."
 
-    # 1. Pre-validate Target Backup Integrity & Checksum
+    # 1. Pre-validate Target Backup Integrity, Schema & Checksum
     expected_hash = expected_checksum or (record.get('checksum_sha256') if record else None)
     is_valid, msg = verify_backup_integrity(backup_path, expected_checksum=expected_hash)
     if not is_valid:
@@ -277,8 +308,8 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expec
     pre_restore_filename = f"pre_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
     pre_restore_path = bck_dir / pre_restore_filename
 
-    with maintenance_context():
-        try:
+    try:
+        with maintenance_context(timeout=drain_timeout):
             # 2. Checkpoint WAL and Create Pre-Restore Rollback Snapshot
             live_conn = sqlite3.connect(live_db_path, timeout=10.0)
             try:
@@ -299,6 +330,9 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expec
             live_conn.backup(pre_conn)
             pre_conn.close()
             live_conn.close()
+
+            # Mark restore in progress for power-cut / crash resilience
+            mark_restore_in_progress(pre_restore_path, target_backup=filename)
 
             # 3. Perform Live Restoration with WAL Checkpoint
             target_bck_conn = sqlite3.connect(str(backup_path))
@@ -345,16 +379,21 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expec
                 rb_src.close()
                 return False, pre_restore_filename, "Post-restore integrity check failed! Automatically restored database back to pre-restore safety copy."
 
+            # Success: clear interrupted restore marker
+            clear_restore_in_progress()
             return True, pre_restore_filename, None
-        except Exception as e:
-            # Emergency rollback if safety copy was created
-            if pre_restore_path.exists():
-                try:
-                    rb_src = sqlite3.connect(pre_restore_path)
-                    rb_dest = sqlite3.connect(live_db_path)
-                    rb_src.backup(rb_dest)
-                    rb_dest.close()
-                    rb_src.close()
-                except Exception:
-                    pass
-            return False, pre_restore_filename if pre_restore_path.exists() else None, f"Restoration error: {str(e)}. Safe rollback snapshot retained."
+    except TimeoutError as te:
+        return False, None, str(te)
+    except Exception as e:
+        # Emergency rollback if safety copy was created
+        if pre_restore_path.exists():
+            try:
+                rb_src = sqlite3.connect(pre_restore_path)
+                rb_dest = sqlite3.connect(live_db_path)
+                rb_src.backup(rb_dest)
+                rb_dest.close()
+                rb_src.close()
+                clear_restore_in_progress()
+            except Exception:
+                pass
+        return False, pre_restore_filename if pre_restore_path.exists() else None, f"Restoration error: {str(e)}. Safe rollback snapshot retained."

@@ -8,6 +8,8 @@ Usage:
 
 import sys
 import os
+import json
+import socket
 import argparse
 import sqlite3
 from pathlib import Path
@@ -22,6 +24,32 @@ if sys.platform == 'win32':
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BACKUPS_DIR = PROJECT_ROOT / 'backups'
 LIVE_DB_PATH = PROJECT_ROOT / 'kitaab_bank.db'
+
+def is_server_active(port=5000):
+    """Check if Waitress production server is actively listening on localhost port."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(0.5)
+    try:
+        res = s.connect_ex(('127.0.0.1', port))
+        return res == 0
+    except Exception:
+        return False
+    finally:
+        s.close()
+
+def is_database_locked(db_path):
+    """Check if the live SQLite database is locked by an active external transaction."""
+    db_path = Path(db_path)
+    if not db_path.exists():
+        return False
+    try:
+        conn = sqlite3.connect(str(db_path), timeout=0.2)
+        conn.execute("BEGIN IMMEDIATE;")
+        conn.rollback()
+        conn.close()
+        return False
+    except (sqlite3.OperationalError, sqlite3.DatabaseError):
+        return True
 
 def list_backups():
     """Display available backups in backups/ directory."""
@@ -44,11 +72,28 @@ def list_backups():
     print("=" * 70 + "\n")
     return backups
 
-def restore_backup(backup_path, skip_confirm=False):
-    """Safely restore database from verified backup file with WAL checkpoint and rollback defense."""
+def restore_backup(backup_path, skip_confirm=False, port=5000, check_server=True):
+    """Safely restore database from verified backup file with cross-process server check and crash resilience."""
     backup_path = Path(backup_path)
     if not backup_path.exists():
         print(f"ERROR: Backup file '{backup_path}' does not exist.")
+        return False
+
+    # 0. Cross-Process Safety Check: Require Waitress to be stopped before CLI restore
+    if check_server and is_server_active(port=port):
+        print("\n" + "=" * 70)
+        print("[CROSS-PROCESS SAFETY GUARD] ACTIVE WAITRESS SERVER DETECTED")
+        print("=" * 70)
+        print(f"The Waitress production server is actively listening on port {port}.")
+        print("To guarantee cross-process data safety and eliminate any write conflicts:")
+        print("  1. Stop the Waitress server (Ctrl+C on start_kitaab_bank window) before running CLI restore; OR")
+        print("  2. Perform restoration safely from the Teacher Settings web portal (/teacher/settings?tab=backup).")
+        print("=" * 70)
+        print("CLI restoration ABORTED. Live database was NOT modified.\n")
+        return False
+
+    if is_database_locked(LIVE_DB_PATH):
+        print("\n[ERROR] Live database is locked by an active external transaction. CLI restore aborted.\n")
         return False
 
     print(f"\nTarget Backup: {backup_path.name}")
@@ -58,48 +103,32 @@ def restore_backup(backup_path, skip_confirm=False):
         print("\n[SAFETY NOTICE]")
         print("Restoring will replace the current active database with the contents of this snapshot.")
         print("An automated pre-restore rollback snapshot will be captured before modifying the live database.")
-        print("Note: If the Waitress production server is actively processing writes, it is recommended to pause traffic.")
         ans = input("Proceed with database restoration? (y/N): ").strip().lower()
         if ans not in ('y', 'yes'):
             print("Restoration cancelled by user.")
             return False
 
-    # 1. Integrity Check on Target Backup
-    print("\nStep 1/4: Checking target backup file integrity and core tables...")
+    # 1. Integrity & Strict Schema Check on Target Backup
+    print("\nStep 1/4: Checking target backup file integrity and required schema...")
     try:
-        conn = sqlite3.connect(str(backup_path))
-        cur = conn.cursor()
-        cur.execute("PRAGMA integrity_check;")
-        res = cur.fetchone()
-        if not res or res[0] != 'ok':
-            conn.close()
-            print(f"ERROR: Backup integrity check failed: {res}")
+        from app.services.backup_service import verify_backup_integrity
+        is_valid, v_msg = verify_backup_integrity(backup_path)
+        if not is_valid:
+            print(f"ERROR: Backup validation rejected: {v_msg}")
             return False
-
-        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = {r[0] for r in cur.fetchall()}
-        required = {'teachers', 'books', 'donations', 'requests', 'handovers', 'activity_logs'}
-        if not required.issubset(tables):
-            conn.close()
-            print(f"ERROR: Backup is missing required application tables: {required - tables}")
-            return False
-
-        conn.close()
         print("✓ Backup integrity and schema verification PASSED.")
     except Exception as e:
         print(f"ERROR: Could not verify backup file: {e}")
         return False
 
-    # 2. Acquire Maintenance Gate to Protect Against Running Waitress Server
+    # 2. Acquire Maintenance Gate & Create Pre-Restore Rollback Snapshot
     m_file = LIVE_DB_PATH.parent / '.maintenance_lock'
+    rip_file = LIVE_DB_PATH.parent / '.restore_in_progress'
+
     try:
         m_file.write_text(f"CLI_RESTORE_ACTIVE:{datetime.now().isoformat()}")
         print("\n[MAINTENANCE GATE] Acquired maintenance lock (.maintenance_lock).")
-        print("  - Incoming Waitress requests gated with HTTP 503 Service Unavailable.")
-        print("  - Draining active in-flight database connections (waiting 0.5s)...")
-        time.sleep(0.5)
 
-        # 2. Pre-Restore Safety Snapshot of Live Database (with WAL Checkpoint)
         BACKUPS_DIR.mkdir(parents=True, exist_ok=True)
         pre_restore_file = BACKUPS_DIR / f"pre_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         print(f"\nStep 2/4: Capturing emergency rollback snapshot ({pre_restore_file.name})...")
@@ -110,6 +139,7 @@ def restore_backup(backup_path, skip_confirm=False):
                     live_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
                 except Exception:
                     pass
+
                 # Capture existing backup catalog to preserve historical records across restores
                 existing_backup_rows = []
                 try:
@@ -128,6 +158,13 @@ def restore_backup(backup_path, skip_confirm=False):
                 print(f"WARNING: Pre-restore snapshot failed: {e}")
         else:
             print("Live database did not exist yet; skipping pre-restore copy.")
+
+        # Record crash resilience marker
+        rip_file.write_text(json.dumps({
+            "rollback_snapshot": str(pre_restore_file),
+            "target_backup": str(backup_path.name),
+            "started_at": datetime.now().isoformat()
+        }))
 
         # 3. Perform Live Restoration with WAL Truncate
         print("\nStep 3/4: Restoring database pages and syncing WAL...")
@@ -172,6 +209,8 @@ def restore_backup(backup_path, skip_confirm=False):
                     rb_dest.close()
                     rb_src.close()
                     print("✓ Successfully rolled back to pre-restore state.")
+                    if rip_file.exists():
+                        rip_file.unlink()
                 except Exception as rb_err:
                     print(f"CRITICAL: Rollback failed: {rb_err}")
             return False
@@ -190,6 +229,8 @@ def restore_backup(backup_path, skip_confirm=False):
             if res and res[0] == 'ok':
                 print(f"✓ Restored database verified! (Integrity: ok, Books cataloged: {books_count})")
                 print("\n🎉 RESTORATION COMPLETED SUCCESSFULLY!\n")
+                if rip_file.exists():
+                    rip_file.unlink()
                 return True
             else:
                 print(f"ERROR: Post-restore verification failed: {res}")
@@ -202,6 +243,8 @@ def restore_backup(backup_path, skip_confirm=False):
                     rb_dest.close()
                     rb_src.close()
                     print("✓ Rolled back to safe state.")
+                    if rip_file.exists():
+                        rip_file.unlink()
                 return False
         except Exception as e:
             print(f"ERROR: Post-restore check failed: {e}")
@@ -220,28 +263,40 @@ def main():
     group.add_argument('--latest', action='store_true', help="Restore the most recent backup")
     group.add_argument('--file', type=str, help="Specific backup file name in backups/")
     group.add_argument('--list', action='store_true', help="List available backups")
-    parser.add_argument('-y', '--yes', action='store_true', help="Bypass interactive confirmation prompt")
+    parser.add_argument('-y', '--yes', action='store_true', help="Skip interactive confirmation prompt")
+    parser.add_argument('--port', type=int, default=5000, help="Port to check for active Waitress server")
+    parser.add_argument('--no-server-check', action='store_true', help="Bypass active server port check")
 
     args = parser.parse_args()
 
     if args.list:
         list_backups()
-        return 0
+        return
 
+    target_file = None
     if args.latest:
         backups = sorted(BACKUPS_DIR.glob("kitab_bank_backup_*.db"), reverse=True)
         if not backups:
-            print("ERROR: No backups found in backups/ to restore.")
-            return 1
+            print("ERROR: No backup files found in backups/ directory.")
+            sys.exit(1)
         target_file = backups[0]
-    else:
+    elif args.file:
         target_file = BACKUPS_DIR / args.file
         if not target_file.exists():
-            # Try direct path
             target_file = Path(args.file)
 
-    success = restore_backup(target_file, skip_confirm=args.yes)
-    return 0 if success else 1
+    if not target_file or not target_file.exists():
+        print(f"ERROR: Backup file '{target_file}' not found.")
+        sys.exit(1)
+
+    success = restore_backup(
+        target_file,
+        skip_confirm=args.yes,
+        port=args.port,
+        check_server=not args.no_server_check
+    )
+    if not success:
+        sys.exit(1)
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()

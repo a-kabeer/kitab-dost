@@ -734,13 +734,40 @@ Phase 8 was implemented, audited, and verified on 2026-11-05.
 
 | Test Suite | Scope | Result | Details |
 |---|---|---|---|
+| `tests/test_restore_safety_hardening.py` | Final Restore Safety Hardening Suite | **PASS (8/8)** | Deterministic in-flight connection draining (>500ms), HTTP 503 maintenance gate, controller thread deadlock exclusion, CLI restore Waitress server guard, clean restore after drain, safe drain timeout abort, crash-interrupted restore startup recovery, strict table and column validation |
 | `tests/test_final_data_safety.py` | Final Data Safety Hardening Suite | **PASS (10/10)** | Empty DB pre-demo backup, real data preservation, repeated demo re-activation guard, exact pre-demo backup ID binding, active pre-demo deletion protection, crash resilience across restarts, HTTP 503 maintenance concurrency gate, corrupted backup rejection, automated rollback, post-restore integrity |
 | `tests/test_phase9.py` | Phase 9 Comprehensive QA Suite | **PASS (13/13)** | Backup integrity validation, SHA-256 mismatch rejection, corrupt SQLite rejection, invalid schema rejection, sole backup deletion protection, WAL checkpoint truncate, pre-demo automated backup, historical backup catalog preservation, demo mode activation & safe exit, unauthenticated route protection, CSRF defense |
-| Combined Test Suite (`tests/`) | Complete Unit & Integration Suite | **PASS (120/120)** | 100% of unit and integration tests passing across all suites with exit code 0 |
+| Combined Test Suite (`tests/`) | Complete Unit & Integration Suite | **PASS (128/128)** | 100% of unit and integration tests passing across all 11 test modules with exit code 0 |
 | `test_phase1.py` | Foundation & Security Regression | **PASS (7/7)** | SQLite WAL mode, dual portals, 100% offline static assets, error handlers, and persistence |
 | `test_concurrency.py` | Concurrency & WAL Performance | **PASS (15/15)** | 15 concurrent student write operations committed without lock errors |
 | `test_browser_phase9.py` | Phase 9 Multi-Device Playwright Audit | **PASS (6/6 Suites)** | Desktop (1280x800), Tablet (768x1024), iPhone (390x844), Android (360x640), Light/Dark/System themes, RTL rendering, with **0 console errors and 0 page exceptions** |
 
 ### Release Status
 - **Kitaab Bank (کتاب بینک) is 100% FEATURE-COMPLETE, TESTED, HARDENED, AND PRODUCTION-READY.**
-- **All 9 Roadmap Phases (Phases 1–9) have been implemented, verified, and documented.**
+- **All 9 Roadmap Phases (Phases 1–9) and the Final Restore Safety Hardening have been implemented, verified, and documented.**
+
+---
+
+## 12. Final Restore Safety Hardening & Verification Summary (Completed 2026-11-05)
+
+### Features & Defenses Verified
+
+1. **Deterministic Connection Draining (`app/services/maintenance_service.py`):**
+   - Eliminated fixed delay sleeps in restoration paths.
+   - Implemented thread-safe tracking of active in-flight requests (`_active_requests`) and active database connections (`_active_db_threads`).
+   - `drain_connections()` deterministically monitors connections until all in-flight queries complete.
+   - Enforces configurable timeout (default 5.0s) and safely aborts without modifying live DB if drain fails.
+   - Specifically excludes the restore controller thread (`exclude_thread=threading.get_ident()`) to eliminate self-deadlock.
+
+2. **Cross-Process Coordination Between CLI Restore & Waitress Server:**
+   - `scripts/restore_backup.py` verifies if Waitress is actively listening on port 5000 (`is_server_active`) or if the database is locked (`is_database_locked`).
+   - Rejects CLI restore when Waitress is running with a high-visibility warning advising to stop Waitress or restore via the Teacher Settings portal.
+
+3. **Crash-Resilient Recovery from Interrupted Restorations:**
+   - Atomic persistent state marker `.restore_in_progress` written before live database pages are touched.
+   - Upon application startup (`init_db()`), `check_and_recover_interrupted_restore()` detects interrupted restorations from unexpected shutdowns or power cuts.
+   - Automatically recovers live DB from the verified rollback snapshot, validates `PRAGMA integrity_check;`, and clears the marker file before serving requests.
+
+4. **Strict Schema & Column Verification:**
+   - `verify_backup_integrity()` validates SQLite page integrity, SHA-256 checksum, AND strict table and column completeness across all 8 tables (`REQUIRED_SCHEMA`).
+   - Non-compliant schemas (missing tables or missing columns) are rejected prior to any restore operations.

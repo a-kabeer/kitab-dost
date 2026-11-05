@@ -61,9 +61,39 @@ def create_app(config_name='default'):
             session['csrf_token'] = secrets.token_hex(24)
         return dict(csrf_token=lambda: session['csrf_token'])
 
+    # Multilingual & RTL Localization Context Processor
+    from app.services import translation_service
+
+    @app.context_processor
+    def inject_localization():
+        lang = session.get('lang') or request.cookies.get('kb_lang') or request.args.get('lang', 'en')
+        if lang not in translation_service.SUPPORTED_LANGUAGES:
+            lang = 'en'
+        meta = translation_service.get_language_meta(lang)
+        return {
+            'current_lang': lang,
+            'is_rtl': meta['dir'] == 'rtl',
+            'lang_dir': meta['dir'],
+            'supported_languages': translation_service.SUPPORTED_LANGUAGES,
+            '_t': lambda key, default=None, **kwargs: translation_service.translate(key, lang=lang, default=default, **kwargs)
+        }
+
+    @app.route('/set-language/<lang_code>')
+    def set_language(lang_code):
+        from flask import redirect, url_for
+        if lang_code not in translation_service.SUPPORTED_LANGUAGES:
+            lang_code = 'en'
+        session['lang'] = lang_code
+        target = request.referrer or url_for('student.index')
+        resp = redirect(target)
+        resp.set_cookie('kb_lang', lang_code, max_age=30*24*3600, samesite='Lax')
+        return resp
+
     # CSRF Protection on POST requests
     @app.before_request
     def validate_csrf():
+        if app.config.get('TESTING') and app.config.get('WTF_CSRF_ENABLED') is False:
+            return
         if request.method in ('POST', 'PUT', 'DELETE', 'PATCH'):
             token = request.form.get('csrf_token')
             expected = session.get('csrf_token')

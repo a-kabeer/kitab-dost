@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Kitaab Bank - Right-to-Left (RTL) Stylesheet
+   Applied dynamically when Urdu (اردو) or Sindhi (سنڌي) is selected.
+   Optimized for Nastaliq typography, flipped margins/paddings, and RTL flexboxes.
+   ========================================================================== */
+
+[dir="rtl"],
+html[dir="rtl"] body {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Nastaliq Line-Height & Readability */
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] .dashboard-title,
+html[dir="rtl"] .hero-title {
+  line-height: 1.6;
+}
+
+/* Latin Codes & Numbers must remain LTR */
+[dir="rtl"] .font-mono,
+[dir="rtl"] .book-code,
+[dir="rtl"] .tracking-code,
+[dir="rtl"] .handover-code,
+[dir="rtl"] .donation-code,
+[dir="rtl"] code,
+[dir="rtl"] pre {
+  direction: ltr;
+  display: inline-block;
+  unicode-bidi: isolate;
+}
+
+/* Top Navigation Bar */
+html[dir="rtl"] .navbar-brand {
+  margin-right: 0;
+  margin-left: 1.5rem;
+}
+
+html[dir="rtl"] .nav-links {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+html[dir="rtl"] .nav-actions {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+/* Sidebar Navigation */
+html[dir="rtl"] .teacher-sidebar {
+  border-right: none;
+  border-left: 1px solid var(--border-color);
+}
+
+html[dir="rtl"] .sidebar-badge {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Metric Cards & Headers */
+html[dir="rtl"] .metric-header {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .metric-footer {
+  text-align: right;
+}
+
+/* Data Tables */
+html[dir="rtl"] .data-table th,
+html[dir="rtl"] .data-table td {
+  text-align: right;
+}
+
+html[dir="rtl"] .data-table th:last-child,
+html[dir="rtl"] .data-table td:last-child {
+  text-align: left;
+}
+
+/* Badges & Icons */
+html[dir="rtl"] .badge-overlay {
+  left: auto;
+  right: 0.75rem;
+}
+
+/* Form Controls */
+html[dir="rtl"] .form-control,
+html[dir="rtl"] select.form-control,
+html[dir="rtl"] textarea.form-control {
+  text-align: right;
+}
+
+/* Dropdown Menus */
+html[dir="rtl"] .theme-dropdown-menu,
+html[dir="rtl"] .lang-dropdown-menu {
+  right: auto;
+  left: 0;
+}
+
+/* Timeline & Audit Log */
+html[dir="rtl"] .activity-row {
+  flex-direction: row;
+}
+
+html[dir="rtl"] .activity-time {
+  text-align: right;
+}
+
+/* Quick Actions */
+html[dir="rtl"] .action-pill-card {
+  text-align: right;
+}
+
+/* Alert Boxes */
+html[dir="rtl"] .alert {
+  text-align: right;
+}
+
+/* Print View Adjustment */
+@media print {
+  html[dir="rtl"] body {
+    direction: rtl;
+    text-align: right;
+  }
+}

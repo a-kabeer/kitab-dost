@@ -19,6 +19,12 @@ class Phase2StudentDiscoveryTests(unittest.TestCase):
     def setUpClass(cls):
         cls.app = create_app('testing')
         cls.client = cls.app.test_client()
+        with cls.app.app_context():
+            from app.seed_data import seed_sample_books
+            db = get_db()
+            db.execute("UPDATE books SET status = 'available', is_approved = 1;")
+            db.commit()
+            seed_sample_books()
 
     def test_01_homepage_renders_and_contains_stats(self):
         """Test homepage renders with live stats, search bar, and featured books."""

@@ -14,8 +14,8 @@
 | **Phase 5** | **Physical Handover Ledger & Circulation Defense** | **COMPLETED & VERIFIED** | Day 5 | 2026-11-05 | Handover verification form, dual confirmation checkboxes, sequential KB-HO-000001 ledger, printable A4 receipt, student tracking timeline, reservation release/cancellation, and 55 unit tests + 4 browser tests passing. |
 | **Phase 6** | **QR System, Label Printing & Android Tested Scanner** | **COMPLETED & VERIFIED** | Day 6 | 2026-11-05 | Offline QR generator, printable single/bulk labels, dual-mode /scan with prominent manual entry, Secure Context detection, camera stream cleanup (track.stop()), 69 unit tests + 5 browser tests passing. |
 | **Phase 7** | **Teacher Dashboard, Analytics & Themed Admin Desk** | **COMPLETED & VERIFIED** | Day 7 | 2026-11-05 | Executive dashboard, analytics engine, inventory CRUD, status guards, reports desk with CSV exports, system activity audit logs, 84 unit tests + 6 browser tests passing. |
-| **Phase 8** | Multilingual RTL, Hot Backups & Exhibition Mode | READY TO START | Day 8 | — | Dependent on Phase 7. |
-| **Phase 9** | Comprehensive QA, Multi-Device Hardening & Release | PENDING | Day 9 | — | Final sign-off milestone. |
+| **Phase 8** | **Multilingual RTL, Hot Backups & Exhibition Mode** | **COMPLETED & VERIFIED** | Day 8 | 2026-11-05 | Full RTL (Urdu, English, Sindhi), sqlite3 hot backup engine with SHA-256 and CLI restore, Teacher Settings Desk with 4 tabs, Exhibition demo seeder in < 1s, CSV injection defense, 97 unit tests + 7 browser tests passing. |
+| **Phase 9** | Comprehensive QA, Multi-Device Hardening & Release | READY TO START | Day 9 | — | Final sign-off milestone. |
 
 ---
 
@@ -619,4 +619,82 @@ The following core improvements have been fully integrated into the architecture
 
 ### Stopping Point
 - **Phase 7 – Teacher Dashboard, Analytics & Themed Admin Desk is 100% COMPLETE & VERIFIED.**
-- **Phase 8 (Multilingual RTL, Live Snapshot Backups & Exhibition Mode) has NOT been started.** Awaiting instructions to proceed to Phase 8.
+
+---
+
+## 10. Phase 8 Implementation & Verification Summary
+
+Phase 8 was implemented, audited, and verified on 2026-11-05.
+
+### Key Architectural Deliverables Completed
+
+1. **Multilingual & Right-to-Left (RTL) Localization Engine:**
+   - **Translation Dictionaries:** `app/translations/en.json`, `app/translations/ur.json` (Urdu), and `app/translations/sd.json` (Sindhi).
+   - **Translation Service (`app/services/translation_service.py`):** In-memory caching, graceful fallback hierarchy (Target -> English -> Default -> Key), and metadata dictionary.
+   - **Dynamic RTL Styling (`app/static/css/rtl.css`):** Conditional inclusion when `is_rtl` is true; applies Noto Nastaliq Urdu / Sindhi typography, flips margins, padding, navigation alignment, and float properties.
+   - **Strict Latin Code Isolation:** Enforced `direction: ltr; display: inline-block; unicode-bidi: isolate;` across all book codes (`KB-BK-000001`), request tracking tokens (`KB-REQ-7K9M-2X4P`), handover receipts (`KB-HO-000001`), and monospace badges, preventing bidirectional corruption in RTL reading flow.
+   - **Language Switchers:** Dropdowns in both public (`base.html`) and teacher (`base_teacher.html`) navigation headers with automatic persistence via HTTP cookie (`kb_lang`) and server session (`session['lang']`).
+
+2. **CSV Formula Injection Defense (`analytics_service.py`):**
+   - Implemented `sanitize_csv_cell(value)` to prevent Spreadsheet Formula Injection / DDE attacks.
+   - Any cell value starting with `=`, `+`, `-`, `@`, `\t`, or `\r` is automatically neutralized by prepending a single quote `'`.
+   - Applied across both `generate_inventory_csv()` and `generate_handovers_csv()`.
+
+3. **Consistent SQLite Live Snapshot Hot Backup Engine (`app/services/backup_service.py`):**
+   - **Live Hot Snapshot:** Uses Python's native `sqlite3.Connection.backup()` API to produce consistent, byte-for-byte database snapshots without locking out readers or disrupting application traffic.
+   - **Automated Validation:** Every snapshot is checked immediately after generation with `PRAGMA integrity_check;` and schema presence checks.
+   - **SHA-256 Checksums:** Cryptographic SHA-256 hash calculated and cataloged in the `backup_records` SQLite table along with file size, creation timestamp, and creator identity.
+   - **Audit Trail:** Every backup generation and deletion event is recorded in `activity_logs`.
+
+4. **Command-Line Database Restoration Tool (`scripts/restore_backup.py`):**
+   - CLI utility supporting `--latest`, `--file <filename>`, and `--list`.
+   - **Pre-Restore Rollback Snapshot:** Automatically creates `backups/pre_restore_YYYYMMDD_HHMMSS.db` before applying any restore operation.
+   - **Post-Restore Verification:** Executes `PRAGMA integrity_check;` on the live database after restoration to guarantee data consistency.
+
+5. **Exhibition Showcase Mode / Fast Demo Seeder (`scripts/seed_demo.py`):**
+   - Resets and populates a complete, realistic curriculum demonstration dataset in **under 1 second (measured 425ms)**.
+   - Populates 18 standardized textbooks across Grades 6, 7, and 8 in English, Urdu, and Sindhi.
+   - Realistic circulation distribution: 13 Available, 3 Reserved, 2 Handed Over.
+   - Full donation lifecycle queue (Pending, Approved, Rejected with feedback).
+   - Full request lifecycle (Pending, Approved/Reserved, Completed).
+   - Handover records with printable receipts (`KB-HO-000001`, `KB-HO-000002`).
+   - 30 days of teacher logins, catalog mutations, and audit activity logs.
+
+6. **Teacher Administrative Settings Desk (`/teacher/settings`):**
+   - Replaced placeholder view with a 4-tab administrative management desk:
+     - **Tab 1 — School Profile:** Update official school name, active academic session, and portal default language.
+     - **Tab 2 — Account Security:** Secure password rotation requiring current password verification and 8+ character complexity.
+     - **Tab 3 — Database Hot Backups:** Live snapshot creation button, snapshot catalog table with file sizes, truncated SHA-256 checksums, integrity badges, and `.db` file download endpoints.
+     - **Tab 4 — Exhibition Showcase Mode:** Fast demo reset action with prominent confirmation warning.
+
+### Automated & Browser Test Verification Summary
+
+| Test Suite | Scope | Result | Details |
+|---|---|---|---|
+| `tests/test_phase8.py` | Phase 8 Unit & Integration Suite | **PASS (13/13)** | Translations (en, ur, sd), language route/cookie persistence, Latin code preservation, CSV formula injection defense, live hot backup creation, SHA-256 verification, backup deletion, pre-restore rollback snapshot, database restoration, school profile settings, password rotation validation, exhibition demo seeder performance (< 1s), teacher auth protection |
+| `tests/test_phase7.py` | Phase 7 Unit Regression | **PASS (15/15)** | Analytics calculation accuracy, inventory CRUD, reports, CSV exports |
+| `tests/test_phase6.py` | Phase 6 Unit Regression | **PASS (14/14)** | QR generation, labels, code normalization |
+| `tests/test_phase5.py` | Phase 5 Unit Regression | **PASS (17/17)** | Physical handover ledger, atomic locks, receipt printing |
+| `tests/test_phase4.py` | Phase 4 Unit Regression | **PASS (14/14)** | Book request workflow, competing request resolution, reservation locking |
+| `tests/test_phase3.py` | Phase 3 Unit Regression | **PASS (12/12)** | Book donation lifecycle and Pillow image processing |
+| `tests/test_phase2.py` | Phase 2 Unit Regression | **PASS (12/12)** | Student catalogue discovery, search, and multi-faceted filtering |
+| Combined Test Suite (`tests/`) | Combined Unit & Integration Suite | **PASS (97/97)** | 100% of unit and integration tests passing across all completed phases (Exit code 0) |
+| `test_phase1.py` | Foundation & Security Regression | **PASS (7/7)** | SQLite WAL mode, dual portals, 100% offline static assets, error handlers, and persistence |
+| `test_concurrency.py` | Concurrency & WAL Performance | **PASS (15/15)** | 15 concurrent student write operations committed without lock errors |
+| `test_browser_phase8.py` | Phase 8 Playwright Audit | **PASS** | Edge Chromium: Public portal language switching (en, ur, sd), dynamic RTL layout, rtl.css inclusion, teacher settings desk tabs (profile, security password rotation, hot backup generation, exhibition demo reset), mobile viewport (390x844) with **0 console errors and 0 page exceptions** |
+| `test_browser_phase7.py` | Phase 7 Playwright Audit | **PASS** | Dashboard, inventory, reports, CSV exports, activity logs with **0 console errors and 0 page exceptions** |
+| `test_browser_phase6.py` | Phase 6 Playwright Audit | **PASS** | Scanner and printable QR labels with **0 console errors and 0 page exceptions** |
+
+### Network & Wi-Fi LAN Access Note
+- **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
+- **Current Machine Wi-Fi IP:** `10.0.0.36` (network `bbrouter`).
+- **Connection Diagnostics:**
+  - `Test-NetConnection -ComputerName 10.0.0.36 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
+  - `http://10.0.0.36:5000`: **HTTP 200 OK** (Verified responsive).
+- **Current Active URLs:**
+  - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://10.0.0.36:5000`**
+
+### Stopping Point
+- **Phase 8 – Multilingual RTL, Live Snapshot Backups & Exhibition Mode is 100% COMPLETE & VERIFIED.**
+- **Phase 9 (Comprehensive QA, Multi-Device Hardening & Release) has NOT been started.** Awaiting instructions to proceed to Phase 9.

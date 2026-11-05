@@ -166,26 +166,34 @@ flowchart TD
 
 ---
 
-### Phase 8 – Multilingual RTL, Live Snapshot Backups & Exhibition Mode (READY TO START)
+### Phase 8 – Multilingual RTL, Live Snapshot Backups & Exhibition Mode (COMPLETED & VERIFIED)
 - **Goal:** Implement full bilingual / trilingual localization (English, Urdu اردو, Sindhi سنڌي) with RTL support, Python SQLite consistent live snapshot backup and restoration verification tools, and exhibition showcase mode.
 - **Key Deliverables:**
-  - JSON translation dictionaries (`en.json`, `ur.json`, `sd.json`) and template translation helper `_t('key')` preserving Latin digits in codes.
-  - RTL stylesheet (`rtl.css`) dynamically applied when Urdu or Sindhi is selected.
-  - Language switcher in student and teacher navbars.
+  - JSON translation dictionaries (`app/translations/en.json`, `ur.json`, `sd.json`) and template translation helper `_t('key')` preserving Latin digits in all school codes (`KB-BK-`, `KB-REQ-`, `KB-HO-`).
+  - RTL stylesheet (`app/static/css/rtl.css`) with Noto Nastaliq Urdu typography, bidirectional isolation (`unicode-bidi: isolate; direction: ltr;` on codes), and layout mirroring dynamically enabled when Urdu or Sindhi is active.
+  - Language switchers in both public and teacher navbars with cookie (`kb_lang`) and session persistence.
   - Built-in SQLite Hot Backup Engine (Consistent Live Snapshot) using `sqlite3.Connection.backup()`:
-    - Dedicated backup route (`/teacher/settings/backup`).
+    - Dedicated management desk at `/teacher/settings?tab=backup` with live backup trigger, catalog table, file size, SHA-256 checksums, and `.db` downloads.
     - Automated backup validation check (`PRAGMA integrity_check;` and schema verification).
-    - Safe restoration script (`scripts/restore_backup.py`) with pre-restore rollback snapshot and verification test.
-  - Exhibition Demo Seeder: One-click script to reset and seed clean exhibition demo data in < 2 seconds.
-- **Acceptance Criteria:**
+    - Safe CLI restoration script (`scripts/restore_backup.py`) with pre-restore rollback snapshot and verification test.
+  - Teacher Settings Desk (`/teacher/settings`):
+    - School Profile tab (school name, academic year, default language).
+    - Account Security tab (secure password rotation with minimum length validation).
+    - Live Backups tab (hot snapshots, verification status, file downloads).
+    - Exhibition Showcase Mode tab (fast demo reset with confirmation dialog).
+  - Fast Exhibition Demo Seeder (`scripts/seed_demo.py`): Clean reset and population of 18 curriculum textbooks across Grades 6–8, donations, requests, handovers, and 30-day activity logs in < 1 second.
+  - CSV Formula Injection defense in `app/services/analytics_service.py` (`sanitize_csv_cell()` prepends `'` to formulas).
+- **Acceptance Criteria (VERIFIED):**
   - UI language switches instantly without losing theme preference.
-  - Right-to-Left (RTL) typography renders correctly for Urdu and Sindhi text.
-  - Hot database backup produces a verified, consistent live snapshot `.db` file in `/backups/`.
-  - Restore procedure successfully restores data with verified integrity after test simulation.
+  - Right-to-Left (RTL) typography renders correctly for Urdu and Sindhi text with Latin code preservation.
+  - Hot database backup produces a verified, consistent live snapshot `.db` file in `backups/`.
+  - Restore procedure successfully restores data with verified integrity and pre-restore rollback copy.
+  - Exhibition demo seeder resets and populates complete realistic database in < 1s (measured 425ms).
+  - 13 unit/integration tests (`tests/test_phase8.py`), 97/97 combined tests, 15/15 concurrency, 7/7 phase 1, and full Playwright browser audit (`test_browser_phase8.py`) passing with 0 console errors and 0 page exceptions.
 
 ---
 
-### Phase 9 – Comprehensive QA, Multi-Device Hardening & Release
+### Phase 9 – Comprehensive QA, Multi-Device Hardening & Release (READY TO START)
 - **Goal:** Rigorous end-to-end testing across multiple physical devices on local Wi-Fi, ngrok verification, performance audits, and release packaging.
 - **Key Deliverables:**
   - Multi-device verification (Host PC + Android phone + iPhone connected to local Wi-Fi).

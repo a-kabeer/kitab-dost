@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="{{ current_lang }}" dir="{{ lang_dir }}" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,6 +23,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
+  {% if is_rtl %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rtl.css') }}">
+  {% endif %}
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -38,8 +41,25 @@
         </div>
       </a>
 
-      <!-- Right Header Actions (Theme Switcher + Student View Switch) -->
+      <!-- Right Header Actions (Language Switcher + Theme Switcher + Student View Switch) -->
       <div class="nav-actions">
+        <!-- Language Switcher Dropdown -->
+        <div class="theme-selector-wrap" style="position: relative;">
+          <button type="button" class="theme-btn" id="langTeacherBtn" aria-label="Select Language">
+            <span>🌐</span>
+            <span style="font-weight: 600;">{{ supported_languages[current_lang].native_name }}</span>
+            <span style="font-size: 0.65rem;">▼</span>
+          </button>
+          <div class="theme-dropdown-menu" id="langTeacherMenu" style="min-width: 140px;">
+            {% for code, lang_info in supported_languages.items() %}
+            <a href="{{ url_for('set_language', lang_code=code) }}" class="theme-option" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; {% if code == current_lang %}font-weight: 700; color: var(--primary);{% endif %}">
+              <span>{{ lang_info.native_name }}</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">{{ lang_info.name }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+
         <!-- Theme Switcher Dropdown -->
         <div class="theme-selector-wrap">
           <button type="button" class="theme-btn" data-theme-toggle aria-label="Toggle Theme">
@@ -162,6 +182,20 @@
 
   <!-- Offline Local JavaScript -->
   <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script>
+    // Language dropdown toggle
+    const langBtn = document.getElementById('langTeacherBtn');
+    const langMenu = document.getElementById('langTeacherMenu');
+    if (langBtn && langMenu) {
+      langBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        langMenu.classList.toggle('show');
+      });
+      document.addEventListener('click', () => {
+        langMenu.classList.remove('show');
+      });
+    }
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

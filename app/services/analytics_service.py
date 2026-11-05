@@ -230,10 +230,24 @@ def get_detailed_reports():
         'velocity': dashboard_data['velocity']
     }
 
+def sanitize_csv_cell(value):
+    """
+    Prevent CSV Formula Injection (CWE-1236).
+    If a cell value begins with '=', '+', '-', '@', tab, or carriage return,
+    prepend a single quote (') so spreadsheets strictly interpret it as literal text.
+    """
+    if value is None:
+        return ""
+    val_str = str(value)
+    if val_str and val_str[0] in ('=', '+', '-', '@', '\t', '\r'):
+        return "'" + val_str
+    return val_str
+
 def generate_inventory_csv():
     """
     Generate CSV text of the complete book inventory.
     Prepends UTF-8 BOM (\ufeff) for seamless opening in Microsoft Excel.
+    Applies formula injection sanitization to all fields.
     """
     db = get_db()
     cur = db.cursor()
@@ -258,17 +272,17 @@ def generate_inventory_csv():
 
     for r in rows:
         writer.writerow([
-            r['book_code'],
-            r['title'] or '',
-            r['author'] or '',
-            r['subject'] or '',
-            r['class_grade'] or '',
-            r['language'] or '',
-            r['publisher'] or '',
-            r['edition_year'] or '',
-            r['condition_state'] or '',
-            r['status'] or '',
-            r['date_added'] or ''
+            sanitize_csv_cell(r['book_code']),
+            sanitize_csv_cell(r['title']),
+            sanitize_csv_cell(r['author']),
+            sanitize_csv_cell(r['subject']),
+            sanitize_csv_cell(r['class_grade']),
+            sanitize_csv_cell(r['language']),
+            sanitize_csv_cell(r['publisher']),
+            sanitize_csv_cell(r['edition_year']),
+            sanitize_csv_cell(r['condition_state']),
+            sanitize_csv_cell(r['status']),
+            sanitize_csv_cell(r['date_added'])
         ])
 
     return output.getvalue()
@@ -277,6 +291,7 @@ def generate_handovers_csv():
     """
     Generate CSV text of the complete handover ledger.
     Prepends UTF-8 BOM (\ufeff) for seamless opening in Microsoft Excel.
+    Applies formula injection sanitization to all fields.
     """
     db = get_db()
     cur = db.cursor()
@@ -302,16 +317,16 @@ def generate_handovers_csv():
 
     for r in rows:
         writer.writerow([
-            r['handover_code'],
-            r['tracking_code'] or '',
-            r['book_code'] or '',
-            r['recipient_name'] or '',
-            r['recipient_class'] or '',
-            r['recipient_roll_no'] or '',
-            r['recipient_contact'] or '',
-            r['teacher_name'] or '',
-            r['remarks'] or '',
-            r['date_handed_over'] or ''
+            sanitize_csv_cell(r['handover_code']),
+            sanitize_csv_cell(r['tracking_code']),
+            sanitize_csv_cell(r['book_code']),
+            sanitize_csv_cell(r['recipient_name']),
+            sanitize_csv_cell(r['recipient_class']),
+            sanitize_csv_cell(r['recipient_roll_no']),
+            sanitize_csv_cell(r['recipient_contact']),
+            sanitize_csv_cell(r['teacher_name']),
+            sanitize_csv_cell(r['remarks']),
+            sanitize_csv_cell(r['date_handed_over'])
         ])
 
     return output.getvalue()

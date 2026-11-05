@@ -241,9 +241,13 @@ class Phase5PhysicalHandoverTests(unittest.TestCase):
             self.assertEqual(cur.fetchone()['status'], 'handed_over')
 
             # Attempting another handover with manual approved status on a request for this book
+            cur.execute("SELECT id FROM books WHERE book_code = 'KB-BK-000009';")
+            bk_row = cur.fetchone()
+            b_id = bk_row['id'] if bk_row else 9
             cur.execute(
                 "INSERT INTO requests (tracking_code, book_id, requester_name, requester_class, requester_roll_no, requester_contact, status) "
-                "VALUES ('KB-REQ-TEST-CIRC', 9, 'Other', '8-A', '999', '0300', 'approved');"
+                "VALUES ('KB-REQ-TEST-CIRC', ?, 'Other', '8-A', '999', '0300', 'approved');",
+                (b_id,)
             )
             other_id = cur.lastrowid
             db.commit()

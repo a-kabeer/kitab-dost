@@ -1,0 +1,274 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Settings & Live Backups - Kitaab Bank{% endblock %}
+
+{% block teacher_content %}
+<div class="dashboard-header">
+  <div>
+    <h1 class="dashboard-title">System Settings & Data Management</h1>
+    <p class="dashboard-subtitle">Configure school profile, rotate administrative credentials, generate hot database backups, or seed exhibition mode.</p>
+  </div>
+</div>
+
+<!-- Settings Navigation Tabs -->
+<div class="filter-tabs-bar" style="margin-bottom: 1.5rem;">
+  <a href="{{ url_for('teacher.settings', tab='profile') }}" class="filter-tab {% if active_tab == 'profile' %}active{% endif %}">
+    <span>🏫</span> School Profile
+  </a>
+  <a href="{{ url_for('teacher.settings', tab='security') }}" class="filter-tab {% if active_tab == 'security' %}active{% endif %}">
+    <span>🔒</span> Account Security
+  </a>
+  <a href="{{ url_for('teacher.settings', tab='backup') }}" class="filter-tab {% if active_tab == 'backup' %}active{% endif %}">
+    <span>💾</span> Live Backups
+    <span class="badge badge-primary sidebar-badge">{{ backups|length }}</span>
+  </a>
+  <a href="{{ url_for('teacher.settings', tab='demo') }}" class="filter-tab {% if active_tab == 'demo' %}active{% endif %}">
+    <span>✨</span> Exhibition Showcase Mode
+  </a>
+</div>
+
+<!-- Tab 1: School Profile -->
+{% if active_tab == 'profile' %}
+<div class="card" style="max-width: 720px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+    <span style="font-size: 1.75rem;">🏫</span>
+    <div>
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-primary);">School Profile & System Preferences</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.2rem 0 0 0;">Metadata displayed on student catalogue, printed QR labels, and circulation receipts.</p>
+    </div>
+  </div>
+
+  <form action="{{ url_for('teacher.update_profile_settings') }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-group mb-3">
+      <label for="school_name" class="form-label" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; display: block;">Official School Name</label>
+      <input type="text" id="school_name" name="school_name" class="form-control" value="{{ settings.get('school_name', 'Government Model High School') }}" required style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-app); color: var(--text-primary);">
+      <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.25rem;">Displayed in page headers, A4 handover receipts, and QR label sheets.</small>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="academic_year" class="form-label" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; display: block;">Active Academic Session</label>
+      <input type="text" id="academic_year" name="academic_year" class="form-control" value="{{ settings.get('academic_year', '2026-2027') }}" required placeholder="e.g. 2026-2027" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-app); color: var(--text-primary);">
+    </div>
+
+    <div class="form-group mb-4">
+      <label for="default_language" class="form-label" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; display: block;">Default Portal Language</label>
+      <select id="default_language" name="default_language" class="form-control" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-app); color: var(--text-primary);">
+        <option value="en" {% if settings.get('default_language', 'en') == 'en' %}selected{% endif %}>English (Default)</option>
+        <option value="ur" {% if settings.get('default_language') == 'ur' %}selected{% endif %}>اردو (Urdu - Right to Left)</option>
+        <option value="sd" {% if settings.get('default_language') == 'sd' %}selected{% endif %}>سنڌي (Sindhi - Right to Left)</option>
+      </select>
+      <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.25rem;">Students and teachers can switch their active language at any time via the top header bar.</small>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 600;">Save School Profile</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<!-- Tab 2: Account Security (Password Rotation) -->
+{% if active_tab == 'security' %}
+<div class="card" style="max-width: 600px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+    <span style="font-size: 1.75rem;">🔑</span>
+    <div>
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-primary);">Teacher Account Security</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.2rem 0 0 0;">Rotate teacher incharge password to safeguard school administrative operations.</p>
+    </div>
+  </div>
+
+  <form action="{{ url_for('teacher.change_password') }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-group mb-3">
+      <label class="form-label" style="font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Username</label>
+      <input type="text" class="form-control" value="{{ session.get('teacher_username', 'teacher') }}" disabled style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-muted); color: var(--text-muted); cursor: not-allowed;">
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="current_password" class="form-label" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; display: block;">Current Password</label>
+      <input type="password" id="current_password" name="current_password" class="form-control" required placeholder="Enter current password" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-app); color: var(--text-primary);">
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="new_password" class="form-label" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; display: block;">New Password</label>
+      <input type="password" id="new_password" name="new_password" class="form-control" required placeholder="Minimum 8 characters" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-app); color: var(--text-primary);">
+      <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.25rem;">Must be at least 8 characters. For strong protection, mix letters, numbers, and symbols.</small>
+    </div>
+
+    <div class="form-group mb-4">
+      <label for="confirm_password" class="form-label" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; display: block;">Confirm New Password</label>
+      <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Repeat new password" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-app); color: var(--text-primary);">
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 600;">Update Password</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<!-- Tab 3: Database Hot Backups -->
+{% if active_tab == 'backup' %}
+<div style="display: flex; flex-direction: column; gap: 1.5rem;">
+  <!-- Create Backup Action Header Card -->
+  <div class="card" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 style="font-size: 1.2rem; font-weight: 700; margin: 0; color: var(--text-primary);">Consistent Live Database Backups</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
+        Uses SQLite Online Hot Backup API (<code class="font-mono">sqlite3.Connection.backup()</code>). Zero downtime, automated SHA-256 checksums, and integrity validation.
+      </p>
+    </div>
+    <form action="{{ url_for('teacher.create_backup') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem; font-weight: 600;">
+        <span>💾</span>
+        <span>Create Live Backup Now</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Backups Catalog Table -->
+  <div class="table-card">
+    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="font-size: 1rem; font-weight: 600; margin: 0; color: var(--text-primary);">Backup Snapshots Catalog</h3>
+      <span class="badge badge-secondary">{{ backups|length }} Snapshots Recorded</span>
+    </div>
+
+    {% if backups %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Backup File</th>
+            <th>File Size</th>
+            <th>SHA-256 Checksum</th>
+            <th>Integrity Status</th>
+            <th>Created By</th>
+            <th>Created At</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bck in backups %}
+          <tr>
+            <td>
+              <span class="font-mono" style="font-weight: 600; color: var(--text-primary);">{{ bck.filename }}</span>
+            </td>
+            <td>
+              {% if bck.file_size_bytes < 1024 %}
+                {{ bck.file_size_bytes }} B
+              {% elif bck.file_size_bytes < 1024 * 1024 %}
+                {{ (bck.file_size_bytes / 1024)|round(1) }} KB
+              {% else %}
+                {{ (bck.file_size_bytes / (1024 * 1024))|round(2) }} MB
+              {% endif %}
+            </td>
+            <td>
+              <span class="font-mono" title="{{ bck.checksum_sha256 }}" style="font-size: 0.8rem; background-color: var(--bg-muted); padding: 0.2rem 0.4rem; border-radius: var(--radius-sm); cursor: help;">
+                {{ bck.checksum_sha256[:12] }}...
+              </span>
+            </td>
+            <td>
+              {% if bck.verification_status == 'VALID' %}
+                <span class="badge badge-success">✓ Verified Valid</span>
+              {% else %}
+                <span class="badge badge-danger">⚠️ {{ bck.verification_status }}</span>
+              {% endif %}
+            </td>
+            <td>{{ bck.creator_name or 'System / Admin' }}</td>
+            <td>{{ bck.created_at }}</td>
+            <td style="text-align: right;">
+              <div class="d-flex gap-2 justify-content-end align-items-center">
+                <a href="{{ url_for('teacher.download_backup', backup_id=bck.id) }}" class="btn btn-outline btn-sm" title="Download backup database file">
+                  📥 Download
+                </a>
+                <form action="{{ url_for('teacher.delete_backup', backup_id=bck.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete backup {{ bck.filename }}?');" style="display: inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-danger btn-sm" title="Delete snapshot">
+                    🗑️
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div style="padding: 3rem 1rem; text-align: center; color: var(--text-muted);">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💾</div>
+      <p style="font-weight: 600; margin: 0;">No backups created yet.</p>
+      <p style="font-size: 0.85rem; margin-top: 0.25rem;">Click "Create Live Backup Now" above to generate your first consistent snapshot.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- CLI Restoration Instructions Card -->
+  <div class="card" style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem;">
+    <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+      <span>🛠️</span> CLI Database Restoration Utility
+    </h3>
+    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+      In the event of hardware failure, power loss, or disaster recovery, use the offline command-line restoration tool located in <code class="font-mono">scripts/restore_backup.py</code>.
+      Every restoration automatically creates an emergency rollback snapshot before touching the live database.
+    </p>
+    <div style="background-color: var(--bg-app); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.75rem 1rem; font-family: monospace; font-size: 0.85rem; color: var(--text-primary); overflow-x: auto;">
+      <div># Restore latest verified backup:</div>
+      <div style="color: var(--primary); font-weight: 600;">python scripts/restore_backup.py --latest</div>
+      <div style="margin-top: 0.5rem;"># Restore a specific snapshot:</div>
+      <div style="color: var(--primary); font-weight: 600;">python scripts/restore_backup.py --file kitab_bank_backup_20261105_120000.db</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tab 4: Exhibition Showcase Mode -->
+{% if active_tab == 'demo' %}
+<div class="card" style="max-width: 760px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+    <span style="font-size: 1.75rem;">✨</span>
+    <div>
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-primary);">Exhibition Showcase Mode</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.2rem 0 0 0;">Instantly resets and seeds realistic curriculum data for school exhibitions, inspections, and live demos.</p>
+    </div>
+  </div>
+
+  <div style="background-color: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.75rem; align-items: flex-start;">
+    <span style="font-size: 1.25rem;">⚠️</span>
+    <div style="font-size: 0.875rem; color: var(--warning-text);">
+      <strong>Exhibition Reset Warning:</strong>
+      This action clears all existing student requests, donations, handovers, and custom books, then immediately repopulates a standardized exhibition dataset. Always create a live backup before running a demo reset.
+    </div>
+  </div>
+
+  <div style="margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Included Exhibition Dataset:</h3>
+    <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+      <li><strong>18 Standard Curriculum Textbooks:</strong> Balanced across Classes 6, 7, and 8 in English, Urdu, and Sindhi.</li>
+      <li><strong>Realistic Circulation Distribution:</strong> 12 Available, 3 Reserved, and 3 Handed Over.</li>
+      <li><strong>Full Donation Queue:</strong> Pending student donation with photo, Approved donation, and Rejected donation with clear feedback.</li>
+      <li><strong>Request Workflow:</strong> Active reserved request ready for physical handover, pending request, and fulfilled requests.</li>
+      <li><strong>Physical Handover Ledger:</strong> Completed handovers with printable receipts (<span class="font-mono">KB-HO-000001</span>, <span class="font-mono">KB-HO-000002</span>).</li>
+      <li><strong>Audit History:</strong> 30 days of teacher logins, catalog updates, approvals, and circulation activity.</li>
+      <li><strong>Execution Speed:</strong> High-performance direct SQL execution in under 500 milliseconds.</li>
+    </ul>
+  </div>
+
+  <form action="{{ url_for('teacher.seed_demo') }}" method="POST" onsubmit="return confirm('CONFIRM RESET: This will replace current data with the standard 18-book exhibition demonstration baseline. Have you taken a backup? Proceed?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
+      <a href="{{ url_for('teacher.settings', tab='backup') }}" class="btn btn-outline">Back Up First</a>
+      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 600; background: linear-gradient(135deg, var(--primary), var(--accent));">
+        🚀 Seed Exhibition Demo Data
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -199,3 +199,35 @@ Uploaded book photographs represent a common attack vector if left unconstrained
 ### 9.4 CSV Injection Mitigation
 - Exported spreadsheets (`/teacher/reports/export/inventory.csv` and `/teacher/reports/export/handovers.csv`) are generated using Python's standard `csv.writer` with strict quoting.
 - Text cells containing potential spreadsheet formula prefixes (`=`, `+`, `-`, `@`) are safely handled to prevent command execution or DDE injection when opened in external spreadsheet software like Excel or LibreOffice Calc.
+
+---
+
+## 10. Multilingual RTL Isolation, Backup Verification & Account Security
+
+### 10.1 Bidirectional Isolation for School Identifiers (Bidi Defense)
+- In Right-to-Left (RTL) writing systems (Urdu and Sindhi), mixed Latin identifiers like `KB-BK-000001`, `KB-REQ-7K9M-2X4P`, and `KB-HO-000001` can suffer from visual reordering, transposition of hyphen segments, or inverted digit sequences if unisolated.
+- Kitab Bank isolates all monospace codes, receipt tokens, and badge text using:
+  ```css
+  direction: ltr !important;
+  display: inline-block;
+  unicode-bidi: isolate;
+  text-align: left;
+  ```
+- This guarantees that identifiers are read and scanned identically across English, Urdu, and Sindhi locales.
+
+### 10.2 CSV Formula Injection Neutralization (`sanitize_csv_cell`)
+- Both `generate_inventory_csv()` and `generate_handovers_csv()` in `app/services/analytics_service.py` apply `sanitize_csv_cell(value)` to every data field before serialization.
+- Any cell value beginning with `=`, `+`, `-`, `@`, `\t`, or `\r` has a single quote `'` prepended, instructing spreadsheet applications (Microsoft Excel, LibreOffice Calc, Google Sheets) to treat the cell strictly as inert plaintext, preventing Dynamic Data Exchange (DDE) exploitation.
+
+### 10.3 Teacher Account Security & Password Rotation
+- The Teacher Settings Desk (`/teacher/settings?tab=security`) provides an authenticated self-service credential rotation interface.
+- Requires:
+  1. Verification of the current password against the stored PBKDF2 hash using constant-time comparison (`check_password_hash`).
+  2. Enforces a minimum password length of 8 characters.
+  3. Strict matching between new password and confirmation fields.
+- Password change events are logged in `activity_logs` without storing the password or hash in the log details.
+
+### 10.4 Live Snapshot Verification & Rollback Defense
+- Backups created via `backup_service.create_database_backup()` are immediately verified using `PRAGMA integrity_check;` and schema inspection.
+- The SHA-256 cryptographic digest is stored in `backup_records`.
+- Before executing any database restoration via `scripts/restore_backup.py` or the web interface, the system creates an automated pre-restore safety copy (`backups/pre_restore_YYYYMMDD_HHMMSS.db`). If any error occurs during restoration, this rollback copy guarantees zero data loss.

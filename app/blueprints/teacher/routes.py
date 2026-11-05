@@ -1,7 +1,7 @@
-from flask import render_template, session, redirect, url_for, flash, request, abort, current_app, Response
+from flask import render_template, session, redirect, url_for, flash, request, abort, current_app, Response, send_from_directory
 from . import teacher_bp
 from app.database import get_db
-from app.services import donation_service, request_service, handover_service, book_service, qr_service, analytics_service, activity_service
+from app.services import donation_service, request_service, handover_service, book_service, qr_service, analytics_service, activity_service, backup_service, settings_service
 
 @teacher_bp.context_processor
 def inject_teacher_globals():
@@ -594,9 +594,130 @@ def activity_logs():
 
 @teacher_bp.route('/settings')
 def settings():
+    """System settings, account security, database live snapshot backups, and exhibition showcase."""
+    active_tab = request.args.get('tab', 'profile').strip().lower()
+    if active_tab not in ('profile', 'security', 'backup', 'demo'):
+        active_tab = 'profile'
+
+    system_settings = settings_service.get_system_settings()
+    backups = backup_service.get_all_backups()
+
     return render_template(
-        'student/placeholder.html',
-        title="System Settings & Database Backup",
-        icon="⚙️",
-        description="School profile management and one-click SQLite live snapshot backup will be implemented in Phase 8."
+        'teacher/settings.html',
+        settings=system_settings,
+        backups=backups,
+        active_tab=active_tab
     )
+
+@teacher_bp.route('/settings/profile', methods=['POST'])
+def update_profile_settings():
+    """Update school name, academic year, and default language."""
+    school_name = request.form.get('school_name', '').strip()
+    academic_year = request.form.get('academic_year', '').strip()
+    default_language = request.form.get('default_language', 'en').strip()
+
+    success, error = settings_service.update_school_profile(
+        school_name=school_name,
+        academic_year=academic_year,
+        default_language=default_language,
+        updated_by_id=session.get('teacher_id'),
+        updated_by_name=session.get('teacher_name')
+    )
+
+    if success:
+        flash("School profile and system preferences updated successfully.", "success")
+    else:
+        flash(f"Error updating settings: {error}", "danger")
+
+    return redirect(url_for('teacher.settings', tab='profile'))
+
+@teacher_bp.route('/settings/password', methods=['POST'])
+def change_password():
+    """Update teacher account password."""
+    current_password = request.form.get('current_password', '')
+    new_password = request.form.get('new_password', '')
+    confirm_password = request.form.get('confirm_password', '')
+
+    success, error = settings_service.change_teacher_password(
+        teacher_id=session.get('teacher_id'),
+        current_password=current_password,
+        new_password=new_password,
+        confirm_password=confirm_password,
+        teacher_name=session.get('teacher_name')
+    )
+
+    if success:
+        flash("Your password has been changed successfully. Please remember your new password.", "success")
+    else:
+        flash(f"Password change failed: {error}", "danger")
+
+    return redirect(url_for('teacher.settings', tab='security'))
+
+@teacher_bp.route('/settings/backup/create', methods=['POST'])
+def create_backup():
+    """Generate live snapshot database backup with SHA-256 and integrity check."""
+    success, record, error = backup_service.create_database_backup(
+        created_by_id=session.get('teacher_id'),
+        teacher_name=session.get('teacher_name')
+    )
+
+    if success:
+        flash(f"Live database backup created successfully: {record['filename']} ({record['file_size_bytes']} bytes, SHA-256 verified).", "success")
+    else:
+        flash(f"Backup creation failed: {error}", "danger")
+
+    return redirect(url_for('teacher.settings', tab='backup'))
+
+@teacher_bp.route('/settings/backup/<int:backup_id>/download')
+def download_backup(backup_id):
+    """Download database backup snapshot file."""
+    record = backup_service.get_backup_by_id(backup_id)
+    if not record:
+        abort(404, description="Backup file not found.")
+
+    bck_dir = backup_service.get_backups_dir()
+    filepath = bck_dir / record['filename']
+    if not filepath.exists():
+        abort(404, description="Backup file is missing on server disk.")
+
+    return send_from_directory(str(bck_dir), record['filename'], as_attachment=True)
+
+@teacher_bp.route('/settings/backup/<int:backup_id>/delete', methods=['POST'])
+def delete_backup(backup_id):
+    """Delete a backup snapshot from disk and catalog."""
+    success, error = backup_service.delete_backup(
+        backup_id=backup_id,
+        teacher_id=session.get('teacher_id'),
+        teacher_name=session.get('teacher_name')
+    )
+
+    if success:
+        flash("Backup deleted successfully.", "success")
+    else:
+        flash(f"Failed to delete backup: {error}", "danger")
+
+    return redirect(url_for('teacher.settings', tab='backup'))
+
+@teacher_bp.route('/settings/seed-demo', methods=['POST'])
+def seed_demo():
+    """Reset database and seed realistic exhibition showcase data."""
+    try:
+        from scripts.seed_demo import reset_and_seed_demo_data
+        target_db = current_app.config.get('DATABASE_PATH')
+        reset_and_seed_demo_data(target_db=target_db)
+
+        # Audit log
+        activity_service.record_activity(
+            action='exhibition_demo_reset',
+            entity_type='system',
+            entity_id=None,
+            actor_type='teacher',
+            actor_name=session.get('teacher_name', 'Teacher'),
+            details="Exhibition demo data reseeded successfully (18 textbooks, donations, requests & handovers)."
+        )
+
+        flash("Exhibition Demo Mode activated! 18 textbooks across Classes 6–8 and realistic circulation records populated.", "success")
+    except Exception as e:
+        flash(f"Exhibition reset failed: {str(e)}", "danger")
+
+    return redirect(url_for('teacher.settings', tab='demo'))

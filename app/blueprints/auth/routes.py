@@ -37,8 +37,11 @@ def login():
         teacher = cur.fetchone()
 
         if teacher and teacher['is_active'] and check_password_hash(teacher['password_hash'], password):
-            # Establish authenticated session
+            # Establish authenticated session while preserving language preference
+            saved_lang = session.get('lang')
             session.clear()
+            if saved_lang:
+                session['lang'] = saved_lang
             session['teacher_id'] = teacher['id']
             session['teacher_username'] = teacher['username']
             session['teacher_name'] = teacher['full_name']

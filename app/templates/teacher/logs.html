@@ -1,115 +1,140 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}System Activity Logs - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
-<div class="dashboard-header">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
-    <h1 class="dashboard-title">System Activity Logs & Audit Trail</h1>
-    <p class="dashboard-subtitle">Immutable records of book circulation, staff actions, and student requests.</p>
+    <h1 class="h3 fw-bold text-body mb-1">
+      {{ icon('clock-rotate-left', extra_class='text-primary me-2') }}System Activity Logs &amp; Audit Trail
+    </h1>
+    <p class="text-body-secondary mb-0 small">
+      Immutable records of book circulation, staff actions, and student requests.
+    </p>
   </div>
   <div>
-    <span class="badge badge-success">Audit Logging Active</span>
+    <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1 py-2 px-3">
+      {{ icon('shield-halved', extra_class='small') }}
+      <span>Audit Logging Active</span>
+    </span>
   </div>
 </div>
 
 <!-- Filters Card -->
-<div class="card mb-4" style="padding: 1.25rem;">
-  <form method="GET" action="{{ url_for('teacher.activity_logs') }}" class="d-flex gap-2 flex-wrap align-items-center">
-    <div style="flex: 2; min-width: 200px;">
-      <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by description or actor name...">
-    </div>
+<div class="card border mb-4 shadow-sm">
+  <div class="card-body p-3">
+    <form method="GET" action="{{ url_for('teacher.activity_logs') }}" class="row g-2 align-items-center">
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-body-tertiary border-end-0">
+            {{ icon('magnifying-glass', extra_class='text-body-secondary') }}
+          </span>
+          <input type="search" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search by description or actor name...">
+        </div>
+      </div>
 
-    <div style="flex: 1; min-width: 160px;">
-      <select name="action" class="form-control">
-        <option value="">All Actions</option>
-        {% for act in distinct_actions %}
-          <option value="{{ act }}" {% if action_filter == act %}selected{% endif %}>
-            {{ act.replace('_', ' ').capitalize() }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+      <div class="col-6 col-md-2">
+        <select name="action" class="form-select">
+          <option value="">All Actions</option>
+          {% for act in distinct_actions %}
+            <option value="{{ act }}" {% if action_filter == act %}selected{% endif %}>
+              {{ act.replace('_', ' ').capitalize() }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <div style="flex: 1; min-width: 140px;">
-      <select name="actor_type" class="form-control">
-        <option value="">All Actors</option>
-        {% for at in distinct_actors %}
-          <option value="{{ at }}" {% if actor_filter == at %}selected{% endif %}>
-            {{ at.capitalize() }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+      <div class="col-6 col-md-2">
+        <select name="actor_type" class="form-select">
+          <option value="">All Actors</option>
+          {% for at in distinct_actors %}
+            <option value="{{ at }}" {% if actor_filter == at %}selected{% endif %}>
+              {{ at.capitalize() }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <div style="display: flex; gap: 0.5rem; align-items: center;">
-      <input type="date" name="date_from" value="{{ date_from }}" class="form-control" style="width: 140px;" title="Date From">
-      <span style="color: var(--text-muted);">-</span>
-      <input type="date" name="date_to" value="{{ date_to }}" class="form-control" style="width: 140px;" title="Date To">
-    </div>
+      <div class="col-12 col-md-2">
+        <div class="input-group input-group-sm">
+          <input type="date" name="date_from" value="{{ date_from }}" class="form-control" title="Date From">
+          <span class="input-group-text">-</span>
+          <input type="date" name="date_to" value="{{ date_to }}" class="form-control" title="Date To">
+        </div>
+      </div>
 
-    <div>
-      <button type="submit" class="btn btn-primary">Filter</button>
-      {% if search_query or action_filter or actor_filter or date_from or date_to %}
-        <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-outline">Reset</a>
-      {% endif %}
-    </div>
-  </form>
+      <div class="col-12 col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1">
+          {{ icon('filter') }}
+          <span>Filter</span>
+        </button>
+        {% if search_query or action_filter or actor_filter or date_from or date_to %}
+          <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
+            {{ icon('rotate-left') }}
+            <span>Reset</span>
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Logs Table Card -->
-<div class="table-card">
+<div class="card border shadow-sm mb-4">
   <div class="table-responsive">
-    <table class="data-table">
-      <thead>
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
         <tr>
-          <th style="width: 170px;">Timestamp</th>
-          <th style="width: 180px;">Action</th>
-          <th style="width: 130px;">Entity</th>
-          <th style="width: 160px;">Actor</th>
-          <th>Details</th>
+          <th scope="col" style="min-width: 160px;">Timestamp</th>
+          <th scope="col" style="min-width: 160px;">Action</th>
+          <th scope="col" style="min-width: 120px;">Entity</th>
+          <th scope="col" style="min-width: 150px;">Actor</th>
+          <th scope="col" style="min-width: 250px;">Details</th>
         </tr>
       </thead>
       <tbody>
         {% for log in logs %}
         <tr>
-          <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; font-family: monospace;">
-            {{ log.created_at }}
+          <td class="small text-body-secondary text-nowrap">
+            <code class="kb-code small text-body-secondary">{{ log.created_at }}</code>
           </td>
           <td>
-            <span class="activity-badge
-              {% if 'donation' in log.action %}badge-act-donation
-              {% elif 'request' in log.action %}badge-act-request
-              {% elif 'handover' in log.action %}badge-act-handover
-              {% elif 'book' in log.action %}badge-act-book
-              {% elif 'login' in log.action or 'logout' in log.action %}badge-act-auth
-              {% else %}badge-act-default{% endif %}">
+            <span class="badge
+              {% if 'donation' in log.action %}bg-warning-subtle text-warning-emphasis border border-warning-subtle
+              {% elif 'request' in log.action %}bg-info-subtle text-info-emphasis border border-info-subtle
+              {% elif 'handover' in log.action %}bg-success-subtle text-success border border-success-subtle
+              {% elif 'book' in log.action %}bg-primary-subtle text-primary border border-primary-subtle
+              {% elif 'login' in log.action or 'logout' in log.action %}bg-secondary-subtle text-secondary border border-secondary-subtle
+              {% else %}bg-light text-dark border{% endif %}">
               {{ log.action.replace('_', ' ') }}
             </span>
           </td>
           <td>
-            <span class="badge badge-outline">
+            <span class="badge bg-body-secondary text-body border">
               {{ log.entity_type }}{% if log.entity_id %} #{{ log.entity_id }}{% endif %}
             </span>
           </td>
           <td>
-            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">
+            <div class="fw-semibold text-body small">
               {{ log.actor_name or 'System' }}
             </div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">
+            <div class="small text-body-tertiary">
               {{ log.actor_type.capitalize() }}
             </div>
           </td>
-          <td style="font-size: 0.875rem; color: var(--text-primary); line-height: 1.4;">
+          <td class="small text-body leading-normal">
             {{ log.details }}
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📜</div>
-            <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">No log entries found</div>
-            <p>Try adjusting your search filters.</p>
+          <td colspan="5" class="text-center py-5 text-body-secondary">
+            <div class="display-6 mb-3 text-body-tertiary">
+              {{ icon('scroll', extra_class='text-body-tertiary') }}
+            </div>
+            <h4 class="h5 fw-bold text-body mb-2">No log entries found</h4>
+            <p class="small text-body-secondary mb-0">Try adjusting your search filters.</p>
           </td>
         </tr>
         {% endfor %}
@@ -118,19 +143,22 @@
   </div>
 
   <!-- Pagination / Summary -->
-  <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
+  <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
       Showing <strong>{{ logs|length }}</strong> of <strong>{{ total_count }}</strong> activity records
     </div>
     {% if total_pages > 1 %}
-    <div class="d-flex gap-1">
-      {% for p in range(1, total_pages + 1) %}
-        <a href="{{ url_for('teacher.activity_logs', page=p, action=action_filter, actor_type=actor_filter, q=search_query, date_from=date_from, date_to=date_to) }}"
-           class="btn btn-sm {% if p == current_page %}btn-primary{% else %}btn-outline{% endif %}" style="padding: 0.25rem 0.65rem;">
-          {{ p }}
-        </a>
-      {% endfor %}
-    </div>
+    <nav aria-label="Activity logs pagination">
+      <ul class="pagination pagination-sm mb-0">
+        {% for p in range(1, total_pages + 1) %}
+          <li class="page-item {% if p == current_page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('teacher.activity_logs', page=p, action=action_filter, actor_type=actor_filter, q=search_query, date_from=date_from, date_to=date_to) }}">
+              {{ p }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
     {% endif %}
   </div>
 </div>

@@ -1,138 +1,176 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Reports & Analytics - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
 <!-- Reports Header -->
-<div class="dashboard-header">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
-    <h1 class="dashboard-title">Library Reports & Statistical Analytics</h1>
-    <p class="dashboard-subtitle">Official circulation metrics, class distribution, and administrative summaries.</p>
+    <h1 class="h3 fw-bold text-body mb-1">
+      {{ icon('chart-pie', extra_class='text-primary me-2') }}Library Reports &amp; Statistical Analytics
+    </h1>
+    <p class="text-body-secondary mb-0 small">
+      Official circulation metrics, class distribution, and administrative summaries.
+    </p>
   </div>
   <div class="d-flex gap-2 align-items-center no-print flex-wrap">
-    <button type="button" class="btn btn-outline" onclick="window.print();">🖨️ Print Report</button>
-    <a href="{{ url_for('teacher.export_inventory_csv') }}" class="btn btn-outline">📥 Export Inventory CSV</a>
-    <a href="{{ url_for('teacher.export_handovers_csv') }}" class="btn btn-primary">📥 Export Handovers CSV</a>
+    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" onclick="window.print();">
+      {{ icon('print') }}
+      <span>Print Report</span>
+    </button>
+    <a href="{{ url_for('teacher.export_inventory_csv') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+      {{ icon('file-csv') }}
+      <span>Export Inventory CSV</span>
+    </a>
+    <a href="{{ url_for('teacher.export_handovers_csv') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+      {{ icon('file-arrow-down') }}
+      <span>Export Handovers CSV</span>
+    </a>
   </div>
 </div>
 
 <!-- Print-Only School Header -->
-<div class="d-none" style="display: none;" id="printHeader">
-  <div style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #000; padding-bottom: 1rem;">
-    <h2 style="margin: 0; font-size: 1.5rem;">KITAAB BANK - SMART SCHOOL BOOK EXCHANGE</h2>
-    <h3 style="margin: 0.25rem 0; font-size: 1.15rem; color: #444;">{{ school_name }}</h3>
-    <div style="font-size: 0.85rem; color: #666;">Official Library Circulation & Statistical Report</div>
+<div class="d-none" id="printHeader">
+  <div class="text-center mb-4 border-bottom border-dark pb-3">
+    <h2 class="h4 fw-bold mb-1">KITAAB BANK - SMART SCHOOL BOOK EXCHANGE</h2>
+    <h3 class="h6 text-secondary mb-1">{{ school_name }}</h3>
+    <div class="small text-muted">Official Library Circulation &amp; Statistical Report</div>
   </div>
 </div>
 
 <!-- Summary KPI Cards -->
-<div class="dashboard-metrics" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Total Books</span>
-      <div class="metric-icon">📚</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card border shadow-sm h-100">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="small text-body-secondary fw-semibold">Total Books</span>
+          <span class="text-primary fs-5">{{ icon('book') }}</span>
+        </div>
+        <div class="h3 fw-bold text-body mb-1">{{ report.summary.total_inventory }}</div>
+        <div class="small text-body-tertiary fs-8">Catalogued in library</div>
+      </div>
     </div>
-    <div class="metric-value">{{ report.summary.total_inventory }}</div>
-    <div class="metric-footer">Catalogued in library</div>
   </div>
 
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Available Books</span>
-      <div class="metric-icon" style="background-color: var(--success-bg); color: var(--success);">🟢</div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card border shadow-sm h-100">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="small text-body-secondary fw-semibold">Available</span>
+          <span class="text-success fs-5">{{ icon('circle-check') }}</span>
+        </div>
+        <div class="h3 fw-bold text-body mb-1">{{ report.summary.available_books }}</div>
+        <div class="small text-body-tertiary fs-8">Ready for allocation</div>
+      </div>
     </div>
-    <div class="metric-value">{{ report.summary.available_books }}</div>
-    <div class="metric-footer">Ready for allocation</div>
   </div>
 
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Active Reservations</span>
-      <div class="metric-icon" style="background-color: var(--warning-bg); color: var(--warning);">🔒</div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card border shadow-sm h-100">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="small text-body-secondary fw-semibold">Reserved</span>
+          <span class="text-warning fs-5">{{ icon('lock') }}</span>
+        </div>
+        <div class="h3 fw-bold text-body mb-1">{{ report.summary.reserved_books }}</div>
+        <div class="small text-body-tertiary fs-8">Awaiting student pickup</div>
+      </div>
     </div>
-    <div class="metric-value">{{ report.summary.reserved_books }}</div>
-    <div class="metric-footer">Awaiting student pickup</div>
   </div>
 
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Total Handovers</span>
-      <div class="metric-icon" style="background-color: var(--primary-light); color: var(--primary);">🤝</div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card border shadow-sm h-100">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="small text-body-secondary fw-semibold">Handovers</span>
+          <span class="text-info fs-5">{{ icon('handshake') }}</span>
+        </div>
+        <div class="h3 fw-bold text-body mb-1">{{ report.summary.completed_handovers }}</div>
+        <div class="small text-body-tertiary fs-8">Reused textbook transfers</div>
+      </div>
     </div>
-    <div class="metric-value">{{ report.summary.completed_handovers }}</div>
-    <div class="metric-footer">Reused textbook transfers</div>
   </div>
 
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Reuse Rate</span>
-      <div class="metric-icon">📈</div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card border shadow-sm h-100">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="small text-body-secondary fw-semibold">Reuse Rate</span>
+          <span class="text-primary fs-5">{{ icon('chart-line') }}</span>
+        </div>
+        <div class="h3 fw-bold text-body mb-1">{{ report.summary.reuse_rate }}%</div>
+        <div class="small text-body-tertiary fs-8">Circulation efficiency</div>
+      </div>
     </div>
-    <div class="metric-value">{{ report.summary.reuse_rate }}%</div>
-    <div class="metric-footer">Circulation efficiency</div>
   </div>
 
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Students Benefited</span>
-      <div class="metric-icon">👥</div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card border shadow-sm h-100">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="small text-body-secondary fw-semibold">Beneficiaries</span>
+          <span class="text-success fs-5">{{ icon('graduation-cap') }}</span>
+        </div>
+        <div class="h3 fw-bold text-body mb-1">{{ report.summary.unique_recipients }}</div>
+        <div class="small text-body-tertiary fs-8">Unique students</div>
+      </div>
     </div>
-    <div class="metric-value">{{ report.summary.unique_recipients }}</div>
-    <div class="metric-footer">Unique student recipients</div>
   </div>
 </div>
 
 <!-- Class-wise Cross-Tabulation Matrix -->
-<div class="table-card mb-4">
-  <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+<div class="card border shadow-sm mb-4">
+  <div class="card-header bg-body-tertiary py-3 px-4 d-flex justify-content-between align-items-center">
     <div>
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-        🏫 Class-wise Circulation Matrix
+      <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+        {{ icon('school', extra_class='text-primary') }}Class-wise Circulation Matrix
       </h2>
-      <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+      <div class="small text-body-secondary mt-1">
         Detailed breakdown by middle school grade levels.
       </div>
     </div>
-    <span class="badge badge-primary">Grades 6–8</span>
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Grades 6–8</span>
   </div>
 
   <div class="table-responsive">
-    <table class="data-table">
-      <thead>
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
         <tr>
-          <th>Class Level</th>
-          <th style="text-align: center;">Total Books</th>
-          <th style="text-align: center;">Available</th>
-          <th style="text-align: center;">Reserved</th>
-          <th style="text-align: center;">Handed Over</th>
-          <th style="text-align: center;">Circulation Share</th>
-          <th style="width: 250px;">Distribution Meter</th>
+          <th scope="col">Class Level</th>
+          <th scope="col" class="text-center">Total Books</th>
+          <th scope="col" class="text-center">Available</th>
+          <th scope="col" class="text-center">Reserved</th>
+          <th scope="col" class="text-center">Handed Over</th>
+          <th scope="col" class="text-center">Circulation Share</th>
+          <th scope="col" style="min-width: 180px;">Distribution Meter</th>
         </tr>
       </thead>
       <tbody>
         {% for cls in report.class_distribution %}
         <tr>
-          <td style="font-weight: 700; color: var(--text-primary);">
+          <td class="fw-bold text-body">
             {{ cls.class_grade }}
           </td>
-          <td style="text-align: center; font-weight: 600;">
+          <td class="text-center fw-semibold">
             {{ cls.total }}
           </td>
-          <td style="text-align: center;">
-            <span class="badge badge-success">{{ cls.available }}</span>
+          <td class="text-center">
+            <span class="badge bg-success-subtle text-success border border-success-subtle">{{ cls.available }}</span>
           </td>
-          <td style="text-align: center;">
-            <span class="badge badge-warning">{{ cls.reserved }}</span>
+          <td class="text-center">
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ cls.reserved }}</span>
           </td>
-          <td style="text-align: center;">
-            <span class="badge badge-primary">{{ cls.handed_over }}</span>
+          <td class="text-center">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ cls.handed_over }}</span>
           </td>
-          <td style="text-align: center; font-weight: 600;">
+          <td class="text-center fw-semibold">
             {{ cls.percentage }}%
           </td>
           <td>
-            <div class="meter-track" style="height: 12px;">
-              <div class="meter-fill fill-primary" style="width: {{ cls.percentage }}%;"></div>
+            <div class="progress" style="height: 10px;" role="progressbar" aria-valuenow="{{ cls.percentage }}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar bg-primary" style="width: {{ cls.percentage }}%;"></div>
             </div>
           </td>
         </tr>
@@ -143,38 +181,128 @@
 </div>
 
 <!-- Two-Column Breakdown: Subjects & Language/Condition -->
-<div class="analytics-grid-two">
+<div class="row g-4 mb-4">
   <!-- Subject-wise Circulation Matrix -->
-  <div class="table-card">
-    <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-        📖 Subject Inventory Spread
-      </h2>
+  <div class="col-12 col-lg-6">
+    <div class="card border shadow-sm h-100">
+      <div class="card-header bg-body-tertiary py-3 px-4">
+        <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+          {{ icon('book-bookmark', extra_class='text-primary') }}Subject Inventory Spread
+        </h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Subject</th>
+              <th scope="col" class="text-center">Total</th>
+              <th scope="col" class="text-center">Available</th>
+              <th scope="col" class="text-center">Reused</th>
+              <th scope="col" style="min-width: 140px;">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sb in report.subject_distribution %}
+            <tr>
+              <td class="fw-semibold text-body">{{ sb.subject }}</td>
+              <td class="text-center">{{ sb.total }}</td>
+              <td class="text-center"><span class="badge bg-success-subtle text-success border border-success-subtle">{{ sb.available }}</span></td>
+              <td class="text-center"><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ sb.handed_over }}</span></td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height: 8px;" role="progressbar" aria-valuenow="{{ sb.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-info" style="width: {{ sb.percentage }}%;"></div>
+                  </div>
+                  <span class="small text-body-secondary" style="min-width: 35px;">{{ sb.percentage }}%</span>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
+
+  <!-- Language & Condition Matrix -->
+  <div class="col-12 col-lg-6">
+    <div class="d-flex flex-column gap-4 h-100">
+      <!-- Language Distribution Card -->
+      <div class="card border shadow-sm flex-fill">
+        <div class="card-header bg-body-tertiary py-3 px-4">
+          <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+            {{ icon('language', extra_class='text-primary') }}Language Distribution
+          </h2>
+        </div>
+        <div class="card-body p-4 d-flex flex-column gap-3">
+          {% for lang in report.languages %}
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1 small">
+              <span class="fw-semibold text-body">{{ lang.language }}</span>
+              <span class="text-body-secondary"><strong>{{ lang.count }}</strong> books ({{ lang.percentage }}%)</span>
+            </div>
+            <div class="progress" style="height: 8px;" role="progressbar" aria-valuenow="{{ lang.percentage }}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar bg-primary" style="width: {{ lang.percentage }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Condition Assessment Card -->
+      <div class="card border shadow-sm flex-fill">
+        <div class="card-header bg-body-tertiary py-3 px-4">
+          <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+            {{ icon('clipboard-check', extra_class='text-primary') }}Physical Condition Assessment
+          </h2>
+        </div>
+        <div class="card-body p-4 d-flex flex-column gap-3">
+          {% for cond in report.conditions %}
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1 small">
+              <span class="badge {% if cond.condition == 'Like New' %}bg-success-subtle text-success border border-success-subtle{% elif cond.condition == 'Good' %}bg-info-subtle text-info-emphasis border border-info-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}">
+                {{ cond.condition }}
+              </span>
+              <span class="text-body-secondary"><strong>{{ cond.count }}</strong> books ({{ cond.percentage }}%)</span>
+            </div>
+            <div class="progress" style="height: 8px;" role="progressbar" aria-valuenow="{{ cond.percentage }}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar {% if cond.condition == 'Like New' %}bg-success{% elif cond.condition == 'Good' %}bg-info{% else %}bg-warning{% endif %}" style="width: {{ cond.percentage }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Historical / Monthly Trends Card -->
+<div class="card border shadow-sm mb-4">
+  <div class="card-header bg-body-tertiary py-3 px-4">
+    <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+      {{ icon('calendar-days', extra_class='text-primary') }}Historical Circulation Summary
+    </h2>
+  </div>
+
+  <div class="card-body p-0">
+    {% if report.monthly_handovers %}
     <div class="table-responsive">
-      <table class="data-table">
-        <thead>
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
           <tr>
-            <th>Subject</th>
-            <th style="text-align: center;">Total</th>
-            <th style="text-align: center;">Available</th>
-            <th style="text-align: center;">Reused</th>
-            <th style="width: 120px;">Share</th>
+            <th scope="col">Month</th>
+            <th scope="col">Completed Handovers</th>
+            <th scope="col" style="min-width: 200px;">Relative Volume</th>
           </tr>
         </thead>
         <tbody>
-          {% for sb in report.subject_distribution %}
+          {% for mh in report.monthly_handovers %}
           <tr>
-            <td style="font-weight: 600;">{{ sb.subject }}</td>
-            <td style="text-align: center;">{{ sb.total }}</td>
-            <td style="text-align: center;"><span class="badge badge-success">{{ sb.available }}</span></td>
-            <td style="text-align: center;"><span class="badge badge-primary">{{ sb.handed_over }}</span></td>
+            <td class="fw-semibold text-body">{{ mh.month }}</td>
+            <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ mh.count }} handovers</span></td>
             <td>
-              <div class="d-flex align-items-center gap-2">
-                <div class="meter-track" style="height: 8px; flex: 1;">
-                  <div class="meter-fill fill-info" style="width: {{ sb.percentage }}%;"></div>
-                </div>
-                <span style="font-size: 0.75rem; color: var(--text-muted); min-width: 35px;">{{ sb.percentage }}%</span>
+              <div class="progress" style="height: 8px; max-width: 320px;" role="progressbar" aria-valuenow="{{ (mh.count / report.summary.completed_handovers * 100)|round(1) if report.summary.completed_handovers > 0 else 0 }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar bg-success" style="width: {{ (mh.count / report.summary.completed_handovers * 100)|round(1) if report.summary.completed_handovers > 0 else 0 }}%;"></div>
               </div>
             </td>
           </tr>
@@ -182,96 +310,11 @@
         </tbody>
       </table>
     </div>
-  </div>
-
-  <!-- Language & Condition Matrix -->
-  <div class="d-flex flex-column gap-3">
-    <!-- Language Distribution -->
-    <div class="card">
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
-        🌐 Language Distribution
-      </h2>
-      <div class="meter-list">
-        {% for lang in report.languages %}
-        <div class="meter-item">
-          <div class="meter-header">
-            <span class="meter-label">{{ lang.language }}</span>
-            <span class="meter-stats"><strong>{{ lang.count }}</strong> books ({{ lang.percentage }}%)</span>
-          </div>
-          <div class="meter-track">
-            <div class="meter-fill fill-primary" style="width: {{ lang.percentage }}%;"></div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+    {% else %}
+    <div class="p-4 text-center text-body-secondary small">
+      No completed handovers recorded in past months yet.
     </div>
-
-    <!-- Condition Assessment -->
-    <div class="card">
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
-        🩺 Physical Condition Assessment
-      </h2>
-      <div class="meter-list">
-        {% for cond in report.conditions %}
-        <div class="meter-item">
-          <div class="meter-header">
-            <span class="meter-label">
-              <span class="badge
-                {% if cond.condition == 'Like New' %}badge-success
-                {% elif cond.condition == 'Good' %}badge-primary
-                {% else %}badge-warning{% endif %}">
-                {{ cond.condition }}
-              </span>
-            </span>
-            <span class="meter-stats"><strong>{{ cond.count }}</strong> books ({{ cond.percentage }}%)</span>
-          </div>
-          <div class="meter-track">
-            <div class="meter-fill
-              {% if cond.condition == 'Like New' %}fill-success
-              {% elif cond.condition == 'Good' %}fill-primary
-              {% else %}fill-warning{% endif %}"
-              style="width: {{ cond.percentage }}%;"></div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
+    {% endif %}
   </div>
-</div>
-
-<!-- Historical / Monthly Trends -->
-<div class="card" style="margin-top: 1.5rem;">
-  <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
-    📅 Historical Circulation Summary
-  </h2>
-
-  {% if report.monthly_handovers %}
-  <div class="table-responsive">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Month</th>
-          <th>Completed Handovers</th>
-          <th>Relative Volume</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for mh in report.monthly_handovers %}
-        <tr>
-          <td style="font-weight: 600;">{{ mh.month }}</td>
-          <td><span class="badge badge-primary">{{ mh.count }} handovers</span></td>
-          <td>
-            <div class="meter-track" style="height: 10px; max-width: 300px;">
-              <div class="meter-fill fill-success" style="width: {{ (mh.count / report.summary.completed_handovers * 100)|round(1) if report.summary.completed_handovers > 0 else 0 }}%;"></div>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <p class="text-secondary" style="margin: 0;">No completed handovers recorded in past months yet.</p>
-  {% endif %}
 </div>
 {% endblock %}

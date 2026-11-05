@@ -1,4 +1,5 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Bulk QR Label Printing Sheet - Teacher Desk{% endblock %}
 
@@ -6,95 +7,106 @@
 <!-- Controls & Filter Toolbar (Hidden on Print) -->
 <div class="no-print">
   <!-- Breadcrumb -->
-  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
-    <span> / </span>
-    <span style="color: var(--text-primary); font-weight: 600;">QR Label Center</span>
-  </div>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+      <li class="breadcrumb-item active" aria-current="page">QR Label Center</li>
+    </ol>
+  </nav>
 
   <!-- Header -->
-  <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-      <h1 class="dashboard-title">🏷️ Physical Textbook QR Label Sheet</h1>
-      <p class="dashboard-subtitle">
+      <h1 class="h3 fw-bold text-body mb-1">
+        {{ icon('qrcode', extra_class='text-primary me-2') }}Physical Textbook QR Label Sheet
+      </h1>
+      <p class="text-body-secondary mb-0 small">
         Generate and print high-contrast adhesive sticker sheets for physical textbook labeling. Formatted for standard A4 paper.
       </p>
     </div>
 
-    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-      <button type="button" onclick="window.print()" class="btn btn-primary" style="padding: 0.65rem 1.75rem; font-weight: 700; font-size: 1rem;">
-        <span>🖨️</span>
+    <div>
+      <button type="button" onclick="window.print()" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2 fw-bold">
+        {{ icon('print') }}
         <span>Print Sheet (A4)</span>
       </button>
     </div>
   </div>
 
-  <!-- Filter & Search Toolbar -->
-  <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
-    <form method="GET" action="{{ url_for('teacher.qr_sheet') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
-      
-      <!-- Class Filter -->
-      <div style="min-width: 140px;">
-        <label for="class_grade" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">CLASS LEVEL</label>
-        <select name="class_grade" id="class_grade" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
-          <option value="">All Classes</option>
-          {% for c in filter_options.classes %}
-          <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
+  <!-- Filter & Search Toolbar Card -->
+  <div class="card border shadow-sm mb-4">
+    <div class="card-body p-3 p-md-4">
+      <form method="GET" action="{{ url_for('teacher.qr_sheet') }}" class="row g-2 align-items-end">
+        
+        <!-- Class Filter -->
+        <div class="col-6 col-sm-3 col-lg-2">
+          <label for="class_grade" class="form-label small fw-semibold text-body mb-1">CLASS LEVEL</label>
+          <select name="class_grade" id="class_grade" class="form-select form-select-sm">
+            <option value="">All Classes</option>
+            {% for c in filter_options.classes %}
+            <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Subject Filter -->
+        <div class="col-6 col-sm-3 col-lg-2">
+          <label for="subject" class="form-label small fw-semibold text-body mb-1">SUBJECT</label>
+          <select name="subject" id="subject" class="form-select form-select-sm">
+            <option value="">All Subjects</option>
+            {% for s in filter_options.subjects %}
+            <option value="{{ s }}" {% if selected_subject == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="col-6 col-sm-3 col-lg-2">
+          <label for="status" class="form-label small fw-semibold text-body mb-1">STATUS</label>
+          <select name="status" id="status" class="form-select form-select-sm">
+            <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All Inventory</option>
+            <option value="available" {% if selected_status == 'available' or not selected_status %}selected{% endif %}>Available Only</option>
+            <option value="reserved" {% if selected_status == 'reserved' %}selected{% endif %}>Reserved</option>
+            <option value="handed_over" {% if selected_status == 'handed_over' %}selected{% endif %}>Handed Over</option>
+          </select>
+        </div>
+
+        <!-- Search Query -->
+        <div class="col-6 col-sm-3 col-lg-3">
+          <label for="q" class="form-label small fw-semibold text-body mb-1">SEARCH</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-body-tertiary border-end-0">
+              {{ icon('magnifying-glass', extra_class='text-body-secondary') }}
+            </span>
+            <input 
+              type="search" 
+              name="q" 
+              id="q" 
+              class="form-control border-start-0" 
+              placeholder="Title, author, or book code..." 
+              value="{{ search_query }}"
+            >
+          </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="col-12 col-lg-3 d-flex gap-2">
+          <button type="submit" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1">
+            {{ icon('filter') }}
+            <span>Filter</span>
+          </button>
+          <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+            {{ icon('rotate-left') }}
+            <span>Reset</span>
+          </a>
+        </div>
+
+      </form>
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 mt-3 border-top small text-body-secondary">
+        <span>Displaying <strong>{{ books|length }}</strong> labels ready for printing.</span>
+        <span class="text-body-tertiary">Tip: In the print dialog, set margins to "None" or "Minimum" for exact alignment.</span>
       </div>
-
-      <!-- Subject Filter -->
-      <div style="min-width: 150px;">
-        <label for="subject" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">SUBJECT</label>
-        <select name="subject" id="subject" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
-          <option value="">All Subjects</option>
-          {% for s in filter_options.subjects %}
-          <option value="{{ s }}" {% if selected_subject == s %}selected{% endif %}>{{ s }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Status Filter -->
-      <div style="min-width: 140px;">
-        <label for="status" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">STATUS</label>
-        <select name="status" id="status" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
-          <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All Inventory</option>
-          <option value="available" {% if selected_status == 'available' or not selected_status %}selected{% endif %}>Available Only</option>
-          <option value="reserved" {% if selected_status == 'reserved' %}selected{% endif %}>Reserved</option>
-          <option value="handed_over" {% if selected_status == 'handed_over' %}selected{% endif %}>Handed Over</option>
-        </select>
-      </div>
-
-      <!-- Search Query -->
-      <div style="flex: 1; min-width: 180px;">
-        <label for="q" class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">SEARCH</label>
-        <input 
-          type="text" 
-          name="q" 
-          id="q" 
-          class="form-control" 
-          placeholder="Title, author, or book code..." 
-          value="{{ search_query }}"
-          style="padding: 0.5rem 0.75rem; font-size: 0.9rem;"
-        >
-      </div>
-
-      <!-- Filter Buttons -->
-      <div style="display: flex; gap: 0.5rem;">
-        <button type="submit" class="btn btn-primary" style="padding: 0.55rem 1.25rem;">
-          Filter
-        </button>
-        <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-outline" style="padding: 0.55rem 1rem;">
-          Reset
-        </a>
-      </div>
-
-    </form>
-
-    <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-      <span>Displaying <strong>{{ books|length }}</strong> labels ready for printing.</span>
-      <span style="font-size: 0.8rem; color: var(--text-muted);">Tip: In the print dialog, set margins to "None" or "Minimum" for exact alignment.</span>
     </div>
   </div>
 </div>
@@ -116,7 +128,7 @@
         </div>
 
         <div class="sticker-info">
-          <div class="sticker-code">{{ item.book.book_code }}</div>
+          <div class="sticker-code kb-code">{{ item.book.book_code }}</div>
           <div class="sticker-title">{{ item.book.title }}</div>
           <div class="sticker-meta">
             <span class="sticker-badge">{{ item.book.class_grade }}</span>
@@ -133,10 +145,10 @@
     {% endfor %}
   </div>
   {% else %}
-  <div style="text-align: center; padding: 4rem 1rem; background-color: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: var(--radius-lg);">
-    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏷️</div>
-    <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">No Textbooks Found</h3>
-    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+  <div class="card border border-dashed text-center py-5">
+    <div class="display-6 mb-3 text-body-tertiary">{{ icon('qrcode') }}</div>
+    <h3 class="h5 fw-bold text-body mb-2">No Textbooks Found</h3>
+    <p class="small text-body-secondary mb-0">
       Adjust your filter criteria to display textbooks for label printing.
     </p>
   </div>
@@ -162,7 +174,7 @@
     border: 1.5px solid #1f2937;
     border-radius: 6px;
     padding: 0.85rem 1rem;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
     flex-direction: column;
@@ -285,7 +297,10 @@
     .no-print,
     .teacher-header,
     .teacher-sidebar,
-    .theme-selector-wrap {
+    .theme-selector-wrap,
+    nav[aria-label="breadcrumb"],
+    header,
+    aside {
       display: none !important;
     }
 

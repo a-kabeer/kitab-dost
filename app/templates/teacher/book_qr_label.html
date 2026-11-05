@@ -1,4 +1,5 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Book Sticker Label - {{ book.book_code }} - Teacher Desk{% endblock %}
 
@@ -6,31 +7,35 @@
 <!-- Screen-only Header & Actions -->
 <div class="no-print">
   <!-- Breadcrumb -->
-  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
-    <span> / </span>
-    <a href="{{ url_for('teacher.qr_sheet') }}" style="color: var(--text-secondary);">QR Label Center</a>
-    <span> / </span>
-    <span style="color: var(--text-primary); font-weight: 600;">Label {{ book.book_code }}</span>
-  </div>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.qr_sheet') }}" class="text-decoration-none">QR Label Center</a></li>
+      <li class="breadcrumb-item active kb-code" aria-current="page">Label {{ book.book_code }}</li>
+    </ol>
+  </nav>
 
-  <div class="dashboard-header" style="margin-bottom: 2rem;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-      <h1 class="dashboard-title">🏷️ Physical Textbook QR Label</h1>
-      <p class="dashboard-subtitle">
-        Print this label to stick on the spine or inside cover of physical book <strong>{{ book.book_code }}</strong>.
+      <h1 class="h3 fw-bold text-body mb-1">
+        {{ icon('qrcode', extra_class='text-primary me-2') }}Physical Textbook QR Label
+      </h1>
+      <p class="text-body-secondary mb-0 small">
+        Print this label to stick on the spine or inside cover of physical book <strong class="kb-code text-primary">{{ book.book_code }}</strong>.
       </p>
     </div>
 
-    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-      <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline" target="_blank">
-        View Book ↗
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" target="_blank">
+        <span>View Book</span>
+        {{ icon('arrow-up-right-from-square', extra_class='small') }}
       </a>
-      <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-outline">
-        ← All Labels Sheet
+      <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        {{ icon('arrow-left') }}
+        <span>All Labels Sheet</span>
       </a>
-      <button type="button" onclick="window.print()" class="btn btn-primary" style="padding: 0.6rem 1.5rem; font-weight: 700;">
-        <span>🖨️</span>
+      <button type="button" onclick="window.print()" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2 fw-bold">
+        {{ icon('print') }}
         <span>Print Label</span>
       </button>
     </div>
@@ -53,7 +58,7 @@
 
       <!-- Book Identifiers -->
       <div class="sticker-info">
-        <div class="sticker-code">{{ book.book_code }}</div>
+        <div class="sticker-code kb-code">{{ book.book_code }}</div>
         <div class="sticker-title">{{ book.title }}</div>
         <div class="sticker-meta">
           <span class="sticker-badge">{{ book.class_grade }}</span>
@@ -84,7 +89,7 @@
     border: 2px solid #111827;
     border-radius: 8px;
     padding: 1rem 1.25rem;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
@@ -199,7 +204,10 @@
     .no-print,
     .teacher-header,
     .teacher-sidebar,
-    .theme-selector-wrap {
+    .theme-selector-wrap,
+    nav[aria-label="breadcrumb"],
+    header,
+    aside {
       display: none !important;
     }
 

@@ -33,6 +33,7 @@
   {% if is_rtl %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/rtl.css') }}">
   {% endif %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
   {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100 bg-body text-body">

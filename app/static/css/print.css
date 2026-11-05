@@ -1,0 +1,124 @@
+/* ==========================================================================
+   Kitaab Bank - Unified Print Stylesheet
+   Offline-first, crisp black-and-white printing for receipts, labels, and reports.
+   ========================================================================== */
+
+@media print {
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+
+  /* Reset body for printing */
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide interactive, navigation, and administrative elements */
+  .no-print,
+  .navbar,
+  .teacher-header,
+  .teacher-sidebar,
+  .offcanvas,
+  .offcanvas-backdrop,
+  .modal-backdrop,
+  .theme-selector-wrap,
+  .btn,
+  .alert,
+  .breadcrumb,
+  nav[aria-label="breadcrumb"],
+  header.navbar,
+  aside.teacher-sidebar,
+  footer.footer,
+  .pagination {
+    display: none !important;
+  }
+
+  /* Layout container full width */
+  .container,
+  .container-fluid,
+  .container-xl,
+  .container-xxl,
+  .teacher-shell,
+  .teacher-main,
+  .main-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* Print-only headers visible */
+  #printHeader,
+  .print-only {
+    display: block !important;
+  }
+
+  /* Cards and table formatting */
+  .card {
+    border: 1px solid #1f2937 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    color: #000000 !important;
+  }
+
+  .table th,
+  .table td {
+    background-color: transparent !important;
+    color: #000000 !important;
+    border-color: #d1d5db !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* High contrast QR codes and barcodes */
+  img.sticker-qr-img,
+  img[alt*="QR"],
+  canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+  }
+
+  /* Technical Codes in Print */
+  .kb-code,
+  code {
+    font-family: monospace !important;
+    font-weight: 700 !important;
+    color: #000000 !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  /* Hyperlinks plain text in print */
+  a {
+    text-decoration: none !important;
+    color: #000000 !important;
+  }
+
+  a[href^="http"]:after,
+  a[href^="/"]:after {
+    content: "" !important;
+  }
+}

@@ -1,58 +1,111 @@
 /* ==========================================================================
    Kitaab Bank - Right-to-Left (RTL) Stylesheet
    Applied dynamically when Urdu (اردو) or Sindhi (سنڌي) is selected.
-   Optimized for Nastaliq typography, flipped margins/paddings, and RTL flexboxes.
+   Optimized for Nastaliq typography, flipped icons/margins, and RTL flexboxes.
    ========================================================================== */
 
+/* 1. Nastaliq Root & Typography */
 [dir="rtl"],
 html[dir="rtl"] body {
   direction: rtl;
   text-align: right;
-  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.75;
 }
 
-/* Nastaliq Line-Height & Readability */
+/* Enhanced Line-Height to Prevent Glyph Clipping on Ascenders/Descenders */
 html[dir="rtl"] h1,
 html[dir="rtl"] h2,
 html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] h5,
+html[dir="rtl"] h6,
+html[dir="rtl"] .display-1,
+html[dir="rtl"] .display-2,
+html[dir="rtl"] .display-3,
+html[dir="rtl"] .display-4,
+html[dir="rtl"] .display-5,
+html[dir="rtl"] .display-6,
 html[dir="rtl"] .dashboard-title,
 html[dir="rtl"] .hero-title {
-  line-height: 1.6;
+  line-height: 1.65;
+  letter-spacing: normal;
 }
 
-/* Latin Codes & Numbers must remain LTR */
-[dir="rtl"] .font-mono,
+html[dir="rtl"] p,
+html[dir="rtl"] .lead,
+html[dir="rtl"] .form-label,
+html[dir="rtl"] .dropdown-item {
+  line-height: 1.75;
+}
+
+/* 2. Latin Codes, Phones & Technical Strings MUST Remain LTR */
+[dir="rtl"] .kb-code,
 [dir="rtl"] .book-code,
 [dir="rtl"] .tracking-code,
 [dir="rtl"] .handover-code,
 [dir="rtl"] .donation-code,
+[dir="rtl"] .font-mono,
 [dir="rtl"] code,
-[dir="rtl"] pre {
-  direction: ltr;
+[dir="rtl"] kbd,
+[dir="rtl"] pre,
+[dir="rtl"] input[type="tel"],
+[dir="rtl"] input[name*="contact"],
+[dir="rtl"] input[name*="phone"] {
+  direction: ltr !important;
   display: inline-block;
-  unicode-bidi: isolate;
+  unicode-bidi: isolate !important;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* Top Navigation Bar */
+/* 3. Flip Directional Icons in RTL */
+html[dir="rtl"] .fa-arrow-left,
+html[dir="rtl"] .fa-arrow-right,
+html[dir="rtl"] .fa-chevron-left,
+html[dir="rtl"] .fa-chevron-right,
+html[dir="rtl"] .fa-arrow-right-from-bracket,
+html[dir="rtl"] .fa-arrow-left-from-bracket,
+html[dir="rtl"] .fa-angles-left,
+html[dir="rtl"] .fa-angles-right {
+  transform: scaleX(-1);
+  display: inline-block;
+}
+
+/* 4. Form Controls & Floating Labels in RTL */
+html[dir="rtl"] .form-control,
+html[dir="rtl"] .form-select,
+html[dir="rtl"] select.form-control,
+html[dir="rtl"] textarea.form-control {
+  text-align: right;
+}
+
+html[dir="rtl"] .input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  margin-right: -1px;
+  margin-left: 0;
+}
+
+/* 5. Navigation & Offcanvas Drawer in RTL */
 html[dir="rtl"] .navbar-brand {
   margin-right: 0;
   margin-left: 1.5rem;
 }
 
-html[dir="rtl"] .nav-links {
-  margin-right: auto;
-  margin-left: 0;
+html[dir="rtl"] .offcanvas-end {
+  right: auto;
+  left: 0;
+  transform: translateX(-100%);
 }
 
-html[dir="rtl"] .nav-actions {
-  margin-right: auto;
-  margin-left: 0;
+html[dir="rtl"] .offcanvas-end.showing,
+html[dir="rtl"] .offcanvas-end.show:not(.hiding) {
+  transform: none;
 }
 
-/* Sidebar Navigation */
+/* 6. Teacher Sidebar in RTL */
 html[dir="rtl"] .teacher-sidebar {
   border-right: none;
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid var(--bs-border-color);
 }
 
 html[dir="rtl"] .sidebar-badge {
@@ -60,66 +113,22 @@ html[dir="rtl"] .sidebar-badge {
   margin-right: auto;
 }
 
-/* Metric Cards & Headers */
-html[dir="rtl"] .metric-header {
-  flex-direction: row-reverse;
-}
-
-html[dir="rtl"] .metric-footer {
+/* 7. Dropdown Menus in RTL */
+html[dir="rtl"] .dropdown-menu {
   text-align: right;
 }
 
-/* Data Tables */
-html[dir="rtl"] .data-table th,
-html[dir="rtl"] .data-table td {
-  text-align: right;
+/* 8. Modal Close Buttons */
+html[dir="rtl"] .modal-header .btn-close {
+  margin: calc(-.5 * var(--bs-modal-header-padding-y)) auto calc(-.5 * var(--bs-modal-header-padding-y)) calc(-.5 * var(--bs-modal-header-padding-x));
 }
 
-html[dir="rtl"] .data-table th:last-child,
-html[dir="rtl"] .data-table td:last-child {
-  text-align: left;
+/* 9. Punctuation Isolation at Ends of Mixed Text */
+html[dir="rtl"] .dir-auto {
+  unicode-bidi: plaintext;
 }
 
-/* Badges & Icons */
-html[dir="rtl"] .badge-overlay {
-  left: auto;
-  right: 0.75rem;
-}
-
-/* Form Controls */
-html[dir="rtl"] .form-control,
-html[dir="rtl"] select.form-control,
-html[dir="rtl"] textarea.form-control {
-  text-align: right;
-}
-
-/* Dropdown Menus */
-html[dir="rtl"] .theme-dropdown-menu,
-html[dir="rtl"] .lang-dropdown-menu {
-  right: auto;
-  left: 0;
-}
-
-/* Timeline & Audit Log */
-html[dir="rtl"] .activity-row {
-  flex-direction: row;
-}
-
-html[dir="rtl"] .activity-time {
-  text-align: right;
-}
-
-/* Quick Actions */
-html[dir="rtl"] .action-pill-card {
-  text-align: right;
-}
-
-/* Alert Boxes */
-html[dir="rtl"] .alert {
-  text-align: right;
-}
-
-/* Print View Adjustment */
+/* 10. Print View Adjustments in RTL */
 @media print {
   html[dir="rtl"] body {
     direction: rtl;

@@ -122,53 +122,66 @@ def is_demo_mode_active():
     except Exception:
         return False
 
+def get_demo_pre_backup_id():
+    """Retrieve the exact backup ID captured when demo mode was entered."""
+    try:
+        settings = get_system_settings()
+        val = settings.get('demo_pre_backup_id')
+        return int(val) if val and str(val).isdigit() else None
+    except Exception:
+        return None
+
 def exit_demo_mode(teacher_id=None, teacher_name=None):
     """
-    Safely exit demo mode and restore the most recent pre-demo safety backup.
+    Safely exit demo mode and restore the EXACT pre-demo safety backup.
+    Verifies checksum and integrity of restored database before declaring success.
     Returns (success, restored_filename, error_message).
     """
     from app.services import backup_service
     db = get_db()
     cur = db.cursor()
 
-    # Find the latest pre-demo backup or latest verified backup
-    cur.execute(
-        """
-        SELECT * FROM backup_records 
-        WHERE verification_status = 'VALID' 
-          AND filename LIKE '%pre_demo%'
-        ORDER BY id DESC LIMIT 1;
-        """
-    )
-    bck = cur.fetchone()
-    if not bck:
-        # Fallback to any latest valid backup
+    # 1. Retrieve the exact recorded pre-demo backup ID (never an arbitrary latest backup)
+    exact_id = get_demo_pre_backup_id()
+    if exact_id:
         cur.execute(
-            """
-            SELECT * FROM backup_records 
-            WHERE verification_status = 'VALID'
-            ORDER BY id DESC LIMIT 1;
-            """
+            "SELECT * FROM backup_records WHERE id = ? AND verification_status = 'VALID';",
+            (exact_id,)
         )
         bck = cur.fetchone()
+    else:
+        bck = None
 
     if not bck:
-        return False, None, "No verified backup found to restore real school data."
+        return False, None, "No recorded pre-demo safety backup found with matching ID. Cannot safely restore real data."
 
     backup_id = bck['id']
     filename = bck['filename']
+    expected_checksum = bck['checksum_sha256']
 
-    success, pre_restore, err = backup_service.restore_database_from_backup(backup_id, teacher_name=teacher_name)
+    # 2. Perform restoration with maintenance protection and rollback defense
+    success, pre_restore, err = backup_service.restore_database_from_backup(
+        backup_id,
+        teacher_name=teacher_name,
+        expected_checksum=expected_checksum
+    )
     if not success:
-        return False, None, f"Failed to restore backup: {err}"
+        return False, None, f"Failed to restore pre-demo backup: {err}"
 
-    # Mark is_demo_mode = '0'
+    # 3. Post-Restoration Hash & Integrity Verification
+    live_db_path = backup_service.get_live_db_path()
+    is_valid, verify_msg = backup_service.verify_backup_integrity(live_db_path)
+    if not is_valid:
+        return False, None, f"Restored database verification failed: {verify_msg}"
+
+    # 4. Clear demo flags from system_settings
     db = get_db()
     with db_transaction(db):
         db.execute(
             "INSERT INTO system_settings (key, value, updated_at) VALUES ('is_demo_mode', '0', CURRENT_TIMESTAMP) "
             "ON CONFLICT(key) DO UPDATE SET value = '0', updated_at = CURRENT_TIMESTAMP;"
         )
+        db.execute("DELETE FROM system_settings WHERE key = 'demo_pre_backup_id';")
 
     activity_service.record_activity(
         action='exhibition_demo_exited',
@@ -176,6 +189,6 @@ def exit_demo_mode(teacher_id=None, teacher_name=None):
         entity_id=backup_id,
         actor_type='teacher' if teacher_id else 'system',
         actor_name=teacher_name or 'Teacher',
-        details=f"Exited Exhibition Demo Mode. Restored school database from snapshot '{filename}'."
+        details=f"Exited Exhibition Demo Mode. Restored school database from exact pre-demo snapshot '{filename}' (ID: {backup_id})."
     )
     return True, filename, None

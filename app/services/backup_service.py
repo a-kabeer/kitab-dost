@@ -196,6 +196,14 @@ def delete_backup(backup_id, teacher_id=None, teacher_name=None, force=False):
 
     db = get_db()
     cur = db.cursor()
+
+    # Safety Guard: Check if this backup is the active pre-demo safety backup while Demo Mode is active
+    from app.services import settings_service
+    if settings_service.is_demo_mode_active():
+        active_pre_demo_id = settings_service.get_demo_pre_backup_id()
+        if active_pre_demo_id and record['id'] == active_pre_demo_id:
+            return False, "Data Safety Guard: Cannot delete the active pre-demo safety backup while Exhibition Demo Mode is active. Please exit demo mode first."
+
     cur.execute("SELECT COUNT(*) FROM backup_records WHERE verification_status = 'VALID';")
     valid_count = cur.fetchone()[0]
 
@@ -224,16 +232,19 @@ def delete_backup(backup_id, teacher_id=None, teacher_name=None, force=False):
     except Exception as e:
         return False, f"Failed to delete backup: {str(e)}"
 
-def restore_database_from_backup(backup_id_or_filename, teacher_name=None):
+def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expected_checksum=None):
     """
     Safely restore database from a verified backup with complete rollback protection.
     1. Pre-validates target backup (checksum match, PRAGMA integrity_check, schema presence).
-    2. Checkpoints WAL on live database.
-    3. Creates verified pre-restore rollback snapshot before any live database mutation.
-    4. Streams backup pages using sqlite3.Connection.backup() with WAL truncation.
-    5. Verifies live database integrity.
-    6. Automatically rolls back to the pre-restore snapshot if post-restore verification fails.
+    2. Encapsulates restoration in maintenance_context() blocking incoming requests with 503.
+    3. Checkpoints WAL on live database.
+    4. Creates verified pre-restore rollback snapshot before any live database mutation.
+    5. Streams backup pages using sqlite3.Connection.backup() with WAL truncation.
+    6. Verifies live database integrity.
+    7. Automatically rolls back to the pre-restore snapshot if post-restore verification fails.
     """
+    from app.services.maintenance_service import maintenance_context
+
     bck_dir = get_backups_dir()
     record = None
 
@@ -257,7 +268,7 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None):
         return False, None, f"Backup file '{filename}' does not exist on server disk."
 
     # 1. Pre-validate Target Backup Integrity & Checksum
-    expected_hash = record.get('checksum_sha256') if record else None
+    expected_hash = expected_checksum or (record.get('checksum_sha256') if record else None)
     is_valid, msg = verify_backup_integrity(backup_path, expected_checksum=expected_hash)
     if not is_valid:
         return False, None, f"Target backup rejected: {msg}"
@@ -266,57 +277,84 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None):
     pre_restore_filename = f"pre_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
     pre_restore_path = bck_dir / pre_restore_filename
 
-    try:
-        # 2. Checkpoint WAL and Create Pre-Restore Rollback Snapshot
-        live_conn = sqlite3.connect(live_db_path, timeout=10.0)
+    with maintenance_context():
         try:
-            live_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
-        except Exception:
-            pass
-
-        pre_conn = sqlite3.connect(pre_restore_path)
-        live_conn.backup(pre_conn)
-        pre_conn.close()
-        live_conn.close()
-
-        # 3. Perform Live Restoration with WAL Checkpoint
-        target_bck_conn = sqlite3.connect(str(backup_path))
-        dest_live_conn = sqlite3.connect(live_db_path, timeout=10.0)
-        dest_live_conn.execute("PRAGMA busy_timeout = 5000;")
-        target_bck_conn.backup(dest_live_conn)
-        try:
-            dest_live_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
-        except Exception:
-            pass
-        dest_live_conn.close()
-        target_bck_conn.close()
-
-        # 4. Verify Live Database After Restoration
-        verify_conn = sqlite3.connect(live_db_path, timeout=10.0)
-        cur = verify_conn.cursor()
-        cur.execute("PRAGMA integrity_check;")
-        verify_res = cur.fetchone()
-        verify_conn.close()
-
-        if not verify_res or verify_res[0] != 'ok':
-            # Emergency automated rollback to pre-restore snapshot
-            rb_src = sqlite3.connect(pre_restore_path)
-            rb_dest = sqlite3.connect(live_db_path)
-            rb_src.backup(rb_dest)
-            rb_dest.close()
-            rb_src.close()
-            return False, pre_restore_filename, "Post-restore integrity check failed! Automatically restored database back to pre-restore safety copy."
-
-        return True, pre_restore_filename, None
-    except Exception as e:
-        # Emergency rollback if safety copy was created
-        if pre_restore_path.exists():
+            # 2. Checkpoint WAL and Create Pre-Restore Rollback Snapshot
+            live_conn = sqlite3.connect(live_db_path, timeout=10.0)
             try:
+                live_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+            except Exception:
+                pass
+
+            # Capture existing backup catalog to preserve historical records across restores
+            existing_backup_rows = []
+            try:
+                cur = live_conn.cursor()
+                cur.execute("SELECT id, filename, file_size_bytes, checksum_sha256, verification_status, created_by, created_at FROM backup_records;")
+                existing_backup_rows = [tuple(r) for r in cur.fetchall()]
+            except Exception:
+                pass
+
+            pre_conn = sqlite3.connect(pre_restore_path)
+            live_conn.backup(pre_conn)
+            pre_conn.close()
+            live_conn.close()
+
+            # 3. Perform Live Restoration with WAL Checkpoint
+            target_bck_conn = sqlite3.connect(str(backup_path))
+            dest_live_conn = sqlite3.connect(live_db_path, timeout=10.0)
+            dest_live_conn.execute("PRAGMA busy_timeout = 5000;")
+            target_bck_conn.backup(dest_live_conn)
+
+            # Preserve and restore historical backup_records
+            if existing_backup_rows:
+                try:
+                    for row in existing_backup_rows:
+                        dest_live_conn.execute(
+                            """
+                            INSERT INTO backup_records (id, filename, file_size_bytes, checksum_sha256, verification_status, created_by, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            ON CONFLICT(id) DO NOTHING;
+                            """,
+                            row
+                        )
+                    dest_live_conn.commit()
+                except Exception:
+                    pass
+
+            try:
+                dest_live_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+            except Exception:
+                pass
+            dest_live_conn.close()
+            target_bck_conn.close()
+
+            # 4. Verify Live Database After Restoration
+            verify_conn = sqlite3.connect(live_db_path, timeout=10.0)
+            cur = verify_conn.cursor()
+            cur.execute("PRAGMA integrity_check;")
+            verify_res = cur.fetchone()
+            verify_conn.close()
+
+            if not verify_res or verify_res[0] != 'ok':
+                # Emergency automated rollback to pre-restore snapshot
                 rb_src = sqlite3.connect(pre_restore_path)
                 rb_dest = sqlite3.connect(live_db_path)
                 rb_src.backup(rb_dest)
                 rb_dest.close()
                 rb_src.close()
-            except Exception:
-                pass
-        return False, pre_restore_filename if pre_restore_path.exists() else None, f"Restoration error: {str(e)}. Safe rollback snapshot retained."
+                return False, pre_restore_filename, "Post-restore integrity check failed! Automatically restored database back to pre-restore safety copy."
+
+            return True, pre_restore_filename, None
+        except Exception as e:
+            # Emergency rollback if safety copy was created
+            if pre_restore_path.exists():
+                try:
+                    rb_src = sqlite3.connect(pre_restore_path)
+                    rb_dest = sqlite3.connect(live_db_path)
+                    rb_src.backup(rb_dest)
+                    rb_dest.close()
+                    rb_src.close()
+                except Exception:
+                    pass
+            return False, pre_restore_filename if pre_restore_path.exists() else None, f"Restoration error: {str(e)}. Safe rollback snapshot retained."

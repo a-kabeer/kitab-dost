@@ -30,7 +30,7 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
     db_file = target_db or DB_PATH
     db_path_obj = Path(db_file)
 
-    # 0. Data Safety: Capture automated pre-demo safety backup if live DB has existing books
+    # 0. Data Safety: Capture automated pre-demo safety backup
     if create_safety_backup and db_path_obj.exists():
         try:
             if target_backup_dir:
@@ -46,25 +46,45 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
                     bck_dir = PROJECT_ROOT / 'backups'
 
             bck_dir.mkdir(parents=True, exist_ok=True)
-            now_dt = datetime.now()
-            base_name = f"kitab_bank_backup_{now_dt.strftime('%Y%m%d_%H%M%S')}_pre_demo"
-            pre_demo_filename = f"{base_name}.db"
-            pre_demo_path = bck_dir / pre_demo_filename
-            counter = 1
-            while pre_demo_path.exists():
-                pre_demo_filename = f"{base_name}_{counter}.db"
-                pre_demo_path = bck_dir / pre_demo_filename
-                counter += 1
 
-            live_c = sqlite3.connect(str(db_file))
+            live_c = sqlite3.connect(str(db_file), timeout=10.0)
             live_cur = live_c.cursor()
-            live_cur.execute("SELECT COUNT(*) FROM books;")
-            b_cnt = live_cur.fetchone()[0]
 
-            if b_cnt > 0:
+            # Prevent repeated demo activation from replacing the original recovery point with demo data
+            live_cur.execute("SELECT value FROM system_settings WHERE key = 'is_demo_mode';")
+            demo_row = live_cur.fetchone()
+            is_already_demo = (demo_row and demo_row[0] == '1')
+
+            if not is_already_demo:
+                # Truncate WAL to ensure clean snapshot
+                try:
+                    live_cur.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+                except Exception:
+                    pass
+
+                now_dt = datetime.now()
+                base_name = f"kitab_bank_backup_{now_dt.strftime('%Y%m%d_%H%M%S')}_pre_demo"
+                pre_demo_filename = f"{base_name}.db"
+                pre_demo_path = bck_dir / pre_demo_filename
+                counter = 1
+                while pre_demo_path.exists():
+                    pre_demo_filename = f"{base_name}_{counter}.db"
+                    pre_demo_path = bck_dir / pre_demo_filename
+                    counter += 1
+
+                # Capture full live database backup (even if books table is empty)
                 safety_c = sqlite3.connect(str(pre_demo_path))
                 live_c.backup(safety_c)
                 safety_c.close()
+
+                # Verify captured backup integrity
+                chk_c = sqlite3.connect(str(pre_demo_path))
+                chk_cur = chk_c.cursor()
+                chk_cur.execute("PRAGMA integrity_check;")
+                res = chk_cur.fetchone()
+                chk_c.close()
+                if not res or res[0] != 'ok':
+                    raise RuntimeError(f"Pre-demo backup integrity verification failed: {res}")
 
                 # Calculate SHA-256 and catalog
                 import hashlib
@@ -81,6 +101,17 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
                     VALUES (?, ?, ?, 'VALID');
                     """,
                     (pre_demo_filename, size_bytes, checksum)
+                )
+                pre_demo_backup_id = live_cur.lastrowid
+
+                # Store exact pre-demo backup ID in system_settings
+                live_cur.execute(
+                    """
+                    INSERT INTO system_settings (key, value, updated_at)
+                    VALUES ('demo_pre_backup_id', ?, CURRENT_TIMESTAMP)
+                    ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP;
+                    """,
+                    (str(pre_demo_backup_id),)
                 )
                 live_c.commit()
             live_c.close()

@@ -231,13 +231,18 @@ Uploaded book photographs represent a common attack vector if left unconstrained
 - Backups created via `backup_service.create_database_backup()` are immediately verified using `PRAGMA integrity_check;`, SHA-256 digest validation, and core schema verification.
 - The SHA-256 cryptographic digest is stored in `backup_records`.
 - **Pre-Restoration Integrity Check:** Restoring any backup requires valid SHA-256 digest match, SQLite page integrity, and schema compliance. Corrupt files are rejected before live mutations begin.
+- **Maintenance Concurrency Gate (HTTP 503):** Restoration via web or CLI (`scripts/restore_backup.py`) acquires an atomic maintenance lock (`.maintenance_lock`). All new incoming web requests across Waitress worker threads are gated with HTTP 503 Service Unavailable, draining in-flight queries and preventing concurrent writes from corrupting data.
 - **WAL Checkpointing:** Explicitly executes `PRAGMA wal_checkpoint(TRUNCATE);` before and after database restoration to prevent stale or orphaned WAL journal pages.
 - **Pre-Restore Rollback Copy:** Before executing any database restoration via `scripts/restore_backup.py` or the web interface, the system creates an automated pre-restore safety copy (`backups/pre_restore_YYYYMMDD_HHMMSS.db`). If any error occurs during restoration, this rollback copy is immediately re-applied to guarantee zero live data loss.
 - **Sole Backup Deletion Defense:** `backup_service.delete_backup()` checks total count of remaining verified backups. If `COUNT(*) <= 1`, deletion is rejected with a clear safety warning, preventing accidental total backup loss.
+- **Historical Catalog Preservation:** Restoring an older snapshot preserves and re-merges existing `backup_records` rows, ensuring newer backups remain cataloged and tracked.
 
 ### 10.5 Exhibition Demo Mode Safety Defenses
-- **Automated Pre-Demo Backup:** Resetting demo mode automatically captures a pre-demo safety backup (`kitab_bank_backup_*_pre_demo.db`) of real school records.
+- **Universal Pre-Demo Backup:** Resetting demo mode automatically captures a pre-demo safety backup (`kitab_bank_backup_*_pre_demo.db`) of real school records, even if the books table is empty.
+- **Exact Backup ID Binding:** The exact backup ID is recorded in `system_settings` as `demo_pre_backup_id`. Exit Demo restores this exact recorded ID, never an arbitrary latest backup.
+- **Repeated Demo Activation Protection:** If demo mode is already active, subsequent demo resets do NOT create a new pre-demo backup from demo data; the original real school backup ID remains locked.
+- **Active Pre-Demo Backup Deletion Defense:** The system strictly rejects deleting the active pre-demo safety backup while Exhibition Demo Mode is active.
 - **Historical Backups Preserved:** `DELETE FROM backup_records;` is forbidden during demo resets; existing backup history is strictly protected.
 - **Visual Alert Banners:** High-visibility amber banner (`✨ Exhibition Demo Mode Active`) displayed across both student and teacher portals whenever demo mode is active.
 - **Mandatory Confirmation Checkbox:** Teacher settings form requires checking `#confirmDemoBox` before triggering demo seeding.
-- **Reversible Safe Exit:** `/teacher/settings/exit-demo` (`exit_demo_mode()`) restores the latest pre-demo safety backup, clears the demo flag, and reverts the school database cleanly.
+- **Reversible Safe Exit & Post-Restore Verification:** `/teacher/settings/exit-demo` (`exit_demo_mode()`) restores the exact pre-demo safety backup, verifies live database integrity, and clears demo flags cleanly.

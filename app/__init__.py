@@ -101,6 +101,19 @@ def create_app(config_name='default'):
         resp.set_cookie('kb_lang', lang_code, max_age=30*24*3600, samesite='Lax')
         return resp
 
+    # Database Maintenance Concurrency Protection
+    @app.before_request
+    def check_maintenance():
+        from app.services import maintenance_service
+        if maintenance_service.is_maintenance_active():
+            path = request.path
+            # Allow static files and the active restore / exit-demo routes to complete
+            if path.startswith('/static/') or path == '/favicon.ico':
+                return
+            if path in ('/teacher/settings/seed-demo', '/teacher/settings/exit-demo', '/teacher/settings'):
+                return
+            return render_template('errors/503_maintenance.html'), 503
+
     # CSRF Protection on POST requests
     @app.before_request
     def validate_csrf():

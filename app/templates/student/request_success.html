@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Request Submitted - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('request_submitted_title', 'Request Submitted') }} - Kitaab Bank{% endblock %}
 
 {% block content %}
 <div class="container-xxl py-4">
@@ -14,30 +14,30 @@
 
       <div class="mb-3">
         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1">
-          {{ icon('clock') }} Status: Awaiting Teacher Approval
+          {{ icon('clock') }} {{ _t('table_status', 'Status') }}: {{ _t('status_pending', 'Awaiting Teacher Approval') }}
         </span>
       </div>
 
       <h1 class="h3 fw-bold text-body mb-2">
-        Request Received, {{ request_item.requester_name }}!
+        {{ _t('request_received_title', 'Request Received') }}, {{ request_item.requester_name }}!
       </h1>
 
       <p class="text-body-secondary mx-auto mb-4" style="max-width: 520px;">
-        Your book request has been placed in the teacher review queue. Please note down your private tracking code below.
+        {{ _t('request_submitted_desc', 'Your book request has been placed in the teacher review queue. Please note down your private tracking code below.') }}
       </p>
 
       <!-- Tracking Code Box -->
       <div class="card border bg-body-tertiary p-3 mb-4 mx-auto w-100" style="max-width: 440px;">
         <span class="small text-uppercase fw-bold text-primary mb-1 d-block" style="letter-spacing: 0.05em;">
-          Your Private Tracking Code
+          {{ _t('tracking_code', 'Your Private Tracking Code') }}
         </span>
-        <div class="kb-code fs-3 fw-bold text-body my-1" id="track-code">
-          {{ request_item.tracking_code }}
+        <div class="fs-3 fw-bold text-body my-1">
+          <bdi class="kb-code" id="track-code">{{ request_item.tracking_code }}</bdi>
         </div>
         <div>
           <button type="button" class="btn btn-outline-secondary btn-sm mt-1 d-inline-flex align-items-center gap-1" onclick="copyTrackCode()">
             {{ icon('copy') }}
-            <span>Copy Code</span>
+            <span>{{ _t('btn_copy_code', 'Copy Code') }}</span>
           </button>
         </div>
       </div>
@@ -45,24 +45,24 @@
       <!-- Requested Book Summary -->
       <div class="card border text-start p-3 p-md-4 mb-4 bg-body">
         <h3 class="h6 fw-bold text-body mb-3 pb-2 border-bottom">
-          Book Request Summary
+          {{ _t('request_summary_heading', 'Book Request Summary') }}
         </h3>
 
         <div class="row g-3 small">
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">REQUESTED BOOK</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('table_book', 'Requested Book') }}</span>
             <strong class="text-body">{{ request_item.book_title }}</strong>
           </div>
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">BOOK CODE</span>
-            <span class="kb-code fw-bold text-primary">{{ request_item.book_code }}</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('book_code', 'Book Code') }}</span>
+            <bdi class="kb-code fw-bold text-primary">{{ request_item.book_code }}</bdi>
           </div>
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">STUDENT</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('requester_info_heading', 'Student') }}</span>
             <strong class="text-body">{{ request_item.requester_name }} ({{ request_item.requester_class }})</strong>
           </div>
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">CLASS &amp; SUBJECT</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('class_grade', 'Class') }} &amp; {{ _t('subject', 'Subject') }}</span>
             <strong class="text-body">{{ request_item.book_class }} – {{ request_item.book_subject }}</strong>
           </div>
         </div>
@@ -73,9 +73,9 @@
         <div class="d-flex align-items-start gap-2">
           <span class="fs-5 flex-shrink-0">{{ icon('school') }}</span>
           <div>
-            <strong>Next Steps:</strong>
+            <strong>{{ _t('next_steps_title', 'Next Steps:') }}</strong>
             <p class="mb-0 mt-1">
-              A school teacher will review your request. Once approved, this book will be <strong>reserved exclusively for you</strong>. Bring your school Roll Number (<strong>{{ request_item.requester_roll_no }}</strong>) to the school library/teacher desk to collect the book.
+              {{ _t('request_next_steps_desc', 'A school teacher will review your request. Once approved, this book will be reserved exclusively for you. Bring your school Roll Number to the school library/teacher desk to collect the book.') }}
             </p>
           </div>
         </div>
@@ -85,11 +85,11 @@
       <div class="d-flex flex-wrap justify-content-center gap-2">
         <a href="{{ url_for('student.track', code=request_item.tracking_code) }}" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-xs">
           {{ icon('magnifying-glass') }}
-          <span>Track Live Status</span>
+          <span>{{ _t('track_request_cta', 'Track Live Status') }}</span>
         </a>
         <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
           {{ icon('book-bookmark') }}
-          <span>Explore Other Books</span>
+          <span>{{ _t('btn_explore_catalogue', 'Explore Other Books') }}</span>
         </a>
       </div>
     </div>
@@ -98,6 +98,13 @@
 
 <script>
 function copyTrackCode() {
+  const code = document.getElementById('track-code').textContent.trim();
+  navigator.clipboard.writeText(code).then(() => {
+    alert('Tracking Code copied to clipboard: ' + code);
+  });
+}
+</script>
+{% endblock %}
   const code = document.getElementById('track-code').textContent.trim();
   navigator.clipboard.writeText(code).then(() => {
     alert('Tracking Code copied to clipboard: ' + code);

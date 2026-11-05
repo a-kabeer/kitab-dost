@@ -49,6 +49,7 @@
               alt="{{ handover.book_title }} Cover" 
               class="img-fluid rounded border w-100 object-fit-cover shadow-sm"
               style="aspect-ratio: 3/4;"
+              onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
             >
           </div>
           {% else %}
@@ -60,23 +61,23 @@
           <div class="border-top pt-3 d-flex flex-column gap-2 small">
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-body-secondary fw-semibold">HANDOVER REF</span>
-              <code class="kb-code fw-bold text-primary">
+              <bdi class="kb-code fw-bold text-primary">
                 {{ handover.handover_code }}
-              </code>
+              </bdi>
             </div>
 
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-body-secondary fw-semibold">REQUEST REF</span>
-              <code class="kb-code text-body-secondary fw-bold">
+              <bdi class="kb-code text-body-secondary fw-bold">
                 {{ handover.tracking_code }}
-              </code>
+              </bdi>
             </div>
 
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-body-secondary fw-semibold">BOOK CODE</span>
-              <code class="kb-code fw-bold text-primary">
+              <bdi class="kb-code fw-bold text-primary">
                 {{ handover.book_code }}
-              </code>
+              </bdi>
             </div>
 
             <div class="d-flex justify-content-between align-items-center">

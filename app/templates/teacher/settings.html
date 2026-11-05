@@ -1,38 +1,38 @@
 {% extends "teacher/base_teacher.html" %}
 {% from "macros/icons.html" import icon %}
 
-{% block title %}Settings & Live Backups - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('nav_settings', 'Settings & Live Backups') }} - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
     <h1 class="h3 fw-bold text-body mb-1">
-      {{ icon('gear', extra_class='text-primary me-2') }}System Settings &amp; Data Management
+      {{ icon('gear', extra_class='text-primary me-2') }}{{ _t('settings_title', 'System Settings & Maintenance') }}
     </h1>
     <p class="text-body-secondary mb-0 small">
-      Configure school profile, rotate administrative credentials, generate hot database backups, or seed exhibition mode.
+      {{ _t('settings_sub', 'Configure school profile, rotate administrative credentials, generate hot database backups, or seed exhibition mode.') }}
     </p>
   </div>
 </div>
 
 <!-- Settings Navigation Tabs -->
-<div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap flex-sm-wrap">
+<div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap">
   <a href="{{ url_for('teacher.settings', tab='profile') }}" class="btn btn-sm text-nowrap {% if active_tab == 'profile' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
     {{ icon('school') }}
-    <span>School Profile</span>
+    <span>{{ _t('tab_profile', 'School Profile') }}</span>
   </a>
   <a href="{{ url_for('teacher.settings', tab='security') }}" class="btn btn-sm text-nowrap {% if active_tab == 'security' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
     {{ icon('lock') }}
-    <span>Account Security</span>
+    <span>{{ _t('tab_security', 'Account Security') }}</span>
   </a>
   <a href="{{ url_for('teacher.settings', tab='backup') }}" class="btn btn-sm text-nowrap {% if active_tab == 'backup' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
     {{ icon('hard-drive') }}
-    <span>Live Backups</span>
+    <span>{{ _t('tab_backup', 'Live Backups') }}</span>
     <span class="badge {% if active_tab == 'backup' %}bg-white text-primary{% else %}bg-secondary{% endif %} rounded-pill">{{ backups|length }}</span>
   </a>
   <a href="{{ url_for('teacher.settings', tab='demo') }}" class="btn btn-sm text-nowrap {% if active_tab == 'demo' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
     {{ icon('wand-magic-sparkles') }}
-    <span>Exhibition Showcase Mode</span>
+    <span>{{ _t('tab_demo', 'Exhibition Showcase Mode') }}</span>
   </a>
 </div>
 
@@ -43,7 +43,7 @@
     <div class="d-flex align-items-center gap-3">
       <span class="fs-4 text-primary">{{ icon('school') }}</span>
       <div>
-        <h2 class="h5 fw-bold text-body mb-0">School Profile & System Preferences</h2>
+        <h2 class="h5 fw-bold text-body mb-0">School Profile &amp; System Preferences</h2>
         <p class="small text-body-secondary mb-0">Metadata displayed on student catalogue, printed QR labels, and circulation receipts.</p>
       </div>
     </div>
@@ -77,7 +77,7 @@
       <div class="d-flex justify-content-end pt-3 border-top">
         <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2">
           {{ icon('check') }}
-          <span>Save School Profile</span>
+          <span>{{ _t('btn_save', 'Save School Profile') }}</span>
         </button>
       </div>
     </form>
@@ -92,7 +92,7 @@
     <div class="d-flex align-items-center gap-3">
       <span class="fs-4 text-primary">{{ icon('key') }}</span>
       <div>
-        <h2 class="h5 fw-bold text-body mb-0">Teacher Account Security</h2>
+        <h2 class="h5 fw-bold text-body mb-0">{{ _t('tab_security', 'Teacher Account Security') }}</h2>
         <p class="small text-body-secondary mb-0">Rotate teacher incharge password to safeguard school administrative operations.</p>
       </div>
     </div>
@@ -103,7 +103,7 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="mb-3">
-        <label class="form-label small fw-semibold text-body-secondary">Username</label>
+        <label class="form-label small fw-semibold text-body-secondary">{{ _t('username_label', 'Username') }}</label>
         <input type="text" class="form-control bg-body-secondary" value="{{ session.get('teacher_username', 'teacher') }}" disabled readonly style="cursor: not-allowed;">
       </div>
 
@@ -126,7 +126,7 @@
       <div class="d-flex justify-content-end pt-3 border-top">
         <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2">
           {{ icon('shield-halved') }}
-          <span>Update Password</span>
+          <span>{{ _t('btn_save', 'Update Password') }}</span>
         </button>
       </div>
     </form>
@@ -152,7 +152,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-3 py-2">
           {{ icon('floppy-disk') }}
-          <span>Create Live Backup Now</span>
+          <span>{{ _t('btn_create_backup', 'Create Live Backup Now') }}</span>
         </button>
       </form>
     </div>
@@ -162,7 +162,7 @@
   <div class="card border shadow-sm">
     <div class="card-header bg-body-tertiary py-3 px-4 d-flex justify-content-between align-items-center">
       <h3 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
-        {{ icon('database', extra_class='text-primary') }}Backup Snapshots Catalog
+        {{ icon('database', extra_class='text-primary') }}{{ _t('backup_catalog_title', 'Saved Database Backups') }}
       </h3>
       <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">{{ backups|length }} Snapshots Recorded</span>
     </div>
@@ -185,7 +185,7 @@
           {% for bck in backups %}
           <tr>
             <td>
-              <code class="kb-code fw-bold text-primary fs-7">{{ bck.filename }}</code>
+              <bdi class="kb-code fw-bold text-primary fs-7">{{ bck.filename }}</bdi>
             </td>
             <td class="small text-body">
               {% if bck.file_size_bytes < 1024 %}
@@ -197,9 +197,9 @@
               {% endif %}
             </td>
             <td>
-              <code class="kb-code small bg-body-secondary px-2 py-1 rounded" title="{{ bck.checksum_sha256 }}" style="cursor: help;">
+              <bdi class="kb-code small bg-body-secondary px-2 py-1 rounded" title="{{ bck.checksum_sha256 }}" style="cursor: help;">
                 {{ bck.checksum_sha256[:12] }}...
-              </code>
+              </bdi>
             </td>
             <td>
               {% if bck.verification_status == 'VALID' %}
@@ -273,7 +273,7 @@
     <div class="d-flex align-items-center gap-3">
       <span class="fs-4 text-primary">{{ icon('wand-magic-sparkles') }}</span>
       <div>
-        <h2 class="h5 fw-bold text-body mb-0">Exhibition Showcase Mode</h2>
+        <h2 class="h5 fw-bold text-body mb-0">{{ _t('tab_demo', 'Exhibition Showcase Mode') }}</h2>
         <p class="small text-body-secondary mb-0">Instantly resets and seeds realistic curriculum data for school exhibitions, inspections, and live demos.</p>
       </div>
     </div>
@@ -285,17 +285,17 @@
     <div class="alert alert-success d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4" role="alert">
       <div>
         <div class="d-flex align-items-center gap-2 fw-bold fs-6 text-success mb-1">
-          {{ icon('sparkles') }}Exhibition Demo Mode is Currently ACTIVE
+          {{ icon('sparkles') }}{{ _t('demo_banner_title', 'Exhibition Demo Mode is Currently ACTIVE') }}
         </div>
         <div class="small text-success-emphasis">
-          Real school data is safely stored in automatic pre-demo snapshots. Click below when the demonstration concludes.
+          {{ _t('demo_banner_desc', 'Operating with sample curriculum textbooks. Real school database is preserved in automated backups.') }}
         </div>
       </div>
       <form action="{{ url_for('teacher.exit_demo') }}" method="POST" onsubmit="return confirm('Restore real school database from the pre-demo backup?');">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline-success bg-body fw-semibold d-inline-flex align-items-center gap-2">
           {{ icon('rotate-left') }}
-          <span>Exit Demo &amp; Restore Real Data</span>
+          <span>{{ _t('btn_exit_demo', 'Exit Demo & Restore Real Data') }}</span>
         </button>
       </form>
     </div>
@@ -325,7 +325,7 @@
           <strong>Request Workflow:</strong> Active reserved request ready for physical handover, pending request, and fulfilled requests.
         </li>
         <li class="list-group-item bg-transparent px-0 py-2">
-          <strong>Physical Handover Ledger:</strong> Completed handovers with printable receipts (<span class="kb-code">KB-HO-000001</span>, <span class="kb-code">KB-HO-000002</span>).
+          <strong>Physical Handover Ledger:</strong> Completed handovers with printable receipts (<bdi class="kb-code">KB-HO-000001</bdi>, <bdi class="kb-code">KB-HO-000002</bdi>).
         </li>
         <li class="list-group-item bg-transparent px-0 py-2">
           <strong>Audit History:</strong> 30 days of teacher logins, catalog updates, approvals, and circulation activity.
@@ -354,7 +354,7 @@
         <a href="{{ url_for('teacher.settings', tab='backup') }}" class="btn btn-outline-secondary">Back Up First</a>
         <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2">
           {{ icon('rocket') }}
-          <span>Seed Exhibition Demo Data</span>
+          <span>{{ _t('btn_enter_demo', 'Seed Exhibition Demo Data') }}</span>
         </button>
       </div>
     </form>

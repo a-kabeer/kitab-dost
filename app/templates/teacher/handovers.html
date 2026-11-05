@@ -1,14 +1,14 @@
 {% extends "teacher/base_teacher.html" %}
 {% from "macros/icons.html" import icon %}
 
-{% block title %}Physical Handover Ledger - Teacher Desk{% endblock %}
+{% block title %}{{ _t('nav_handovers', 'Physical Handover Ledger') }} - {{ _t('teacher_dashboard', 'Teacher Desk') }}{% endblock %}
 
 {% block teacher_content %}
   <!-- Header -->
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
       <h1 class="h3 fw-bold text-body mb-1">
-        {{ icon('handshake', extra_class='text-primary me-2') }}Physical Handover Ledger
+        {{ icon('handshake', extra_class='text-primary me-2') }}{{ _t('nav_handovers', 'Physical Handover Ledger') }}
       </h1>
       <p class="text-body-secondary mb-0 small">
         Official immutable distribution ledger recording physical book transfers to verified student recipients.
@@ -32,7 +32,7 @@
             {{ icon('handshake') }}
           </div>
           <div>
-            <div class="small text-body-secondary fw-semibold">Total Handovers</div>
+            <div class="small text-body-secondary fw-semibold">{{ _t('kpi_handed_over', 'Total Handovers') }}</div>
             <div class="h3 fw-bold text-body mb-0" id="metric-total-handovers">{{ metrics.total_handovers }}</div>
           </div>
         </div>
@@ -46,7 +46,7 @@
             {{ icon('graduation-cap') }}
           </div>
           <div>
-            <div class="small text-body-secondary fw-semibold">Student Beneficiaries</div>
+            <div class="small text-body-secondary fw-semibold">{{ _t('stat_students_served', 'Student Beneficiaries') }}</div>
             <div class="h3 fw-bold text-body mb-0" id="metric-unique-recipients">{{ metrics.unique_recipients }}</div>
           </div>
         </div>
@@ -60,7 +60,7 @@
             {{ icon('book-bookmark') }}
           </div>
           <div>
-            <div class="small text-body-secondary fw-semibold">Textbooks Reused</div>
+            <div class="small text-body-secondary fw-semibold">{{ _t('stat_reused_books', 'Textbooks Reused') }}</div>
             <div class="h3 fw-bold text-body mb-0" id="metric-reused-books">{{ metrics.reused_books }}</div>
           </div>
         </div>
@@ -82,7 +82,7 @@
               type="search" 
               name="q" 
               class="form-control border-start-0" 
-              placeholder="Search student, roll, code (KB-HO-), or book..." 
+              placeholder="{{ _t('search_placeholder_short', 'Search student, roll, code (KB-HO-), or book...') }}" 
               value="{{ search_query }}"
             >
           </div>
@@ -91,7 +91,7 @@
         <!-- Class Filter -->
         <div class="col-12 col-sm-6 col-md-3 col-lg-2">
           <select name="class_grade" class="form-select">
-            <option value="">All Classes</option>
+            <option value="">{{ _t('filter_all_classes', 'All Classes') }}</option>
             {% for c in ['Class 6', 'Class 7', 'Class 8'] %}
             <option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>
             {% endfor %}
@@ -124,13 +124,13 @@
         <div class="col-12 col-lg-2 d-flex gap-2">
           <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
             {{ icon('filter') }}
-            <span>Filter</span>
+            <span>{{ _t('btn_filter', 'Filter') }}</span>
           </button>
 
           {% if search_query or class_filter or date_from or date_to %}
           <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
             {{ icon('rotate-left') }}
-            <span>Reset</span>
+            <span>{{ _t('btn_reset', 'Reset') }}</span>
           </a>
           {% endif %}
         </div>
@@ -138,105 +138,147 @@
     </div>
   </div>
 
-  <!-- Handover Records Table Card -->
-  <div class="card border shadow-sm mb-4">
-    {% if handovers and handovers|length > 0 %}
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th scope="col" style="min-width: 150px;">Handover Ref</th>
-            <th scope="col" style="min-width: 220px;">Textbook</th>
-            <th scope="col" style="min-width: 170px;">Student Recipient</th>
-            <th scope="col" style="min-width: 140px;">Request Ref</th>
-            <th scope="col" style="min-width: 140px;">Confirmed By</th>
-            <th scope="col" class="text-end" style="min-width: 170px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for h in handovers %}
-          <tr>
-            <!-- Handover Ref & Date -->
-            <td>
-              <code class="kb-code fw-bold text-primary fs-7 d-block">
-                {{ h.handover_code }}
-              </code>
-              <small class="text-body-secondary d-inline-flex align-items-center gap-1 mt-1">
-                {{ icon('calendar-days', extra_class='small') }}
-                <span>{{ h.handover_date[:16] if h.handover_date else 'Recently' }}</span>
-              </small>
-            </td>
+  <!-- Handover Records Section -->
+  {% if handovers and handovers|length > 0 %}
+    <!-- Desktop / Tablet Table View (>= 768px, solves DEF-TAB-02) -->
+    <div class="card border shadow-sm mb-4 d-none d-md-block">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" style="min-width: 140px;">{{ _t('table_handover_ref', 'Handover Ref') }}</th>
+              <th scope="col" style="min-width: 200px;">{{ _t('table_book', 'Textbook') }}</th>
+              <th scope="col" style="min-width: 150px;">{{ _t('table_requester', 'Student Recipient') }}</th>
+              <th scope="col" style="min-width: 130px;">{{ _t('tracking_code', 'Request Ref') }}</th>
+              <th scope="col" style="min-width: 130px;">{{ _t('table_handed_by', 'Confirmed By') }}</th>
+              <th scope="col" class="text-end" style="min-width: 150px;">{{ _t('table_actions', 'Actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in handovers %}
+            <tr>
+              <!-- Handover Ref & Date -->
+              <td>
+                <bdi class="kb-code fw-bold text-primary fs-7 d-block">
+                  {{ h.handover_code }}
+                </bdi>
+                <small class="text-body-secondary d-inline-flex align-items-center gap-1 mt-1">
+                  {{ icon('calendar-days', extra_class='small') }}
+                  <span>{{ h.handover_date[:16] if h.handover_date else 'Recently' }}</span>
+                </small>
+              </td>
 
-            <!-- Book Details -->
-            <td>
-              <div class="fw-semibold text-body mb-1">
-                {{ h.book_title }}
-              </div>
-              <div class="small text-body-secondary">
-                <code class="kb-code text-primary fw-semibold">{{ h.book_code }}</code> &bull; {{ h.book_class }} &bull; {{ h.book_subject }}
-              </div>
-            </td>
+              <!-- Book Details -->
+              <td>
+                <div class="fw-semibold text-body mb-1">
+                  {{ h.book_title }}
+                </div>
+                <div class="small text-body-secondary">
+                  <bdi class="kb-code text-primary fw-semibold">{{ h.book_code }}</bdi> &bull; {{ h.book_class }} &bull; {{ h.book_subject }}
+                </div>
+              </td>
 
-            <!-- Student Details -->
-            <td>
-              <div class="fw-semibold text-body mb-1">
-                {{ h.recipient_name }}
-              </div>
-              <div class="small text-body-secondary">
-                Class: <span class="fw-semibold">{{ h.recipient_class }}</span> &bull; Roll: <span class="fw-semibold">{{ h.recipient_roll_no }}</span>
-              </div>
-              {% if h.recipient_contact %}
-              <div class="small text-body-secondary mt-1">
-                {{ icon('phone', extra_class='small me-1') }}<span class="kb-code">{{ h.recipient_contact }}</span>
-              </div>
-              {% endif %}
-            </td>
+              <!-- Student Details -->
+              <td>
+                <div class="fw-semibold text-body mb-1">
+                  {{ h.recipient_name }}
+                </div>
+                <div class="small text-body-secondary">
+                  {{ h.recipient_class }} &bull; Roll: {{ h.recipient_roll_no }}
+                </div>
+                {% if h.recipient_contact %}
+                <div class="small text-body-secondary mt-1">
+                  {{ icon('phone', extra_class='small me-1') }}<bdi class="kb-code">{{ h.recipient_contact }}</bdi>
+                </div>
+                {% endif %}
+              </td>
 
-            <!-- Tracking Code -->
-            <td>
-              <code class="kb-code text-body-secondary small d-block mb-1">
-                {{ h.tracking_code }}
-              </code>
-              <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
-                {{ icon('check', extra_class='small') }}
-                <span>Handed Over</span>
-              </span>
-            </td>
+              <!-- Tracking Code -->
+              <td>
+                <bdi class="kb-code text-body-secondary small d-block mb-1">
+                  {{ h.tracking_code }}
+                </bdi>
+                <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                  {{ icon('check', extra_class='small') }}
+                  <span>{{ _t('status_completed', 'Handed Over') }}</span>
+                </span>
+              </td>
 
-            <!-- Teacher -->
-            <td>
-              <div class="small fw-semibold text-body">
-                {{ h.confirming_teacher_name or h.teacher_name }}
-              </div>
-              <small class="text-body-secondary">
-                Verified Staff
-              </small>
-            </td>
+              <!-- Teacher -->
+              <td>
+                <div class="small fw-semibold text-body">
+                  {{ h.confirming_teacher_name or h.teacher_name }}
+                </div>
+                <small class="text-body-secondary">
+                  Verified Staff
+                </small>
+              </td>
 
-            <!-- Actions -->
-            <td class="text-end">
-              <div class="btn-group btn-group-sm" role="group">
-                <a href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}" class="btn btn-outline-secondary" title="Inspect full audit record">
-                  {{ icon('eye', extra_class='me-1') }}Detail
-                </a>
-                <a href="{{ url_for('teacher.handover_receipt', handover_id=h.id) }}" class="btn btn-primary" title="Print official receipt" target="_blank">
-                  {{ icon('receipt', extra_class='me-1') }}Receipt
-                </a>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              <!-- Actions -->
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}" class="btn btn-outline-secondary" title="View detail">
+                    {{ icon('eye') }}
+                  </a>
+                  <a href="{{ url_for('teacher.handover_receipt', handover_id=h.id) }}" class="btn btn-primary" title="Print receipt" target="_blank">
+                    {{ icon('receipt') }}
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center">
+        <div>{{ _t('showing_records_count', 'Showing {count} records', count=handovers|length) }}</div>
+      </div>
     </div>
 
-    <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center">
-      <div>Showing <strong>{{ handovers|length }}</strong> of <strong>{{ total_count }}</strong> completed physical handovers</div>
+    <!-- Mobile Stacked Record Cards (< 768px, solves DEF-TAB-01) -->
+    <div class="d-md-none mb-4">
+      <div class="d-flex flex-column gap-3">
+        {% for h in handovers %}
+        <div class="card border shadow-xs overflow-hidden">
+          <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between py-2 px-3">
+            <bdi class="kb-code fw-bold text-primary small">{{ h.handover_code }}</bdi>
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+              {{ _t('status_completed', 'Handed Over') }}
+            </span>
+          </div>
+          <div class="card-body p-3">
+            <div class="mb-2">
+              <h3 class="h6 fw-bold text-body mb-1 text-truncate" title="{{ h.book_title }}">{{ h.book_title }}</h3>
+              <div class="small text-body-secondary">
+                <bdi class="kb-code text-primary">{{ h.book_code }}</bdi> &bull; {{ h.book_class }} &bull; {{ h.book_subject }}
+              </div>
+            </div>
+            <div class="small text-body-secondary border-top border-dashed pt-2 mt-2">
+              <div><strong>{{ _t('table_requester', 'Recipient') }}:</strong> {{ h.recipient_name }} ({{ h.recipient_class }}, Roll: {{ h.recipient_roll_no }})</div>
+              <div><strong>{{ _t('tracking_code', 'Request') }}:</strong> <bdi class="kb-code">{{ h.tracking_code }}</bdi></div>
+              <div><strong>{{ _t('table_handed_by', 'Confirmed By') }}:</strong> {{ h.confirming_teacher_name or h.teacher_name }}</div>
+              <div class="text-body-tertiary mt-1">{{ h.handover_date[:16] if h.handover_date else '' }}</div>
+            </div>
+          </div>
+          <div class="card-footer bg-body-tertiary p-2 d-flex gap-2 justify-content-end">
+            <a href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+              {{ icon('eye') }} <span>{{ _t('btn_details', 'Detail') }}</span>
+            </a>
+            <a href="{{ url_for('teacher.handover_receipt', handover_id=h.id) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" target="_blank">
+              {{ icon('receipt') }} <span>{{ _t('btn_print_receipt', 'Receipt') }}</span>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="text-center small text-body-secondary mt-2">
+        {{ _t('showing_records_count', 'Showing {count} records', count=handovers|length) }}
+      </div>
     </div>
-
-    {% else %}
+  {% else %}
     <!-- Empty State -->
-    <div class="card-body text-center py-5">
+    <div class="card border text-center py-5 shadow-sm mb-4">
       <div class="display-6 text-body-secondary mb-3">
         {{ icon('handshake', extra_class='text-body-tertiary') }}
       </div>
@@ -253,7 +295,7 @@
       {% if search_query or class_filter or date_from or date_to %}
       <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
         {{ icon('rotate-left') }}
-        <span>Clear All Filters</span>
+        <span>{{ _t('btn_reset_all', 'Clear All Filters') }}</span>
       </a>
       {% else %}
       <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
@@ -262,6 +304,5 @@
       </a>
       {% endif %}
     </div>
-    {% endif %}
-  </div>
+  {% endif %}
 {% endblock %}

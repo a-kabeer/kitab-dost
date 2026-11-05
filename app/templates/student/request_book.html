@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Request Book - {{ book.title }} - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('request_title', 'Request Book') }} - {{ book.title }} - Kitaab Bank{% endblock %}
 
 {% block content %}
 <div class="container-xxl py-4">
@@ -9,10 +9,10 @@
   <!-- Breadcrumbs -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb small">
-      <li class="breadcrumb-item"><a href="{{ url_for('student.index') }}" class="text-decoration-none">{{ icon('house') }} Home</a></li>
-      <li class="breadcrumb-item"><a href="{{ url_for('student.catalogue') }}" class="text-decoration-none">Catalogue</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('student.index') }}" class="text-decoration-none">{{ icon('house') }} {{ _t('nav_home', 'Home') }}</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('student.catalogue') }}" class="text-decoration-none">{{ _t('nav_catalogue', 'Catalogue') }}</a></li>
       <li class="breadcrumb-item"><a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="text-decoration-none text-truncate d-inline-block" style="max-width: 200px;">{{ book.title }}</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Request Book</li>
+      <li class="breadcrumb-item active" aria-current="page">{{ _t('request_title', 'Request Book') }}</li>
     </ol>
   </nav>
 
@@ -21,13 +21,13 @@
     <div class="text-center mb-4">
       <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-semibold mb-3 shadow-xs">
         {{ icon('clipboard-list') }}
-        <span>Student Book Request</span>
+        <span>{{ _t('request_badge', 'Student Book Request') }}</span>
       </div>
       <h1 class="h2 fw-bold text-body mb-2">
-        Request Textbook for Your Studies
+        {{ _t('request_heading', 'Request Textbook for Your Studies') }}
       </h1>
       <p class="text-body-secondary mx-auto mb-0" style="max-width: 620px;">
-        Submit your request to reserve this verified book. A school teacher will review your request and confirm reservation for physical handover.
+        {{ _t('request_sub', 'Submit your request to reserve this verified book. A school teacher will review your request and confirm reservation for physical handover.') }}
       </p>
     </div>
 
@@ -40,6 +40,7 @@
               src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 
               alt="{{ book.title }} Cover" 
               class="w-100 h-100 object-fit-cover"
+              onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
             >
           </div>
           <div class="flex-grow-1">
@@ -47,23 +48,23 @@
               <span class="badge bg-primary text-white">{{ book.class_grade }}</span>
               <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ book.subject }}</span>
               {% if book.condition_state == 'Like New' %}
-                <span class="badge bg-success-subtle text-success border border-success-subtle">{{ book.condition_state }}</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">{{ _t('condition_like_new', 'Like New') }}</span>
               {% elif book.condition_state == 'Good' %}
-                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">{{ book.condition_state }}</span>
+                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">{{ _t('condition_good', 'Good') }}</span>
               {% else %}
-                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ book.condition_state }}</span>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ _t('condition_fair', 'Fair') }}</span>
               {% endif %}
             </div>
             <h3 class="h6 fw-bold text-body mb-1">
               {{ book.title }}
             </h3>
             <div class="small text-body-secondary">
-              By {{ book.author or 'Textbook Board' }} • Code: <span class="kb-code fw-bold text-primary">{{ book.book_code }}</span>
+              {{ _t('by_author', 'By {author}').replace('{author}', book.author or 'Textbook Board') }} • {{ _t('book_code', 'Code') }}: <bdi class="kb-code fw-bold text-primary">{{ book.book_code }}</bdi>
             </div>
           </div>
           <div class="ms-sm-auto">
             <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
-              {{ icon('circle-dot') }} Available
+              {{ icon('circle-dot') }} {{ _t('status_available', 'Available') }}
             </span>
           </div>
         </div>
@@ -81,24 +82,24 @@
           <div class="mb-4 pb-4 border-bottom">
             <div class="d-flex align-items-center gap-2 mb-1">
               <span class="fs-5 text-primary">{{ icon('user') }}</span>
-              <h2 class="h5 fw-bold text-body mb-0">Student Requester Information</h2>
+              <h2 class="h5 fw-bold text-body mb-0">{{ _t('requester_info_heading', 'Student Requester Information') }}</h2>
             </div>
             <p class="small text-body-secondary mb-3">
-              Enter your correct school identifiers. Teachers will verify this information during physical handover.
+              {{ _t('requester_info_desc', 'Enter your correct school identifiers. Teachers will verify this information during physical handover.') }}
             </p>
 
             <div class="row g-3 mb-3">
               <!-- Requester Name -->
               <div class="col-12 col-md-6">
                 <label for="requester-name" class="form-label">
-                  Your Full Name <span class="text-danger">*</span>
+                  {{ _t('student_name', 'Your Full Name') }} <span class="text-danger">*</span>
                 </label>
                 <input 
                   type="text" 
                   id="requester-name" 
                   name="requester_name" 
                   class="form-control" 
-                  placeholder="e.g. Fatima Noor"
+                  placeholder="{{ _t('requester_name_placeholder', 'e.g. Fatima Noor') }}"
                   value="{{ form_data.get('requester_name', '') }}" 
                   required
                   maxlength="100"
@@ -108,14 +109,14 @@
               <!-- Class & Section -->
               <div class="col-12 col-md-6">
                 <label for="requester-class" class="form-label">
-                  Class &amp; Section <span class="text-danger">*</span>
+                  {{ _t('donor_class', 'Class & Section') }} <span class="text-danger">*</span>
                 </label>
                 <input 
                   type="text" 
                   id="requester-class" 
                   name="requester_class" 
                   class="form-control" 
-                  placeholder="e.g. Class 7-B, 6-Blue"
+                  placeholder="{{ _t('requester_class_placeholder', 'e.g. Class 7-B, 6-Blue') }}"
                   value="{{ form_data.get('requester_class', '') }}" 
                   required
                   maxlength="50"
@@ -127,51 +128,51 @@
               <!-- Roll Number -->
               <div class="col-12 col-md-6">
                 <label for="requester-roll" class="form-label">
-                  School Roll Number <span class="text-danger">*</span>
+                  {{ _t('roll_no', 'School Roll Number') }} <span class="text-danger">*</span>
                 </label>
                 <input 
                   type="text" 
                   id="requester-roll" 
                   name="requester_roll_no" 
                   class="form-control" 
-                  placeholder="e.g. 18"
+                  placeholder="{{ _t('requester_roll_placeholder', 'e.g. 18') }}"
                   value="{{ form_data.get('requester_roll_no', '') }}"
                   required
                   maxlength="50"
                 >
-                <div class="form-text">Used by the teacher to verify your identity when you collect the book.</div>
+                <div class="form-text">{{ _t('roll_no_help', 'Used by the teacher to verify your identity when you collect the book.') }}</div>
               </div>
 
               <!-- Contact Phone -->
               <div class="col-12 col-md-6">
                 <label for="requester-contact" class="form-label">
-                  Contact Phone / Parent Mobile <span class="text-danger">*</span>
+                  {{ _t('contact_number', 'Contact Phone / Parent Mobile') }} <span class="text-danger">*</span>
                 </label>
                 <input 
                   type="tel" 
                   id="requester-contact" 
                   name="requester_contact" 
                   class="form-control" 
-                  placeholder="e.g. 0300-1234567"
+                  placeholder="{{ _t('donor_contact_placeholder', 'e.g. 0300-1234567') }}"
                   value="{{ form_data.get('requester_contact', '') }}"
                   required
                   maxlength="50"
                 >
-                <div class="form-text">Strictly private. Never shared publicly.</div>
+                <div class="form-text">{{ _t('contact_help', 'Strictly private. Never shared publicly.') }}</div>
               </div>
             </div>
 
             <!-- Notes -->
             <div>
               <label for="request-notes" class="form-label">
-                Reason / Message for Teacher (Optional)
+                {{ _t('request_reason', 'Reason / Message for Teacher (Optional)') }}
               </label>
               <textarea 
                 id="request-notes" 
                 name="notes" 
                 class="form-control" 
                 rows="3"
-                placeholder="e.g. Need this book for daily classwork and exam preparation..."
+                placeholder="{{ _t('request_reason_placeholder', 'e.g. Need this book for daily classwork and exam preparation...') }}"
                 maxlength="500"
               >{{ form_data.get('notes', '') }}</textarea>
             </div>
@@ -181,18 +182,18 @@
           <div class="alert alert-info d-flex align-items-start gap-2 mb-4 p-3 small shadow-xs">
             <span class="fs-5 flex-shrink-0">{{ icon('shield-halved') }}</span>
             <div>
-              <strong>Atomic Reservation &amp; Privacy:</strong> After submitting, you will receive an unpredictable Tracking Code (e.g. <code>KB-REQ-7K9M-2X4P</code>). Once approved by a teacher, the book is locked and reserved exclusively for you. Your phone number and roll number remain strictly confidential.
+              <strong>{{ _t('atomic_reservation_title', 'Atomic Reservation & Privacy:') }}</strong> {{ _t('atomic_reservation_desc', 'After submitting, you will receive an unpredictable Tracking Code. Once approved by a teacher, the book is locked and reserved exclusively for you. Your phone number and roll number remain strictly confidential.') }}
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="d-flex flex-wrap justify-content-end align-items-center gap-2">
             <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline-secondary">
-              Cancel
+              {{ _t('btn_cancel', 'Cancel') }}
             </a>
             <button type="submit" class="btn btn-primary px-4 shadow-xs d-inline-flex align-items-center gap-2">
               {{ icon('paper-plane') }}
-              <span>Submit Request for Teacher Review</span>
+              <span>{{ _t('btn_request', 'Submit Request for Teacher Review') }}</span>
             </button>
           </div>
         </form>

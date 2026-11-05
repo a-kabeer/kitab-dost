@@ -1,6 +1,6 @@
 {% extends "teacher/base_teacher.html" %}
 
-{% block title %}Teacher Dashboard - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('teacher_dashboard', 'Teacher Dashboard') }} - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
 {% from 'macros/icons.html' import icon %}
@@ -8,8 +8,8 @@
 <!-- Dashboard Header -->
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
   <div>
-    <h1 class="h3 fw-bold text-body mb-1">Library Overview &amp; Operations</h1>
-    <p class="text-body-secondary small mb-0">Live analytics from local SQLite records.</p>
+    <h1 class="h3 fw-bold text-body mb-1">{{ _t('teacher_dashboard', 'Library Overview & Operations') }}</h1>
+    <p class="text-body-secondary small mb-0">{{ _t('teacher_dashboard_sub', 'Live analytics from local SQLite records.') }}</p>
   </div>
   <div class="d-flex flex-wrap gap-2 align-items-center">
     <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
@@ -33,10 +33,10 @@
   </div>
   <div class="d-flex flex-wrap gap-2 flex-shrink-0">
     {% if analytics.summary.pending_donations > 0 %}
-      <a href="{{ url_for('teacher.donations', status='pending') }}" class="btn btn-sm btn-primary shadow-xs">Review Donations</a>
+      <a href="{{ url_for('teacher.donations', status='pending') }}" class="btn btn-sm btn-primary shadow-xs">{{ _t('action_review_donations', 'Review Donations') }}</a>
     {% endif %}
     {% if analytics.summary.pending_requests > 0 %}
-      <a href="{{ url_for('teacher.requests', status='pending') }}" class="btn btn-sm btn-outline-secondary">Review Requests</a>
+      <a href="{{ url_for('teacher.requests', status='pending') }}" class="btn btn-sm btn-outline-secondary">{{ _t('action_manage_requests', 'Review Requests') }}</a>
     {% endif %}
   </div>
 </div>
@@ -49,7 +49,7 @@
       <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
         {{ icon('plus') }}
       </div>
-      <div class="fw-bold text-body small">Add Textbook</div>
+      <div class="fw-bold text-body small">{{ _t('btn_add_book', 'Add Textbook') }}</div>
       <div class="text-body-secondary" style="font-size: 0.725rem;">Direct inventory entry</div>
     </a>
   </div>
@@ -59,7 +59,7 @@
       <div class="rounded-circle bg-warning-subtle text-warning-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
         {{ icon('inbox') }}
       </div>
-      <div class="fw-bold text-body small">Donations Queue</div>
+      <div class="fw-bold text-body small">{{ _t('nav_donations', 'Donations Queue') }}</div>
       <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.pending_donations }} pending review</div>
     </a>
   </div>
@@ -69,7 +69,7 @@
       <div class="rounded-circle bg-info-subtle text-info-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
         {{ icon('clipboard-list') }}
       </div>
-      <div class="fw-bold text-body small">Student Requests</div>
+      <div class="fw-bold text-body small">{{ _t('nav_requests', 'Student Requests') }}</div>
       <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.pending_requests }} pending allocation</div>
     </a>
   </div>
@@ -79,7 +79,7 @@
       <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
         {{ icon('handshake') }}
       </div>
-      <div class="fw-bold text-body small">Handover Ledger</div>
+      <div class="fw-bold text-body small">{{ _t('nav_handovers', 'Handover Ledger') }}</div>
       <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.completed_handovers }} fulfilled</div>
     </a>
   </div>
@@ -89,7 +89,7 @@
       <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
         {{ icon('book') }}
       </div>
-      <div class="fw-bold text-body small">Book Inventory</div>
+      <div class="fw-bold text-body small">{{ _t('nav_inventory', 'Book Inventory') }}</div>
       <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.total_inventory }} total books</div>
     </a>
   </div>
@@ -106,16 +106,16 @@
 </div>
 
 <!-- Primary Metric Cards Grid -->
-<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 mb-4">
+<div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-3 mb-4">
   <div class="col">
     <a href="{{ url_for('teacher.inventory', status='all') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Total Inventory</span>
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('kpi_total_inventory', 'Total Inventory') }}</span>
         <div class="text-primary fs-5">{{ icon('book') }}</div>
       </div>
-      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.total_inventory }}</div>
-      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1">
-        <span>Manage Inventory</span> {{ icon('arrow-right') }}
+      <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.total_inventory }}</div>
+      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
+        <span>Manage</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -123,23 +123,23 @@
   <div class="col">
     <a href="{{ url_for('teacher.inventory', status='available') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Available in Catalogue</span>
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('kpi_available_books', 'Available Books') }}</span>
         <div class="text-success fs-5">{{ icon('book-open-reader') }}</div>
       </div>
-      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.available_books }}</div>
-      <div class="small text-body-secondary mt-auto">Ready for student borrowing</div>
+      <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.available_books }}</div>
+      <div class="small text-body-secondary mt-auto" style="font-size: 0.725rem;">Ready to borrow</div>
     </a>
   </div>
 
   <div class="col">
     <a href="{{ url_for('teacher.requests', status='approved') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Reserved for Pickup</span>
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('kpi_reserved_books', 'Reserved Books') }}</span>
         <div class="text-warning fs-5">{{ icon('clock') }}</div>
       </div>
-      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.reserved_books }}</div>
-      <div class="small text-warning fw-semibold mt-auto d-inline-flex align-items-center gap-1">
-        <span>Awaiting Handover</span> {{ icon('arrow-right') }}
+      <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.reserved_books }}</div>
+      <div class="small text-warning fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
+        <span>Handover</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -147,12 +147,12 @@
   <div class="col">
     <a href="{{ url_for('teacher.handovers') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Books Reused (Handovers)</span>
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('kpi_handed_over', 'Books Reused') }}</span>
         <div class="text-info fs-5">{{ icon('rotate') }}</div>
       </div>
-      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.handed_over_books }}</div>
-      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1">
-        <span>Circulation Ledger</span> {{ icon('arrow-right') }}
+      <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.handed_over_books }}</div>
+      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
+        <span>Ledger</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -160,23 +160,23 @@
   <div class="col">
     <div class="card h-100 border shadow-xs p-3">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Students Served</span>
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('stat_students_served', 'Students') }}</span>
         <div class="text-warning fs-5">{{ icon('users') }}</div>
       </div>
-      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.unique_recipients }}</div>
-      <div class="small text-body-secondary mt-auto">Unique student beneficiaries</div>
+      <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.unique_recipients }}</div>
+      <div class="small text-body-secondary mt-auto" style="font-size: 0.725rem;">Beneficiaries</div>
     </div>
   </div>
 
   <div class="col">
     <a href="{{ url_for('teacher.donations') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Total Donations</span>
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('kpi_pending_donations', 'Donations') }}</span>
         <div class="text-primary fs-5">{{ icon('inbox') }}</div>
       </div>
-      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.total_donations }}</div>
-      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1">
-        <span>View Queue</span> {{ icon('arrow-right') }}
+      <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.total_donations }}</div>
+      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
+        <span>Queue</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>

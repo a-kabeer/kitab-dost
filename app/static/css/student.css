@@ -709,4 +709,9 @@ textarea.form-control {
     max-width: 320px;
     margin: 0 auto;
   }
+  .book-detail-cover-card {
+    max-width: 220px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 }

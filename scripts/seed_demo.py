@@ -162,7 +162,7 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
         ('KB-BK-000009', 'English Grammar & Composition 7', 'A. J. Thomson', 'English', 'Class 7', 'English', 'National Education Press', 2024, 'Good', 'Tenses, active/passive voice, direct/indirect speech.', 'img/covers/english_class7.svg', 'available', 1),
         ('KB-BK-000010', 'سنڌي درسي ڪتاب درجو ستون', 'غلام محمد گرامي', 'Sindhi', 'Class 7', 'Sindhi', 'سنڌ ٽيڪسٽ بڪ بورڊ', 2025, 'Good', 'شاهه لطيف جا بيت، لوڪ ادب، سنڌي ساهت.', 'img/covers/sindhi_class7.svg', 'available', 1),
         ('KB-BK-000011', 'Computer Science for Class 7', 'Engr. Farooq Aziz', 'Computer Science', 'Class 7', 'English', 'Sindhi Textbook Board', 2025, 'Like New', 'Computer hardware, Python basics, scratch programming.', 'img/covers/computer_class7.svg', 'reserved', 1),
-        ('KB-BK-000012', 'اردو زبان و ادب جماعت ہفتم', 'محمود شام', 'Urdu', 'Class 7', 'Urdu', 'پنجاب ٹیکسٹ بک بورڈ', 2024, 'Fair', 'شاعری، نثر نگاری، خطوط نویسی اور ذخیرہ الفاظ۔', 'img/covers/placeholder.svg', 'handed_over', 1),
+        ('KB-BK-000012', 'اردو زبان و ادب جماعت ہفتم', 'محمود شام', 'Urdu', 'Class 7', 'Urdu', 'پنجاب ٹیکسٹ بک بورڈ', 2024, 'Fair', 'شاعری، نثر نگاری، خطوط نویسی اور ذخیرہ الفاظ۔', 'img/covers/urdu_class7.svg', 'handed_over', 1),
 
         # Class 8
         ('KB-BK-000013', 'Mathematics for Class 8', 'Prof. Dr. M. A. Memon', 'Mathematics', 'Class 8', 'English', 'Sindhi Textbook Board', 2025, 'Good', 'Number Systems, Financial Arithmetic, Polynomials, Linear Equations.', 'img/covers/math_class8.svg', 'available', 1),
@@ -170,7 +170,7 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
         ('KB-BK-000015', 'اردو لازمی برائے جماعت ہشتم', 'سید وقار عظیم', 'Urdu', 'Class 8', 'Urdu', 'قومی نصاب و درسی کتب کونسل', 2025, 'Like New', 'قومی و ملی نظمیں، علامہ اقبال کی شاعری، تاریخ اسلام۔', 'img/covers/urdu_class8.svg', 'available', 1),
         ('KB-BK-000016', 'سنڌي لازمی درجو اٺون', 'استاد حيدر بخش جتوئي', 'Sindhi', 'Class 8', 'Sindhi', 'سنڌ ٽيڪسٽ بڪ بورڊ', 2024, 'Good', 'ڪلاسيڪل شاعري، سچل سرمست جو ڪلام، مضمون نگاري.', 'img/covers/sindhi_class8.svg', 'available', 1),
         ('KB-BK-000017', 'Computer Science for Class 8', 'Engr. Farooq Aziz', 'Computer Science', 'Class 8', 'English', 'Sindhi Textbook Board', 2025, 'Good', 'Networks, cybersecurity, algorithmic problem solving.', 'img/covers/computer_class8.svg', 'reserved', 1),
-        ('KB-BK-000018', 'Social Studies for Class 8', 'Prof. Nisar Ahmed', 'Social Studies', 'Class 8', 'English', 'Sindhi Textbook Board', 2024, 'Good', 'History of the Subcontinent, Pakistan Movement.', 'img/covers/placeholder.svg', 'handed_over', 1)
+        ('KB-BK-000018', 'Social Studies for Class 8', 'Prof. Nisar Ahmed', 'Social Studies', 'Class 8', 'English', 'Sindhi Textbook Board', 2024, 'Good', 'History of the Subcontinent, Pakistan Movement.', 'img/covers/social_class8.svg', 'handed_over', 1)
     ]
 
     for b in books_data:

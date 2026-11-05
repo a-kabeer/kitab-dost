@@ -7,18 +7,18 @@
   {% from 'macros/icons.html' import icon %}
 
   <!-- Hero Section -->
-  <section class="text-center py-4 py-lg-5">
+  <section class="text-center py-3 py-lg-4">
     <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-semibold mb-3 shadow-xs">
       {{ icon('graduation-cap') }}
-      <span>Classes 6, 7 & 8 Book Sharing Program</span>
+      <span>{{ _t('hero_badge', 'Classes 6, 7 & 8 Book Sharing Program') }}</span>
     </div>
     
-    <h1 class="display-5 fw-bold text-body mb-3 tracking-tight">
-      Don't Let Old Books Sit on Shelves.<br>
-      <span class="text-primary">Pass Knowledge Forward.</span>
+    <h1 class="display-6 display-md-5 fw-bold text-body mb-3 tracking-tight">
+      {{ _t('hero_title_line1', "Don't Let Old Books Sit on Shelves.") }}<br>
+      <span class="text-primary">{{ _t('hero_title_line2', "Pass Knowledge Forward.") }}</span>
     </h1>
 
-    <p class="lead text-body-secondary mx-auto mb-4" style="max-width: 680px;">
+    <p class="lead text-body-secondary mx-auto mb-4" style="max-width: 680px; font-size: 1.05rem;">
       {{ _t('hero_subtitle', 'Kitaab Bank connects school students to donate completed textbooks and request the books they need for the new academic session. Supervised by school teachers.') }}
     </p>
 
@@ -33,25 +33,25 @@
           name="q" 
           class="form-control border-0 bg-transparent shadow-none fs-6" 
           placeholder="{{ _t('search_placeholder', 'Search by title, author, subject (e.g. Science, Mathematics, اردو)...') }}" 
-          aria-label="Search books"
+          aria-label="{{ _t('btn_search', 'Search') }}"
           autocomplete="off"
         >
         <button type="submit" class="btn btn-primary px-3 px-sm-4 fw-semibold border-0 d-inline-flex align-items-center gap-2">
           {{ icon('magnifying-glass') }}
-          <span class="d-none d-sm-inline">Search</span>
+          <span class="d-none d-sm-inline">{{ _t('btn_search', 'Search') }}</span>
         </button>
       </form>
     </div>
 
     <!-- Quick Action Buttons -->
-    <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
-      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary btn-lg px-4 shadow-xs d-inline-flex align-items-center gap-2">
+    <div class="d-flex flex-wrap justify-content-center gap-2 gap-sm-3 mb-4 mb-lg-5">
+      <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary btn-lg px-4 shadow-xs d-inline-flex align-items-center justify-content-center gap-2 text-nowrap">
         {{ icon('book-bookmark') }}
-        <span>Explore All Books</span>
+        <span>{{ _t('hero_cta_explore', 'Explore All Books') }}</span>
       </a>
-      <a href="{{ url_for('student.donate') }}" class="btn btn-outline-secondary btn-lg px-4 d-inline-flex align-items-center gap-2">
+      <a href="{{ url_for('student.donate') }}" class="btn btn-outline-secondary btn-lg px-4 d-inline-flex align-items-center justify-content-center gap-2 text-nowrap">
         {{ icon('hand-holding-heart') }}
-        <span>Donate an Unused Book</span>
+        <span>{{ _t('hero_cta_donate', 'Donate an Unused Book') }}</span>
       </a>
     </div>
 
@@ -63,7 +63,7 @@
             {{ icon('book-bookmark') }}
           </div>
           <div class="fs-2 fw-bold text-body mb-1">{{ stats.total_donated }}</div>
-          <div class="small text-body-secondary fw-medium">Total Books Donated</div>
+          <div class="small text-body-secondary fw-medium">{{ _t('stat_total_donated', 'Total Books Donated') }}</div>
         </div>
       </div>
       <div class="col">
@@ -72,7 +72,7 @@
             {{ icon('book-open-reader') }}
           </div>
           <div class="fs-2 fw-bold text-body mb-1">{{ stats.available_books }}</div>
-          <div class="small text-body-secondary fw-medium">Currently Available</div>
+          <div class="small text-body-secondary fw-medium">{{ _t('stat_available_books', 'Currently Available') }}</div>
         </div>
       </div>
       <div class="col">
@@ -81,7 +81,7 @@
             {{ icon('rotate') }}
           </div>
           <div class="fs-2 fw-bold text-body mb-1">{{ stats.total_reused }}</div>
-          <div class="small text-body-secondary fw-medium">Successfully Reused</div>
+          <div class="small text-body-secondary fw-medium">{{ _t('stat_reused_books', 'Successfully Reused') }}</div>
         </div>
       </div>
       <div class="col">
@@ -90,7 +90,7 @@
             {{ icon('users') }}
           </div>
           <div class="fs-2 fw-bold text-body mb-1">{{ stats.active_students }}</div>
-          <div class="small text-body-secondary fw-medium">Student Beneficiaries</div>
+          <div class="small text-body-secondary fw-medium">{{ _t('stat_students_served', 'Student Beneficiaries') }}</div>
         </div>
       </div>
     </div>
@@ -102,14 +102,14 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 mb-4">
       <div>
         <h2 class="h3 fw-bold text-body mb-1">
-          Recently Added Educational Books
+          {{ _t('featured_books_title', 'Recently Added Educational Books') }}
         </h2>
         <p class="text-body-secondary mb-0">
-          Verified textbooks ready for collection at the school desk.
+          {{ _t('featured_books_sub', 'Verified textbooks ready for collection at the school desk.') }}
         </p>
       </div>
       <a href="{{ url_for('student.catalogue') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
-        <span>View Full Catalogue</span>
+        <span>{{ _t('view_full_catalogue', 'View Full Catalogue') }}</span>
         {{ icon('arrow-right') }}
       </a>
     </div>
@@ -124,17 +124,18 @@
               alt="{{ book.title }} Cover" 
               class="w-100 h-100 object-fit-cover"
               loading="lazy"
+              onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
             >
             <div class="position-absolute top-0 start-0 m-2 z-1">
               <span class="badge bg-primary text-white shadow-xs">{{ book.class_grade }}</span>
             </div>
             <div class="position-absolute top-0 end-0 m-2 z-1">
               {% if book.condition_state == 'Like New' %}
-                <span class="badge bg-success-subtle text-success border border-success-subtle shadow-xs">{{ book.condition_state }}</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle shadow-xs">{{ _t('condition_like_new', 'Like New') }}</span>
               {% elif book.condition_state == 'Good' %}
-                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle shadow-xs">{{ book.condition_state }}</span>
+                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle shadow-xs">{{ _t('condition_good', 'Good') }}</span>
               {% else %}
-                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle shadow-xs">{{ book.condition_state }}</span>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle shadow-xs">{{ _t('condition_fair', 'Fair') }}</span>
               {% endif %}
             </div>
           </div>
@@ -152,22 +153,22 @@
             </h3>
 
             <p class="small text-body-secondary mb-3 text-truncate" title="{{ book.author }}">
-              By {{ book.author }}
+              {{ _t('by_author', 'By {author}', author=book.author) }}
             </p>
 
             <div class="d-flex align-items-center justify-content-between gap-2 pt-2 mt-auto border-top border-dashed small">
-              <span class="kb-code bg-body-tertiary px-2 py-1 rounded text-body-secondary">{{ book.book_code }}</span>
+              <bdi class="kb-code bg-body-tertiary px-2 py-1 rounded text-body-secondary">{{ book.book_code }}</bdi>
               <span class="text-body-secondary">{{ book.edition_year or 'Official' }}</span>
             </div>
           </div>
 
           <div class="card-footer bg-body-tertiary border-top p-3 d-flex align-items-center justify-content-between">
             <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
-              {{ icon('circle-dot') }} Available
+              {{ icon('circle-dot') }} {{ _t('status_available', 'Available') }}
             </span>
             <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
               {{ icon('circle-info') }}
-              <span>Details</span>
+              <span>{{ _t('btn_details', 'Details') }}</span>
             </a>
           </div>
         </article>
@@ -177,7 +178,7 @@
 
     <div class="text-center mt-4 pt-2">
       <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary px-4 py-2 shadow-xs d-inline-flex align-items-center gap-2">
-        <span>Explore All {{ stats.available_books }} Available Books</span>
+        <span>{{ _t('explore_all_available', 'Explore All Available Books') }}</span>
         {{ icon('arrow-right') }}
       </a>
     </div>
@@ -188,10 +189,10 @@
   <section class="my-5 py-4 border-top">
     <div class="text-center mb-4 pb-2">
       <h2 class="h3 fw-bold text-body mb-2">
-        How Kitaab Bank Works
+        {{ _t('how_it_works_title', 'How Kitaab Bank Works') }}
       </h2>
       <p class="text-body-secondary mx-auto mb-0" style="max-width: 580px;">
-        A simple, four-step process to give educational books a second life in our school.
+        {{ _t('how_it_works_sub', 'A simple, four-step process to give educational books a second life in our school.') }}
       </p>
     </div>
 
@@ -201,10 +202,10 @@
           <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
             {{ icon('hand-holding-heart', extra_class='fs-4') }}
           </div>
-          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 1</span>
-          <h3 class="h6 fw-bold text-body mb-2">Student Donates</h3>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">{{ _t('step_badge_1', 'Step 1') }}</span>
+          <h3 class="h6 fw-bold text-body mb-2">{{ _t('step_1_title', 'Student Donates') }}</h3>
           <p class="small text-body-secondary mb-0">
-            Enter details of an unused textbook you no longer need and submit it for teacher review.
+            {{ _t('step_1_desc', 'Enter details of an unused textbook you no longer need and submit it for teacher review.') }}
           </p>
         </div>
       </div>
@@ -214,10 +215,10 @@
           <div class="rounded-circle bg-info-subtle text-info-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
             {{ icon('user-check', extra_class='fs-4') }}
           </div>
-          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 2</span>
-          <h3 class="h6 fw-bold text-body mb-2">Teacher Verifies</h3>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">{{ _t('step_badge_2', 'Step 2') }}</span>
+          <h3 class="h6 fw-bold text-body mb-2">{{ _t('step_2_title', 'Teacher Verifies') }}</h3>
           <p class="small text-body-secondary mb-0">
-            School teachers check the condition and syllabus relevance before publishing to the catalogue.
+            {{ _t('step_2_desc', 'School teachers check the condition and syllabus relevance before publishing to the catalogue.') }}
           </p>
         </div>
       </div>
@@ -227,10 +228,10 @@
           <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
             {{ icon('book-bookmark', extra_class='fs-4') }}
           </div>
-          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 3</span>
-          <h3 class="h6 fw-bold text-body mb-2">Student Requests</h3>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">{{ _t('step_badge_3', 'Step 3') }}</span>
+          <h3 class="h6 fw-bold text-body mb-2">{{ _t('step_3_title', 'Student Requests') }}</h3>
           <p class="small text-body-secondary mb-0">
-            Browse available books for Class 6, 7, or 8 and request what you need without complex registration.
+            {{ _t('step_3_desc', 'Browse available books for Class 6, 7, or 8 and request what you need without complex registration.') }}
           </p>
         </div>
       </div>
@@ -240,10 +241,10 @@
           <div class="rounded-circle bg-warning-subtle text-warning-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 54px; height: 54px;">
             {{ icon('handshake', extra_class='fs-4') }}
           </div>
-          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">Step 4</span>
-          <h3 class="h6 fw-bold text-body mb-2">School Handover</h3>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill w-auto mx-auto mb-2 px-3 py-1">{{ _t('step_badge_4', 'Step 4') }}</span>
+          <h3 class="h6 fw-bold text-body mb-2">{{ _t('step_4_title', 'School Handover') }}</h3>
           <p class="small text-body-secondary mb-0">
-            Collect your verified book directly from the school teacher's desk and start learning.
+            {{ _t('step_4_desc', 'Collect your verified book directly from the school teacher\'s desk and start learning.') }}
           </p>
         </div>
       </div>

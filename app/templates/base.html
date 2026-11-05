@@ -141,16 +141,16 @@
 
           <!-- Teacher Sign In / Desk Links -->
           {% if session.get('teacher_id') %}
-            <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-primary btn-sm d-none d-md-inline-flex align-items-center gap-1 shadow-xs">
+            <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-primary btn-sm text-nowrap d-none d-md-inline-flex align-items-center gap-1 shadow-xs">
               {{ icon('chalkboard-user') }}
               <span>{{ _t('nav_teacher', 'Teacher Desk') }}</span>
             </a>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm d-none d-md-inline-flex align-items-center gap-1">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm text-nowrap d-none d-md-inline-flex align-items-center gap-1">
               {{ icon('arrow-right-from-bracket') }}
               <span>{{ _t('nav_logout', 'Sign Out') }}</span>
             </a>
           {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm d-none d-md-inline-flex align-items-center gap-1 shadow-xs">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm text-nowrap d-none d-md-inline-flex align-items-center gap-1 shadow-xs">
               {{ icon('right-to-bracket') }}
               <span>{{ _t('nav_login', 'Teacher Sign In') }}</span>
             </a>

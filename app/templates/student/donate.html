@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Donate a Textbook - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('donate_title', 'Donate a Textbook') }} - Kitaab Bank{% endblock %}
 
 {% block content %}
 <div class="container-xxl py-4">
@@ -9,8 +9,8 @@
   <!-- Breadcrumbs -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb small">
-      <li class="breadcrumb-item"><a href="{{ url_for('student.index') }}" class="text-decoration-none">{{ icon('house') }} Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Donate a Textbook</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('student.index') }}" class="text-decoration-none">{{ icon('house') }} {{ _t('nav_home', 'Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ _t('donate_title', 'Donate a Textbook') }}</li>
     </ol>
   </nav>
 
@@ -19,13 +19,13 @@
     <div class="text-center mb-4">
       <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-semibold mb-3 shadow-xs">
         {{ icon('book-open-reader') }}
-        <span>Pass Knowledge Forward</span>
+        <span>{{ _t('hero_title_line2', 'Pass Knowledge Forward') }}</span>
       </div>
       <h1 class="h2 fw-bold text-body mb-2">
-        Donate an Unused Educational Book
+        {{ _t('donate_heading', 'Donate an Unused Educational Book') }}
       </h1>
       <p class="text-body-secondary mx-auto mb-0" style="max-width: 620px;">
-        Give your completed textbooks a second life. School teachers supervise and inspect every donation before listing it in the school exchange catalogue.
+        {{ _t('donate_sub', 'Give your completed textbooks a second life. School teachers supervise and inspect every donation before listing it in the school exchange catalogue.') }}
       </p>
     </div>
 
@@ -39,40 +39,40 @@
           <div class="mb-4 pb-4 border-bottom">
             <div class="d-flex align-items-center gap-2 mb-1">
               <span class="fs-5 text-primary">{{ icon('book') }}</span>
-              <h2 class="h5 fw-bold text-body mb-0">1. Textbook Information</h2>
+              <h2 class="h5 fw-bold text-body mb-0">{{ _t('book_info_heading', '1. Textbook Information') }}</h2>
             </div>
             <p class="small text-body-secondary mb-3">
-              Provide the details of the school book you wish to donate.
+              {{ _t('book_info_desc', 'Provide the details of the school book you wish to donate.') }}
             </p>
 
             <!-- Book Title -->
             <div class="mb-3">
               <label for="book-title" class="form-label">
-                Book Title <span class="text-danger">*</span>
+                {{ _t('book_title', 'Book Title') }} <span class="text-danger">*</span>
               </label>
               <input 
                 type="text" 
                 id="book-title" 
                 name="title" 
                 class="form-control" 
-                placeholder="e.g. Mathematics for Class 7, جنرل سائنس, سنڌي سليس"
+                placeholder="{{ _t('book_title_placeholder', 'e.g. Mathematics for Class 7, جنرل سائنس, سنڌي سليس') }}"
                 value="{{ form_data.get('title', '') }}" 
                 required
                 maxlength="200"
               >
-              <div class="form-text">Official book title as printed on the front cover.</div>
+              <div class="form-text">{{ _t('book_title_help', 'Official book title as printed on the front cover.') }}</div>
             </div>
 
             <div class="row g-3 mb-3">
               <!-- Author -->
               <div class="col-12 col-md-6">
-                <label for="book-author" class="form-label">Author / Board</label>
+                <label for="book-author" class="form-label">{{ _t('author', 'Author / Board') }}</label>
                 <input 
                   type="text" 
                   id="book-author" 
                   name="author" 
                   class="form-control" 
-                  placeholder="e.g. Sindh Textbook Board, Prof. Memon"
+                  placeholder="{{ _t('author_placeholder', 'e.g. Sindh Textbook Board, Prof. Memon') }}"
                   value="{{ form_data.get('author', '') }}"
                   maxlength="150"
                 >
@@ -81,10 +81,10 @@
               <!-- Class Level -->
               <div class="col-12 col-md-6">
                 <label for="book-class" class="form-label">
-                  Class Level <span class="text-danger">*</span>
+                  {{ _t('class_grade', 'Class Level') }} <span class="text-danger">*</span>
                 </label>
                 <select id="book-class" name="class_grade" class="form-select" required>
-                  <option value="">Select Class Level</option>
+                  <option value="">{{ _t('filter_all_classes', 'Select Class Level') }}</option>
                   {% for c in classes %}
                   <option value="{{ c }}" {% if form_data.get('class_grade') == c %}selected{% endif %}>{{ c }}</option>
                   {% endfor %}
@@ -96,10 +96,10 @@
               <!-- Subject -->
               <div class="col-12 col-sm-6 col-md-4">
                 <label for="book-subject" class="form-label">
-                  Subject <span class="text-danger">*</span>
+                  {{ _t('subject', 'Subject') }} <span class="text-danger">*</span>
                 </label>
                 <select id="book-subject" name="subject" class="form-select" required>
-                  <option value="">Select Subject</option>
+                  <option value="">{{ _t('filter_all_subjects', 'Select Subject') }}</option>
                   {% for s in subjects %}
                   <option value="{{ s }}" {% if form_data.get('subject') == s %}selected{% endif %}>{{ s }}</option>
                   {% endfor %}
@@ -109,7 +109,7 @@
               <!-- Language -->
               <div class="col-12 col-sm-6 col-md-4">
                 <label for="book-lang" class="form-label">
-                  Medium / Language <span class="text-danger">*</span>
+                  {{ _t('language', 'Medium / Language') }} <span class="text-danger">*</span>
                 </label>
                 <select id="book-lang" name="language" class="form-select" required>
                   {% for l in languages %}
@@ -121,12 +121,12 @@
               <!-- Condition -->
               <div class="col-12 col-md-4">
                 <label for="book-condition" class="form-label">
-                  Physical Condition <span class="text-danger">*</span>
+                  {{ _t('condition', 'Physical Condition') }} <span class="text-danger">*</span>
                 </label>
                 <select id="book-condition" name="condition_state" class="form-select" required>
-                  <option value="Good" {% if form_data.get('condition_state', 'Good') == 'Good' %}selected{% endif %}>Good (Clean, minor wear)</option>
-                  <option value="Like New" {% if form_data.get('condition_state') == 'Like New' %}selected{% endif %}>Like New (Crisp, intact pages)</option>
-                  <option value="Fair" {% if form_data.get('condition_state') == 'Fair' %}selected{% endif %}>Fair (Usable, study marks)</option>
+                  <option value="Good" {% if form_data.get('condition_state', 'Good') == 'Good' %}selected{% endif %}>{{ _t('condition_good', 'Good') }} (Clean, minor wear)</option>
+                  <option value="Like New" {% if form_data.get('condition_state') == 'Like New' %}selected{% endif %}>{{ _t('condition_like_new', 'Like New') }} (Crisp, intact pages)</option>
+                  <option value="Fair" {% if form_data.get('condition_state') == 'Fair' %}selected{% endif %}>{{ _t('condition_fair', 'Fair') }} (Usable, study marks)</option>
                 </select>
               </div>
             </div>
@@ -134,14 +134,14 @@
             <!-- Description -->
             <div class="mb-3">
               <label for="book-desc" class="form-label">
-                Description / Topics Covered (Optional)
+                {{ _t('notes_remarks', 'Description / Topics Covered (Optional)') }}
               </label>
               <textarea 
                 id="book-desc" 
                 name="description" 
                 class="form-control" 
                 rows="3"
-                placeholder="Mention syllabus edition year, included chapters, or any notes that help teachers and fellow students..."
+                placeholder="{{ _t('desc_placeholder', 'Mention syllabus edition year, included chapters, or any notes that help teachers and fellow students...') }}"
                 maxlength="1000"
               >{{ form_data.get('description', '') }}</textarea>
             </div>
@@ -149,17 +149,17 @@
             <!-- Photograph Upload -->
             <div>
               <label for="book-photo" class="form-label">
-                Book Photograph (Optional)
+                {{ _t('optional_photo', 'Book Photograph (Optional)') }}
               </label>
               <div class="border rounded-3 p-4 text-center bg-body-tertiary card-hover" style="cursor: pointer;" onclick="document.getElementById('book-photo').click()">
                 <div class="fs-1 text-body-secondary mb-2">
                   {{ icon('camera') }}
                 </div>
                 <div class="fw-semibold text-body mb-1">
-                  Click to attach a clear picture of the book cover
+                  {{ _t('photo_upload_prompt', 'Click to attach a clear picture of the book cover') }}
                 </div>
                 <div class="small text-body-secondary">
-                  Supported formats: JPG, PNG, WEBP (Max 3 MB). Helps teachers verify condition faster.
+                  {{ _t('photo_upload_help', 'Supported formats: JPG, PNG, WEBP (Max 3 MB). Helps teachers verify condition faster.') }}
                 </div>
                 <input 
                   type="file" 
@@ -178,24 +178,24 @@
           <div class="mb-4 pb-4 border-bottom">
             <div class="d-flex align-items-center gap-2 mb-1">
               <span class="fs-5 text-primary">{{ icon('user') }}</span>
-              <h2 class="h5 fw-bold text-body mb-0">2. Student Donor Information</h2>
+              <h2 class="h5 fw-bold text-body mb-0">{{ _t('donor_info_heading', '2. Student Donor Information') }}</h2>
             </div>
             <p class="small text-body-secondary mb-3">
-              Your name is recorded for school acknowledgement and teacher supervision. Contact details remain strictly private and will never appear in the public catalogue.
+              {{ _t('donor_info_desc', 'Your name is recorded for school acknowledgement and teacher supervision. Contact details remain strictly private and will never appear in the public catalogue.') }}
             </p>
 
             <div class="row g-3 mb-3">
               <!-- Donor Name -->
               <div class="col-12 col-md-6">
                 <label for="donor-name" class="form-label">
-                  Your Full Name <span class="text-danger">*</span>
+                  {{ _t('student_name', 'Your Full Name') }} <span class="text-danger">*</span>
                 </label>
                 <input 
                   type="text" 
                   id="donor-name" 
                   name="donor_name" 
                   class="form-control" 
-                  placeholder="e.g. Zeeshan Ahmed"
+                  placeholder="{{ _t('donor_name_placeholder', 'e.g. Zeeshan Ahmed') }}"
                   value="{{ form_data.get('donor_name', '') }}" 
                   required
                   maxlength="100"
@@ -205,14 +205,14 @@
               <!-- Class & Section -->
               <div class="col-12 col-md-6">
                 <label for="donor-class" class="form-label">
-                  Class &amp; Section <span class="text-danger">*</span>
+                  {{ _t('donor_class', 'Class & Section') }} <span class="text-danger">*</span>
                 </label>
                 <input 
                   type="text" 
                   id="donor-class" 
                   name="donor_class" 
                   class="form-control" 
-                  placeholder="e.g. Class 8-A, 7-Green"
+                  placeholder="{{ _t('donor_class_placeholder', 'e.g. Class 8-A, 7-Green') }}"
                   value="{{ form_data.get('donor_class', '') }}" 
                   required
                   maxlength="50"
@@ -223,13 +223,13 @@
             <div class="row g-3">
               <!-- Roll No -->
               <div class="col-12 col-md-6">
-                <label for="donor-roll" class="form-label">School Roll Number</label>
+                <label for="donor-roll" class="form-label">{{ _t('roll_no', 'School Roll Number') }}</label>
                 <input 
                   type="text" 
                   id="donor-roll" 
                   name="donor_roll_no" 
                   class="form-control" 
-                  placeholder="e.g. 24"
+                  placeholder="{{ _t('donor_roll_placeholder', 'e.g. 24') }}"
                   value="{{ form_data.get('donor_roll_no', '') }}"
                   maxlength="50"
                 >
@@ -237,13 +237,13 @@
 
               <!-- Contact -->
               <div class="col-12 col-md-6">
-                <label for="donor-contact" class="form-label">Contact / Parent Phone (Optional)</label>
+                <label for="donor-contact" class="form-label">{{ _t('contact_number', 'Contact / Parent Phone (Optional)') }}</label>
                 <input 
                   type="tel" 
                   id="donor-contact" 
                   name="donor_contact" 
                   class="form-control" 
-                  placeholder="e.g. 0300-1234567"
+                  placeholder="{{ _t('donor_contact_placeholder', 'e.g. 0300-1234567') }}"
                   value="{{ form_data.get('donor_contact', '') }}"
                   maxlength="50"
                 >
@@ -255,18 +255,18 @@
           <div class="alert alert-secondary d-flex align-items-start gap-2 mb-4 p-3 small shadow-xs">
             <span class="fs-5 text-secondary flex-shrink-0">{{ icon('shield-halved') }}</span>
             <div>
-              <strong>Teacher Supervision &amp; Quality Guarantee:</strong> Every submitted textbook is verified by school teachers. If approved, the book is cataloged with an official reference code. Your phone and roll numbers are never published.
+              <strong>{{ _t('teacher_supervision_notice', 'Teacher Supervision & Quality Guarantee:') }}</strong> {{ _t('teacher_supervision_desc', 'Every submitted textbook is verified by school teachers. If approved, the book is cataloged with an official reference code. Your phone and roll numbers are never published.') }}
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="d-flex flex-wrap justify-content-end align-items-center gap-2">
             <a href="{{ url_for('student.index') }}" class="btn btn-outline-secondary">
-              Cancel
+              {{ _t('btn_cancel', 'Cancel') }}
             </a>
             <button type="submit" class="btn btn-primary px-4 shadow-xs d-inline-flex align-items-center gap-2">
               {{ icon('paper-plane') }}
-              <span>Submit Donation for Teacher Review</span>
+              <span>{{ _t('btn_donate', 'Submit Donation for Teacher Review') }}</span>
             </button>
           </div>
         </form>

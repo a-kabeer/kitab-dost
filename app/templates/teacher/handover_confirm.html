@@ -84,6 +84,7 @@
               alt="{{ req.book_title }}" 
               class="rounded border object-fit-cover shadow-sm flex-shrink-0"
               style="width: 56px; height: 76px;"
+              onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
             >
             {% else %}
             <div class="rounded border border-dashed bg-body d-flex align-items-center justify-content-center text-body-secondary flex-shrink-0" style="width: 56px; height: 76px;">
@@ -95,7 +96,7 @@
                 {{ req.book_title }}
               </h5>
               <div class="small text-body-secondary mb-2">
-                Book Code: <code class="kb-code text-primary fw-bold">{{ req.book_code }}</code>
+                Book Code: <bdi class="kb-code text-primary fw-bold">{{ req.book_code }}</bdi>
               </div>
               <div class="d-flex gap-1 flex-wrap">
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-8">{{ req.book_class }}</span>

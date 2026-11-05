@@ -128,30 +128,50 @@ def get_default_cover_for_book(subject: str, class_grade: str) -> str:
     if 'urdu' in subj or 'اردو' in subj:
         if '6' in grade or 'ششم' in grade:
             return 'img/covers/urdu_class6.svg'
+        elif '7' in grade or 'ہفتم' in grade or 'ستون' in grade:
+            return 'img/covers/urdu_class7.svg'
         else:
             return 'img/covers/urdu_class8.svg'
 
     if 'sindhi' in subj or 'سنڌي' in subj:
-        if '6' in grade or 'ششم' in grade:
+        if '6' in grade or 'ششم' in grade or 'ڇھون' in grade:
             return 'img/covers/sindhi_class6.svg'
-        elif '7' in grade or 'ستون' in grade:
+        elif '7' in grade or 'ستون' in grade or 'ہفتم' in grade:
             return 'img/covers/sindhi_class7.svg'
         else:
             return 'img/covers/sindhi_class8.svg'
 
-    if 'english' in subj:
-        return 'img/covers/english_class7.svg'
+    if 'english' in subj or 'انگریزی' in subj or 'انگريزي' in subj:
+        if '6' in grade or 'ششم' in grade or 'ڇھون' in grade:
+            return 'img/covers/english_class6.svg'
+        elif '8' in grade or 'ہشتم' in grade or 'اٺون' in grade:
+            return 'img/covers/english_class8.svg'
+        else:
+            return 'img/covers/english_class7.svg'
 
-    if 'computer' in subj:
-        if '8' in grade:
+    if 'computer' in subj or 'کمپیوٹر' in subj or 'ڪمپيوٽر' in subj:
+        if '6' in grade or 'ششم' in grade or 'ڇھون' in grade:
+            return 'img/covers/computer_class6.svg'
+        elif '8' in grade or 'ہشتم' in grade or 'اٺون' in grade:
             return 'img/covers/computer_class8.svg'
-        return 'img/covers/computer_class7.svg'
+        else:
+            return 'img/covers/computer_class7.svg'
 
-    if 'islamiat' in subj or 'اسلامیات' in subj:
-        return 'img/covers/islamiat_class6.svg'
+    if 'islamiat' in subj or 'اسلامیات' in subj or 'اسلاميات' in subj:
+        if '7' in grade or 'ہفتم' in grade or 'ستون' in grade:
+            return 'img/covers/islamiat_class7.svg'
+        elif '8' in grade or 'ہشتم' in grade or 'اٺون' in grade:
+            return 'img/covers/islamiat_class8.svg'
+        else:
+            return 'img/covers/islamiat_class6.svg'
 
-    if 'social' in subj or 'معاشرتی' in subj:
-        return 'img/covers/social_class6.svg'
+    if 'social' in subj or 'معاشرتی' in subj or 'سماجي' in subj or 'مطالعہ' in subj:
+        if '7' in grade or 'ہفتم' in grade or 'ستون' in grade:
+            return 'img/covers/social_class7.svg'
+        elif '8' in grade or 'ہشتم' in grade or 'اٺون' in grade:
+            return 'img/covers/social_class8.svg'
+        else:
+            return 'img/covers/social_class6.svg'
 
     return 'img/covers/placeholder.svg'
 

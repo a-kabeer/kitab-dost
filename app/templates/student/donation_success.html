@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Donation Submitted - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('donation_submitted_title', 'Donation Submitted') }} - Kitaab Bank{% endblock %}
 
 {% block content %}
 <div class="container-xxl py-4">
@@ -14,30 +14,30 @@
 
       <div class="mb-3">
         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1">
-          {{ icon('clock') }} Status: Awaiting Teacher Approval
+          {{ icon('clock') }} {{ _t('table_status', 'Status') }}: {{ _t('status_pending', 'Awaiting Teacher Approval') }}
         </span>
       </div>
 
       <h1 class="h3 fw-bold text-body mb-2">
-        Thank You, {{ donation.donor_name }}!
+        {{ _t('thank_you_donor', 'Thank You') }}, {{ donation.donor_name }}!
       </h1>
 
       <p class="text-body-secondary mx-auto mb-4" style="max-width: 520px;">
-        Your book donation has been successfully submitted to the school desk. Please note down your unique donation reference code below.
+        {{ _t('donation_submitted_desc', 'Your book donation has been successfully submitted to the school desk. Please note down your unique donation reference code below.') }}
       </p>
 
       <!-- Reference Code Box -->
       <div class="card border bg-body-tertiary p-3 mb-4 mx-auto w-100" style="max-width: 440px;">
         <span class="small text-uppercase fw-bold text-primary mb-1 d-block" style="letter-spacing: 0.05em;">
-          Your Donation Reference Code
+          {{ _t('donation_reference', 'Your Donation Reference Code') }}
         </span>
-        <div class="kb-code fs-3 fw-bold text-body my-1" id="ref-code">
-          {{ donation.donation_code }}
+        <div class="fs-3 fw-bold text-body my-1">
+          <bdi class="kb-code" id="ref-code">{{ donation.donation_code }}</bdi>
         </div>
         <div>
           <button type="button" class="btn btn-outline-secondary btn-sm mt-1 d-inline-flex align-items-center gap-1" onclick="copyRefCode()">
             {{ icon('copy') }}
-            <span>Copy Code</span>
+            <span>{{ _t('btn_copy_code', 'Copy Code') }}</span>
           </button>
         </div>
       </div>
@@ -45,24 +45,24 @@
       <!-- Submitted Book Summary Card -->
       <div class="card border text-start p-3 p-md-4 mb-4 bg-body">
         <h3 class="h6 fw-bold text-body mb-3 pb-2 border-bottom">
-          Donation Submission Summary
+          {{ _t('donation_summary', 'Donation Submission Summary') }}
         </h3>
 
         <div class="row g-3 small">
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">BOOK TITLE</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('table_book', 'Book Title') }}</span>
             <strong class="text-body">{{ donation.title }}</strong>
           </div>
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">CLASS &amp; SUBJECT</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('class_grade', 'Class') }} &amp; {{ _t('subject', 'Subject') }}</span>
             <strong class="text-body">{{ donation.class_grade }} – {{ donation.subject }}</strong>
           </div>
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">LANGUAGE &amp; CONDITION</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('language', 'Language') }} &amp; {{ _t('condition', 'Condition') }}</span>
             <strong class="text-body">{{ donation.language }} ({{ donation.condition_state }})</strong>
           </div>
           <div class="col-6 col-sm-6">
-            <span class="text-body-secondary d-block" style="font-size: 0.725rem;">DONOR INFO</span>
+            <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('donor_info_heading', 'Donor Info') }}</span>
             <strong class="text-body">{{ donation.donor_name }} ({{ donation.donor_class }})</strong>
           </div>
         </div>
@@ -73,9 +73,9 @@
         <div class="d-flex align-items-start gap-2">
           <span class="fs-5 flex-shrink-0">{{ icon('school') }}</span>
           <div>
-            <strong>What happens next?</strong>
+            <strong>{{ _t('what_next_title', 'What happens next?') }}</strong>
             <p class="mb-0 mt-1">
-              A school teacher will review this book. Once the condition and curriculum relevance are verified, the book will automatically receive an official code (e.g. <code>KB-BK-000017</code>) and appear in the public catalogue for fellow students to request.
+              {{ _t('what_next_desc', 'A school teacher will review this book. Once the condition and curriculum relevance are verified, the book will automatically receive an official code and appear in the public catalogue for fellow students to request.') }}
             </p>
           </div>
         </div>
@@ -85,11 +85,11 @@
       <div class="d-flex flex-wrap justify-content-center gap-2">
         <a href="{{ url_for('student.donate') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
           {{ icon('book') }}
-          <span>Donate Another Book</span>
+          <span>{{ _t('btn_donate_another', 'Donate Another Book') }}</span>
         </a>
         <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-xs">
           {{ icon('book-bookmark') }}
-          <span>Explore School Catalogue</span>
+          <span>{{ _t('btn_explore_catalogue', 'Explore School Catalogue') }}</span>
         </a>
       </div>
     </div>
@@ -98,6 +98,13 @@
 
 <script>
 function copyRefCode() {
+  const code = document.getElementById('ref-code').textContent.trim();
+  navigator.clipboard.writeText(code).then(() => {
+    alert('Donation Reference Code copied: ' + code);
+  });
+}
+</script>
+{% endblock %}
   const code = document.getElementById('ref-code').textContent.trim();
   navigator.clipboard.writeText(code).then(() => {
     alert('Donation Reference Code copied to clipboard: ' + code);

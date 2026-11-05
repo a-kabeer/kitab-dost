@@ -1,14 +1,14 @@
 {% extends "teacher/base_teacher.html" %}
 {% from "macros/icons.html" import icon %}
 
-{% block title %}Reports & Analytics - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('nav_reports', 'Reports & Analytics') }} - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
 <!-- Reports Header -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
     <h1 class="h3 fw-bold text-body mb-1">
-      {{ icon('chart-pie', extra_class='text-primary me-2') }}Library Reports &amp; Statistical Analytics
+      {{ icon('chart-pie', extra_class='text-primary me-2') }}{{ _t('nav_reports', 'Library Reports & Statistical Analytics') }}
     </h1>
     <p class="text-body-secondary mb-0 small">
       Official circulation metrics, class distribution, and administrative summaries.
@@ -17,15 +17,15 @@
   <div class="d-flex gap-2 align-items-center no-print flex-wrap">
     <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" onclick="window.print();">
       {{ icon('print') }}
-      <span>Print Report</span>
+      <span>{{ _t('btn_print', 'Print Report') }}</span>
     </button>
     <a href="{{ url_for('teacher.export_inventory_csv') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
       {{ icon('file-csv') }}
-      <span>Export Inventory CSV</span>
+      <span>{{ _t('btn_download_csv', 'Export Inventory CSV') }}</span>
     </a>
     <a href="{{ url_for('teacher.export_handovers_csv') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
       {{ icon('file-arrow-down') }}
-      <span>Export Handovers CSV</span>
+      <span>{{ _t('btn_download_csv', 'Export Handovers CSV') }}</span>
     </a>
   </div>
 </div>

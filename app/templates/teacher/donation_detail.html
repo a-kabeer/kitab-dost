@@ -1,15 +1,15 @@
 {% extends "teacher/base_teacher.html" %}
 {% from "macros/icons.html" import icon %}
 
-{% block title %}Inspect Donation {{ donation.donation_code }} - Teacher Desk{% endblock %}
+{% block title %}{{ _t('btn_view', 'Inspect') }} {{ donation.donation_code }} - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb small">
-      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{{ url_for('teacher.donations') }}" class="text-decoration-none">Donation Queue</a></li>
-      <li class="breadcrumb-item active text-truncate kb-code" aria-current="page" style="max-width: 200px;">{{ donation.donation_code }}</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">{{ _t('nav_dashboard', 'Dashboard') }}</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.donations') }}" class="text-decoration-none">{{ _t('nav_donations', 'Donation Queue') }}</a></li>
+      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 200px;"><bdi class="kb-code">{{ donation.donation_code }}</bdi></li>
     </ol>
   </nav>
 
@@ -17,17 +17,17 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
       <h1 class="h3 fw-bold text-body mb-1">
-        {{ icon('magnifying-glass-chart', extra_class='text-primary me-2') }}Donation Inspection
+        {{ icon('magnifying-glass-chart', extra_class='text-primary me-2') }}{{ _t('donation_inspection_title', 'Donation Inspection') }}
       </h1>
       <p class="text-body-secondary mb-0 small">
-        Submitted on {{ donation.created_at }} &bull; Reference Code: <strong class="kb-code text-primary">{{ donation.donation_code }}</strong>
+        Submitted on {{ donation.created_at }} &bull; Reference Code: <bdi class="kb-code text-primary fw-bold">{{ donation.donation_code }}</bdi>
       </p>
     </div>
 
     <div>
       <a href="{{ url_for('teacher.donations') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
         {{ icon('arrow-left') }}
-        <span>Back to Queue</span>
+        <span>{{ _t('btn_back', 'Back to Queue') }}</span>
       </a>
     </div>
   </div>
@@ -46,43 +46,44 @@
                 alt="{{ donation.title }} Photo" 
                 class="img-fluid rounded border w-100 object-fit-cover shadow-sm"
                 style="aspect-ratio: 3/4; cursor: zoom-in;"
+                onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
               >
             </a>
             <div class="text-center mt-2 small text-body-secondary">
-              {{ icon('magnifying-glass-plus', extra_class='me-1') }}Click to inspect full photo
+              {{ icon('magnifying-glass-plus', extra_class='me-1') }}{{ _t('click_inspect_photo', 'Click to inspect full photo') }}
             </div>
           </div>
           {% else %}
           <div class="rounded border border-dashed bg-body-tertiary d-flex flex-column align-items-center justify-content-center p-4 text-center text-body-secondary mb-3" style="aspect-ratio: 3/4;">
             <div class="display-5 mb-2">{{ icon('book', extra_class='text-body-tertiary') }}</div>
-            <div class="fw-semibold small">No Photograph Uploaded</div>
-            <div class="small text-body-tertiary mt-1">Default curriculum cover will be used</div>
+            <div class="fw-semibold small">{{ _t('no_photo_uploaded', 'No Photograph Uploaded') }}</div>
+            <div class="small text-body-tertiary mt-1">{{ _t('default_cover_notice', 'Default curriculum cover will be used') }}</div>
           </div>
           {% endif %}
 
           <div class="border-top pt-3 d-flex flex-column gap-2 small">
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-body-secondary fw-semibold">STATUS</span>
+              <span class="text-body-secondary fw-semibold">{{ _t('table_status', 'STATUS') }}</span>
               {% if donation.status == 'pending' %}
               <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-inline-flex align-items-center gap-1">
                 {{ icon('clock', extra_class='small') }}
-                <span>Pending Review</span>
+                <span>{{ _t('status_pending', 'Pending Review') }}</span>
               </span>
               {% elif donation.status == 'approved' %}
               <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
                 {{ icon('check', extra_class='small') }}
-                <span>Approved</span>
+                <span>{{ _t('status_approved', 'Approved') }}</span>
               </span>
               {% elif donation.status == 'rejected' %}
               <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">
                 {{ icon('xmark', extra_class='small') }}
-                <span>Rejected</span>
+                <span>{{ _t('status_rejected', 'Rejected') }}</span>
               </span>
               {% endif %}
             </div>
 
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-body-secondary fw-semibold">CONDITION</span>
+              <span class="text-body-secondary fw-semibold">{{ _t('table_condition', 'CONDITION') }}</span>
               <span class="badge {% if donation.condition_state == 'Like New' %}bg-success-subtle text-success border border-success-subtle{% elif donation.condition_state == 'Good' %}bg-info-subtle text-info-emphasis border border-info-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}">
                 {{ donation.condition_state }}
               </span>
@@ -90,9 +91,9 @@
 
             {% if donation.approved_book_code %}
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-body-secondary fw-semibold">BOOK CODE</span>
-              <a href="{{ url_for('student.book_detail', code_or_id=donation.approved_book_code) }}" target="_blank" class="kb-code text-primary fw-bold text-decoration-none">
-                {{ donation.approved_book_code }} {{ icon('arrow-up-right-from-square', extra_class='small') }}
+              <span class="text-body-secondary fw-semibold">{{ _t('table_code', 'BOOK CODE') }}</span>
+              <a href="{{ url_for('student.book_detail', code_or_id=donation.approved_book_code) }}" target="_blank" class="text-primary fw-bold text-decoration-none">
+                <bdi class="kb-code">{{ donation.approved_book_code }}</bdi> {{ icon('arrow-up-right-from-square', extra_class='small') }}
               </a>
             </div>
             {% endif %}
@@ -117,7 +118,7 @@
               {{ donation.title }}
             </h2>
             <div class="text-body-secondary fs-6">
-              Author / Board: <strong class="text-body">{{ donation.author or 'Not specified' }}</strong>
+              {{ _t('author', 'Author / Board') }}: <strong class="text-body">{{ donation.author or 'Not specified' }}</strong>
             </div>
           </div>
         </div>
@@ -126,7 +127,7 @@
         <div class="card border shadow-sm">
           <div class="card-header bg-body-tertiary py-3 px-4">
             <h3 class="h6 fw-bold text-body-secondary text-uppercase mb-0 tracking-wide fs-7">
-              {{ icon('file-lines', extra_class='me-2') }}Donor Description &amp; Syllabus Notes
+              {{ icon('file-lines', extra_class='me-2') }}{{ _t('donor_description_heading', 'Donor Description & Syllabus Notes') }}
             </h3>
           </div>
           <div class="card-body p-4">
@@ -140,27 +141,27 @@
         <div class="card border shadow-sm border-info-subtle">
           <div class="card-header bg-info-subtle py-3 px-4 d-flex align-items-center justify-content-between">
             <h3 class="h6 fw-bold text-info-emphasis text-uppercase mb-0 tracking-wide fs-7 d-flex align-items-center gap-2">
-              {{ icon('user-shield') }}Student Donor Information (Confidential)
+              {{ icon('user-shield') }}{{ _t('donor_info_confidential', 'Student Donor Information (Confidential)') }}
             </h3>
             <span class="badge bg-info text-white">Staff Only</span>
           </div>
           <div class="card-body p-4">
             <div class="row g-3">
               <div class="col-12 col-sm-6 col-md-3">
-                <span class="small text-body-secondary d-block fw-semibold">STUDENT NAME</span>
+                <span class="small text-body-secondary d-block fw-semibold text-uppercase">{{ _t('student_name', 'STUDENT NAME') }}</span>
                 <strong class="text-body fs-6">{{ donation.donor_name }}</strong>
               </div>
               <div class="col-12 col-sm-6 col-md-3">
-                <span class="small text-body-secondary d-block fw-semibold">CLASS &amp; SECTION</span>
+                <span class="small text-body-secondary d-block fw-semibold text-uppercase">{{ _t('donor_class', 'CLASS & SECTION') }}</span>
                 <strong class="text-body fs-6">{{ donation.donor_class }}</strong>
               </div>
               <div class="col-12 col-sm-6 col-md-3">
-                <span class="small text-body-secondary d-block fw-semibold">ROLL NUMBER</span>
-                <strong class="text-body fs-6 kb-code">{{ donation.donor_roll_no or 'N/A' }}</strong>
+                <span class="small text-body-secondary d-block fw-semibold text-uppercase">{{ _t('roll_no', 'ROLL NUMBER') }}</span>
+                <bdi class="text-body fs-6 kb-code">{{ donation.donor_roll_no or 'N/A' }}</bdi>
               </div>
               <div class="col-12 col-sm-6 col-md-3">
-                <span class="small text-body-secondary d-block fw-semibold">CONTACT PHONE</span>
-                <strong class="text-body fs-6 kb-code">{{ icon('phone', extra_class='small me-1') }}{{ donation.donor_contact or 'N/A' }}</strong>
+                <span class="small text-body-secondary d-block fw-semibold text-uppercase">{{ _t('contact_number', 'CONTACT PHONE') }}</span>
+                <bdi class="text-body fs-6 kb-code">{{ icon('phone', extra_class='small me-1') }}{{ donation.donor_contact or 'N/A' }}</bdi>
               </div>
             </div>
           </div>
@@ -171,10 +172,10 @@
         <div class="card border border-primary-subtle shadow-sm bg-body">
           <div class="card-body p-4">
             <h3 class="h5 fw-bold text-body mb-2 d-flex align-items-center gap-2">
-              {{ icon('clipboard-check', extra_class='text-primary') }}Teacher Verification Action
+              {{ icon('clipboard-check', extra_class='text-primary') }}{{ _t('verification_action_title', 'Teacher Verification Action') }}
             </h3>
             <p class="text-body-secondary small mb-4">
-              Confirm the book's condition matches the school syllabus. Approving will generate a unique book code and immediately publish the listing in the public catalogue.
+              {{ _t('verification_action_desc', 'Confirm the book condition matches the school syllabus. Approving will generate a unique book code and immediately publish the listing in the public catalogue.') }}
             </p>
 
             <div class="d-flex gap-2 flex-wrap align-items-center">
@@ -183,7 +184,7 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 py-2">
                   {{ icon('check') }}
-                  <span>Approve &amp; Publish Book</span>
+                  <span>{{ _t('btn_approve_publish', 'Approve & Publish Book') }}</span>
                 </button>
               </form>
 
@@ -194,37 +195,37 @@
                 onclick="document.getElementById('reject-section').classList.remove('d-none'); this.classList.add('d-none');"
               >
                 {{ icon('xmark') }}
-                <span>Reject Submission</span>
+                <span>{{ _t('btn_reject_submission', 'Reject Submission') }}</span>
               </button>
             </div>
 
             <!-- Inline Rejection Form -->
             <div id="reject-section" class="d-none mt-4 pt-4 border-top">
               <h4 class="h6 fw-bold text-danger mb-3 d-flex align-items-center gap-2">
-                {{ icon('triangle-exclamation') }}Confirm Rejection Reason
+                {{ icon('triangle-exclamation') }}{{ _t('modal_reject_title', 'Confirm Rejection Reason') }}
               </h4>
               <form action="{{ url_for('teacher.reject_donation', donation_id=donation.id) }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                   <label for="detail-reject-reason" class="form-label small fw-semibold text-body">
-                    Reason for rejection <span class="text-danger">*</span>
+                    {{ _t('modal_reject_reason', 'Reason for rejection') }} <span class="text-danger">*</span>
                   </label>
                   <textarea 
                     id="detail-reject-reason" 
                     name="reason" 
                     class="form-control" 
                     rows="3"
-                    placeholder="Explain why this book cannot be accepted into the catalogue..." 
+                    placeholder="{{ _t('rejection_placeholder', 'Explain why this book cannot be accepted into the catalogue...') }}" 
                     required
                   ></textarea>
                 </div>
                 <div class="d-flex gap-2 justify-content-end">
                   <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('reject-section').classList.add('d-none'); document.querySelector('[onclick*=\'reject-section\']').classList.remove('d-none');">
-                    Cancel
+                    {{ _t('btn_cancel', 'Cancel') }}
                   </button>
                   <button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1">
                     {{ icon('circle-xmark') }}
-                    <span>Submit Rejection</span>
+                    <span>{{ _t('btn_reject', 'Submit Rejection') }}</span>
                   </button>
                 </div>
               </form>
@@ -236,10 +237,10 @@
         <div class="card border border-success-subtle bg-success-subtle shadow-sm">
           <div class="card-body p-4 text-success-emphasis">
             <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
-              {{ icon('circle-check', extra_class='text-success') }}Approved by {{ donation.reviewer_name or 'Teacher' }}
+              {{ icon('circle-check', extra_class='text-success') }}{{ _t('status_approved', 'Approved') }} by {{ donation.reviewer_name or 'Teacher' }}
             </div>
             <div class="small">
-              Reviewed on {{ donation.reviewed_at }}. Assigned Book Code: <strong class="kb-code">{{ donation.approved_book_code }}</strong>.
+              Reviewed on {{ donation.reviewed_at }}. Assigned Book Code: <bdi class="kb-code fw-bold">{{ donation.approved_book_code }}</bdi>.
             </div>
           </div>
         </div>
@@ -248,10 +249,10 @@
         <div class="card border border-danger-subtle bg-danger-subtle shadow-sm">
           <div class="card-body p-4 text-danger-emphasis">
             <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
-              {{ icon('circle-xmark', extra_class='text-danger') }}Rejected by {{ donation.reviewer_name or 'Teacher' }}
+              {{ icon('circle-xmark', extra_class='text-danger') }}{{ _t('status_rejected', 'Rejected') }} by {{ donation.reviewer_name or 'Teacher' }}
             </div>
             <div class="small mb-1">
-              Reason: <strong>{{ donation.rejection_reason }}</strong>
+              {{ _t('modal_reject_reason', 'Reason') }}: <strong>{{ donation.rejection_reason }}</strong>
             </div>
             <div class="small text-danger-emphasis opacity-75">
               Reviewed on {{ donation.reviewed_at }}

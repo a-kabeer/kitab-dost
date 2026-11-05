@@ -1,13 +1,13 @@
 {% extends "teacher/base_teacher.html" %}
 {% from "macros/icons.html" import icon %}
 
-{% block title %}System Activity Logs - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('nav_logs', 'Activity Logs') }} - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
     <h1 class="h3 fw-bold text-body mb-1">
-      {{ icon('clock-rotate-left', extra_class='text-primary me-2') }}System Activity Logs &amp; Audit Trail
+      {{ icon('clock-rotate-left', extra_class='text-primary me-2') }}{{ _t('nav_logs', 'System Activity Logs & Audit Trail') }}
     </h1>
     <p class="text-body-secondary mb-0 small">
       Immutable records of book circulation, staff actions, and student requests.
@@ -67,12 +67,12 @@
       <div class="col-12 col-md-2 d-flex gap-2">
         <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1">
           {{ icon('filter') }}
-          <span>Filter</span>
+          <span>{{ _t('btn_filter', 'Filter') }}</span>
         </button>
         {% if search_query or action_filter or actor_filter or date_from or date_to %}
           <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
             {{ icon('rotate-left') }}
-            <span>Reset</span>
+            <span>{{ _t('btn_reset', 'Reset') }}</span>
           </a>
         {% endif %}
       </div>
@@ -97,7 +97,7 @@
         {% for log in logs %}
         <tr>
           <td class="small text-body-secondary text-nowrap">
-            <code class="kb-code small text-body-secondary">{{ log.created_at }}</code>
+            <bdi class="kb-code small text-body-secondary">{{ log.created_at }}</bdi>
           </td>
           <td>
             <span class="badge
@@ -145,7 +145,7 @@
   <!-- Pagination / Summary -->
   <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
-      Showing <strong>{{ logs|length }}</strong> of <strong>{{ total_count }}</strong> activity records
+      {{ _t('showing_records_count', 'Showing {count} records').replace('{count}', logs|length|string) }} (Total: {{ total_count }})
     </div>
     {% if total_pages > 1 %}
     <nav aria-label="Activity logs pagination">
@@ -158,6 +158,11 @@
           </li>
         {% endfor %}
       </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
     </nav>
     {% endif %}
   </div>

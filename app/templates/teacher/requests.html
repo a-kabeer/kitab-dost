@@ -1,14 +1,14 @@
 {% extends "teacher/base_teacher.html" %}
 {% from "macros/icons.html" import icon %}
 
-{% block title %}Student Requests Queue - Teacher Desk{% endblock %}
+{% block title %}{{ _t('nav_requests', 'Student Requests Queue') }} - {{ _t('teacher_dashboard', 'Teacher Desk') }}{% endblock %}
 
 {% block teacher_content %}
   <!-- Header -->
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
       <h1 class="h3 fw-bold text-body mb-1">
-        {{ icon('clock-rotate-left', extra_class='text-primary me-2') }}Student Requests Queue
+        {{ icon('clock-rotate-left', extra_class='text-primary me-2') }}{{ _t('nav_requests', 'Student Requests Queue') }}
       </h1>
       <p class="text-body-secondary mb-0 small">
         Review student requests for curriculum textbooks, verify eligibility, and atomically lock and reserve books for collection.
@@ -16,32 +16,11 @@
     </div>
   </div>
 
-  <!-- Flash Messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
-          {% if category == 'success' %}
-            {{ icon('circle-check', extra_class='text-success flex-shrink-0 fs-5') }}
-          {% elif category == 'danger' or category == 'error' %}
-            {{ icon('circle-xmark', extra_class='text-danger flex-shrink-0 fs-5') }}
-          {% elif category == 'warning' %}
-            {{ icon('triangle-exclamation', extra_class='text-warning flex-shrink-0 fs-5') }}
-          {% else %}
-            {{ icon('circle-info', extra_class='text-info flex-shrink-0 fs-5') }}
-          {% endif %}
-          <div class="flex-grow-1">{{ message }}</div>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
-  <!-- Status Tabs Bar -->
-  <div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap flex-sm-wrap">
+  <!-- Status Tabs Bar (Scrollable on mobile) -->
+  <div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap">
     <a href="{{ url_for('teacher.requests', status='pending') }}" class="btn btn-sm text-nowrap {% if current_status == 'pending' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
       {{ icon('clock', extra_class='small') }}
-      <span>Pending Review</span>
+      <span>{{ _t('status_pending', 'Pending Review') }}</span>
       <span class="badge {% if counts.pending > 0 %}{% if current_status == 'pending' %}bg-white text-primary{% else %}bg-warning text-dark{% endif %}{% else %}{% if current_status == 'pending' %}bg-white text-primary{% else %}bg-secondary{% endif %}{% endif %} rounded-pill">
         {{ counts.pending }}
       </span>
@@ -49,7 +28,7 @@
 
     <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-sm text-nowrap {% if current_status == 'approved' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
       {{ icon('lock', extra_class='small') }}
-      <span>Approved &amp; Reserved</span>
+      <span>{{ _t('status_reserved', 'Approved & Reserved') }}</span>
       <span class="badge {% if current_status == 'approved' %}bg-white text-primary{% else %}bg-success{% endif %} rounded-pill">
         {{ counts.approved }}
       </span>
@@ -57,7 +36,7 @@
 
     <a href="{{ url_for('teacher.requests', status='rejected') }}" class="btn btn-sm text-nowrap {% if current_status == 'rejected' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
       {{ icon('xmark', extra_class='small') }}
-      <span>Rejected</span>
+      <span>{{ _t('status_rejected', 'Rejected') }}</span>
       <span class="badge {% if current_status == 'rejected' %}bg-white text-primary{% else %}bg-danger{% endif %} rounded-pill">
         {{ counts.rejected }}
       </span>
@@ -65,7 +44,7 @@
 
     <a href="{{ url_for('teacher.requests', status='completed') }}" class="btn btn-sm text-nowrap {% if current_status == 'completed' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
       {{ icon('handshake', extra_class='small') }}
-      <span>Handed Over</span>
+      <span>{{ _t('status_completed', 'Handed Over') }}</span>
       <span class="badge {% if current_status == 'completed' %}bg-white text-primary{% else %}bg-info text-white{% endif %} rounded-pill">
         {{ counts.completed }}
       </span>
@@ -73,7 +52,7 @@
 
     <a href="{{ url_for('teacher.requests', status='all') }}" class="btn btn-sm text-nowrap {% if current_status == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
       {{ icon('list', extra_class='small') }}
-      <span>All Records</span>
+      <span>{{ _t('filter_all_statuses', 'All Records') }}</span>
       <span class="badge {% if current_status == 'all' %}bg-white text-primary{% else %}bg-primary{% endif %} rounded-pill">
         {{ counts.all }}
       </span>
@@ -95,7 +74,7 @@
               type="search" 
               name="q" 
               class="form-control border-start-0" 
-              placeholder="Search student, roll number, tracking code, or book..." 
+              placeholder="{{ _t('search_placeholder_short', 'Search student, roll number, tracking code, or book...') }}" 
               value="{{ search_query }}"
             >
           </div>
@@ -103,7 +82,7 @@
 
         <div class="col-12 col-sm-6 col-md-3 col-lg-3">
           <select name="class_grade" class="form-select">
-            <option value="">All Classes</option>
+            <option value="">{{ _t('filter_all_classes', 'All Classes') }}</option>
             {% for c in ['Class 6', 'Class 7', 'Class 8'] %}
             <option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>
             {% endfor %}
@@ -113,13 +92,13 @@
         <div class="col-12 col-sm-6 col-md-3 col-lg-4 d-flex gap-2">
           <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
             {{ icon('filter') }}
-            <span>Filter</span>
+            <span>{{ _t('btn_filter', 'Filter') }}</span>
           </button>
 
           {% if search_query or class_filter %}
           <a href="{{ url_for('teacher.requests', status=current_status) }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
             {{ icon('rotate-left') }}
-            <span>Reset</span>
+            <span>{{ _t('btn_reset', 'Reset') }}</span>
           </a>
           {% endif %}
         </div>
@@ -127,174 +106,236 @@
     </div>
   </div>
 
-  <!-- Requests Table Card -->
-  <div class="card border shadow-sm mb-4">
-    {% if requests and requests|length > 0 %}
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th scope="col" style="min-width: 140px;">Tracking Code</th>
-            <th scope="col" style="min-width: 220px;">Requested Book</th>
-            <th scope="col" style="min-width: 160px;">Student Requester</th>
-            <th scope="col" style="min-width: 180px;">Student Note</th>
-            <th scope="col" style="min-width: 140px;">Status</th>
-            <th scope="col" class="text-end" style="min-width: 200px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in requests %}
-          <tr>
-            <!-- Tracking Code -->
-            <td>
-              <code class="kb-code fw-bold text-primary fs-7 d-block">
-                {{ r.tracking_code }}
-              </code>
-              <small class="text-body-secondary">
-                {{ r.created_at[:10] if r.created_at else '' }}
-              </small>
-            </td>
+  <!-- Requests Section -->
+  {% if requests and requests|length > 0 %}
+    <!-- Desktop / Tablet Table View (>= 768px, solves DEF-TAB-02) -->
+    <div class="card border shadow-sm mb-4 d-none d-md-block">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" style="min-width: 130px;">{{ _t('tracking_code', 'Tracking Code') }}</th>
+              <th scope="col" style="min-width: 200px;">{{ _t('table_book', 'Requested Book') }}</th>
+              <th scope="col" style="min-width: 150px;">{{ _t('table_requester', 'Student Requester') }}</th>
+              <th scope="col" style="min-width: 150px;">{{ _t('notes_remarks', 'Student Note') }}</th>
+              <th scope="col" style="min-width: 120px;">{{ _t('table_status', 'Status') }}</th>
+              <th scope="col" class="text-end" style="min-width: 160px;">{{ _t('table_actions', 'Actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in requests %}
+            <tr>
+              <!-- Tracking Code -->
+              <td>
+                <bdi class="kb-code fw-bold text-primary fs-7 d-block">
+                  {{ r.tracking_code }}
+                </bdi>
+                <small class="text-body-secondary">
+                  {{ r.created_at[:10] if r.created_at else '' }}
+                </small>
+              </td>
 
-            <!-- Requested Book -->
-            <td>
-              <div class="fw-bold text-body text-truncate mb-1" style="max-width: 240px;" title="{{ r.book_title }}">
-                {{ r.book_title }}
-              </div>
-              <div class="small text-body-secondary mb-1">
-                Code: <code class="kb-code text-primary fw-semibold">{{ r.book_code }}</code> &bull; {{ r.book_class }}
-              </div>
-              <div>
-                <span class="badge {% if r.book_status == 'available' %}bg-success-subtle text-success border border-success-subtle{% elif r.book_status == 'reserved' %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %}">
-                  Book: {{ r.book_status|title }}
-                </span>
-              </div>
-            </td>
+              <!-- Requested Book -->
+              <td>
+                <div class="fw-bold text-body text-truncate mb-1" style="max-width: 220px;" title="{{ r.book_title }}">
+                  {{ r.book_title }}
+                </div>
+                <div class="small text-body-secondary mb-1">
+                  Code: <bdi class="kb-code text-primary fw-semibold">{{ r.book_code }}</bdi> &bull; {{ r.book_class }}
+                </div>
+                <div>
+                  <span class="badge {% if r.book_status == 'available' %}bg-success-subtle text-success border border-success-subtle{% elif r.book_status == 'reserved' %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %}">
+                    {{ _t('status_' + (r.book_status or 'available'), r.book_status|title) }}
+                  </span>
+                </div>
+              </td>
 
-            <!-- Student Requester -->
-            <td>
-              <div class="fw-semibold text-body mb-1">
-                {{ r.requester_name }}
-              </div>
-              <div class="small text-body-secondary">
-                Class: <span class="fw-semibold">{{ r.requester_class }}</span> &bull; Roll: <span class="fw-semibold">{{ r.requester_roll_no }}</span>
-              </div>
-              {% if r.requester_contact %}
-              <div class="small text-body-secondary mt-1">
-                {{ icon('phone', extra_class='small me-1') }}<span class="kb-code">{{ r.requester_contact }}</span>
-              </div>
-              {% endif %}
-            </td>
-
-            <!-- Student Note -->
-            <td>
-              <div class="small text-body-secondary text-truncate" style="max-width: 200px;" title="{{ r.notes or 'No specific note entered.' }}">
-                {{ r.notes or 'No specific note entered.' }}
-              </div>
-            </td>
-
-            <!-- Review Status -->
-            <td>
-              {% if r.status == 'pending' %}
-              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-inline-flex align-items-center gap-1">
-                {{ icon('clock', extra_class='small') }}
-                <span>Pending</span>
-              </span>
-              {% elif r.status == 'approved' %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
-                {{ icon('lock', extra_class='small') }}
-                <span>Reserved</span>
-              </span>
-              <div class="small text-body-secondary mt-1">
-                By {{ r.reviewer_name or 'Teacher' }}
-              </div>
-              {% elif r.status == 'rejected' %}
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">
-                {{ icon('xmark', extra_class='small') }}
-                <span>Rejected</span>
-              </span>
-              <div class="small text-danger mt-1 text-truncate" style="max-width: 180px;" title="{{ r.rejection_reason or 'Criteria not met' }}">
-                {{ r.rejection_reason or 'Criteria not met' }}
-              </div>
-              {% elif r.status == 'completed' %}
-              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle d-inline-flex align-items-center gap-1">
-                {{ icon('handshake', extra_class='small') }}
-                <span>Handed Over</span>
-              </span>
-              {% endif %}
-            </td>
-
-            <!-- Actions -->
-            <td class="text-end">
-              <div class="btn-group btn-group-sm" role="group">
-                <a href="{{ url_for('teacher.request_detail', request_id=r.id) }}" class="btn btn-outline-secondary" title="Inspect full details">
-                  {{ icon('eye', extra_class='me-1') }}View
-                </a>
-
-                {% if r.status == 'pending' %}
-                <!-- Approve Form -->
-                <form action="{{ url_for('teacher.approve_request', request_id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve request and reserve book \'{{ r.book_code }}\' for {{ r.requester_name }}?');">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="btn btn-success" title="Approve & Reserve">
-                    {{ icon('lock', extra_class='me-1') }}Reserve
-                  </button>
-                </form>
-
-                <!-- Reject Button (Opens Modal) -->
-                <button 
-                  type="button" 
-                  class="btn btn-outline-danger" 
-                  title="Reject Request"
-                  onclick="openRejectModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')"
-                >
-                  {{ icon('xmark', extra_class='me-1') }}Reject
-                </button>
-
-                {% elif r.status == 'approved' %}
-                <!-- Handover Button -->
-                <a 
-                  href="{{ url_for('teacher.handover_form', request_id=r.id) }}" 
-                  class="btn btn-success" 
-                  title="Confirm Handover"
-                >
-                  {{ icon('handshake', extra_class='me-1') }}Handover
-                </a>
-
-                <!-- Cancel Reservation Button -->
-                <button 
-                  type="button" 
-                  class="btn btn-outline-warning" 
-                  title="Release Reservation"
-                  onclick="openCancelModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')"
-                >
-                  {{ icon('unlock', extra_class='me-1') }}Release
-                </button>
-
-                {% elif r.status == 'completed' and r.handover_id %}
-                <!-- Printable Receipt -->
-                <a 
-                  href="{{ url_for('teacher.handover_receipt', handover_id=r.handover_id) }}" 
-                  class="btn btn-outline-secondary" 
-                  target="_blank"
-                  title="Print Official Receipt"
-                >
-                  {{ icon('receipt', extra_class='me-1') }}Receipt
-                </a>
+              <!-- Student Requester -->
+              <td>
+                <div class="fw-semibold text-body mb-1">
+                  {{ r.requester_name }}
+                </div>
+                <div class="small text-body-secondary">
+                  {{ r.requester_class }} &bull; Roll: {{ r.requester_roll_no }}
+                </div>
+                {% if r.requester_contact %}
+                <div class="small text-body-secondary mt-1">
+                  {{ icon('phone', extra_class='small me-1') }}<bdi class="kb-code">{{ r.requester_contact }}</bdi>
+                </div>
                 {% endif %}
+              </td>
+
+              <!-- Student Note -->
+              <td>
+                <div class="small text-body-secondary text-truncate" style="max-width: 180px;" title="{{ r.notes or 'No specific note entered.' }}">
+                  {{ r.notes or 'No specific note entered.' }}
+                </div>
+              </td>
+
+              <!-- Review Status -->
+              <td>
+                {% if r.status == 'pending' %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-inline-flex align-items-center gap-1">
+                  {{ icon('clock', extra_class='small') }}
+                  <span>{{ _t('status_pending', 'Pending') }}</span>
+                </span>
+                {% elif r.status == 'approved' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                  {{ icon('lock', extra_class='small') }}
+                  <span>{{ _t('status_reserved', 'Reserved') }}</span>
+                </span>
+                {% elif r.status == 'rejected' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">
+                  {{ icon('xmark', extra_class='small') }}
+                  <span>{{ _t('status_rejected', 'Rejected') }}</span>
+                </span>
+                {% elif r.status == 'completed' %}
+                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle d-inline-flex align-items-center gap-1">
+                  {{ icon('handshake', extra_class='small') }}
+                  <span>{{ _t('status_completed', 'Handed Over') }}</span>
+                </span>
+                {% endif %}
+              </td>
+
+              <!-- Actions -->
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{{ url_for('teacher.request_detail', request_id=r.id) }}" class="btn btn-outline-secondary" title="View details">
+                    {{ icon('eye') }}
+                  </a>
+
+                  {% if r.status == 'pending' %}
+                  <form action="{{ url_for('teacher.approve_request', request_id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve request and reserve book \'{{ r.book_code }}\' for {{ r.requester_name }}?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success" title="Approve &amp; Reserve">
+                      {{ icon('lock') }}
+                    </button>
+                  </form>
+
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-danger" 
+                    title="Reject Request"
+                    onclick="openRejectModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')"
+                  >
+                    {{ icon('xmark') }}
+                  </button>
+
+                  {% elif r.status == 'approved' %}
+                  <a 
+                    href="{{ url_for('teacher.handover_form', request_id=r.id) }}" 
+                    class="btn btn-success" 
+                    title="Confirm Handover"
+                  >
+                    {{ icon('handshake') }}
+                  </a>
+
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-warning" 
+                    title="Release Reservation"
+                    onclick="openCancelModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')"
+                  >
+                    {{ icon('unlock') }}
+                  </button>
+
+                  {% elif r.status == 'completed' and r.handover_id %}
+                  <a 
+                    href="{{ url_for('teacher.handover_receipt', handover_id=r.handover_id) }}" 
+                    class="btn btn-outline-secondary" 
+                    target="_blank"
+                    title="Print Receipt"
+                  >
+                    {{ icon('receipt') }}
+                  </a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center">
+        <span>{{ _t('showing_records_count', 'Showing {count} records', count=requests|length) }}</span>
+      </div>
+    </div>
+
+    <!-- Mobile Stacked Record Cards (< 768px, solves DEF-TAB-01) -->
+    <div class="d-md-none mb-4">
+      <div class="d-flex flex-column gap-3">
+        {% for r in requests %}
+        <div class="card border shadow-xs overflow-hidden">
+          <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between py-2 px-3">
+            <bdi class="kb-code fw-bold text-primary small">{{ r.tracking_code }}</bdi>
+            {% if r.status == 'pending' %}
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ _t('status_pending', 'Pending') }}</span>
+            {% elif r.status == 'approved' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle">{{ _t('status_reserved', 'Reserved') }}</span>
+            {% elif r.status == 'rejected' %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ _t('status_rejected', 'Rejected') }}</span>
+            {% elif r.status == 'completed' %}
+              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">{{ _t('status_completed', 'Handed Over') }}</span>
+            {% endif %}
+          </div>
+          <div class="card-body p-3">
+            <div class="mb-2">
+              <h3 class="h6 fw-bold text-body mb-1 text-truncate" title="{{ r.book_title }}">{{ r.book_title }}</h3>
+              <div class="small text-body-secondary">
+                Code: <bdi class="kb-code text-primary">{{ r.book_code }}</bdi> &bull; {{ r.book_class }}
               </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+            </div>
+            <div class="small text-body-secondary border-top border-dashed pt-2 mt-2">
+              <div><strong>{{ _t('table_requester', 'Student') }}:</strong> {{ r.requester_name }} ({{ r.requester_class }}, Roll: {{ r.requester_roll_no }})</div>
+              {% if r.requester_contact %}
+              <div><strong>{{ _t('contact_number', 'Contact') }}:</strong> <bdi class="kb-code">{{ r.requester_contact }}</bdi></div>
+              {% endif %}
+              {% if r.notes %}
+              <div class="mt-1 text-body-tertiary fst-italic">"{{ r.notes }}"</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="card-footer bg-body-tertiary p-2 d-flex flex-wrap gap-2 justify-content-end">
+            <a href="{{ url_for('teacher.request_detail', request_id=r.id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+              {{ icon('eye') }} <span>{{ _t('btn_view', 'View') }}</span>
+            </a>
 
-    <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center">
-      <span>Showing <strong>{{ requests|length }}</strong> request records</span>
-    </div>
+            {% if r.status == 'pending' %}
+            <form action="{{ url_for('teacher.approve_request', request_id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve request and reserve book \'{{ r.book_code }}\' for {{ r.requester_name }}?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1">
+                {{ icon('lock') }} <span>{{ _t('btn_reserve', 'Reserve') }}</span>
+              </button>
+            </form>
+            <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" onclick="openRejectModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')">
+              {{ icon('xmark') }} <span>{{ _t('btn_reject', 'Reject') }}</span>
+            </button>
 
-    {% else %}
+            {% elif r.status == 'approved' %}
+            <a href="{{ url_for('teacher.handover_form', request_id=r.id) }}" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1">
+              {{ icon('handshake') }} <span>{{ _t('btn_handover', 'Handover') }}</span>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1" onclick="openCancelModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')">
+              {{ icon('unlock') }} <span>Release</span>
+            </button>
+
+            {% elif r.status == 'completed' and r.handover_id %}
+            <a href="{{ url_for('teacher.handover_receipt', handover_id=r.handover_id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" target="_blank">
+              {{ icon('receipt') }} <span>{{ _t('btn_print_receipt', 'Receipt') }}</span>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="text-center small text-body-secondary mt-2">
+        {{ _t('showing_records_count', 'Showing {count} records', count=requests|length) }}
+      </div>
+    </div>
+  {% else %}
     <!-- Empty State -->
-    <div class="card-body text-center py-5">
+    <div class="card border text-center py-5 shadow-sm mb-4">
       <div class="display-6 text-body-secondary mb-3">
         {{ icon('inbox', style='regular', extra_class='text-body-tertiary') }}
       </div>
@@ -309,18 +350,17 @@
         {% endif %}
       </p>
     </div>
-    {% endif %}
-  </div>
+  {% endif %}
 
-  <!-- Request Rejection Modal -->
+  <!-- Request Rejection Modal (Preserves exact DOM IDs for JS) -->
   <div class="modal fade" id="reject-modal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-bottom">
           <h5 class="modal-title text-danger fw-bold d-flex align-items-center gap-2" id="rejectModalLabel">
-            {{ icon('triangle-exclamation') }}Reject Book Request
+            {{ icon('triangle-exclamation') }}{{ _t('modal_reject_title', 'Reject Book Request') }}
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeRejectModal()" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeRejectModal()" aria-label="{{ _t('btn_close', 'Close') }}"></button>
         </div>
 
         <form id="reject-form" method="POST" action="">
@@ -328,7 +368,7 @@
 
           <div class="modal-body">
             <p class="small text-body-secondary mb-3">
-              Specify reason for rejecting request from <strong id="reject-student-name" class="text-body"></strong> for book <strong id="reject-book-code" class="kb-code text-primary"></strong>.
+              Specify reason for rejecting request from <strong id="reject-student-name" class="text-body"></strong> for book <bdi id="reject-book-code" class="kb-code text-primary"></bdi>.
             </p>
 
             <div class="mb-3">
@@ -344,13 +384,13 @@
 
             <div class="mb-2">
               <label for="reject-reason-input" class="form-label small fw-semibold text-body">
-                Detailed Reason <span class="text-danger">*</span>
+                {{ _t('modal_reject_reason', 'Detailed Reason') }} <span class="text-danger">*</span>
               </label>
               <textarea 
                 id="reject-reason-input" 
                 name="reason" 
                 class="form-control" 
-                rows="3"
+                rows="3" 
                 placeholder="State the reason visible on the student's tracking lookup..." 
                 required
               ></textarea>
@@ -359,11 +399,11 @@
 
           <div class="modal-footer bg-body-tertiary">
             <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal" onclick="closeRejectModal()">
-              Cancel
+              {{ _t('btn_cancel', 'Cancel') }}
             </button>
             <button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1">
               {{ icon('circle-xmark') }}
-              <span>Confirm Rejection</span>
+              <span>{{ _t('btn_confirm', 'Confirm Rejection') }}</span>
             </button>
           </div>
         </form>
@@ -371,15 +411,15 @@
     </div>
   </div>
 
-  <!-- Reservation Release / Cancellation Modal -->
+  <!-- Reservation Release / Cancellation Modal (Preserves exact DOM IDs for JS) -->
   <div class="modal fade" id="cancel-modal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-bottom">
           <h5 class="modal-title text-warning fw-bold d-flex align-items-center gap-2" id="cancelModalLabel">
-            {{ icon('unlock') }}Release Book Reservation
+            {{ icon('unlock') }}{{ _t('modal_cancel_title', 'Release Book Reservation') }}
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeCancelModal()" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeCancelModal()" aria-label="{{ _t('btn_close', 'Close') }}"></button>
         </div>
 
         <form id="cancel-form" method="POST" action="">
@@ -387,7 +427,7 @@
 
           <div class="modal-body">
             <p class="small text-body-secondary mb-3">
-              Cancel approved reservation for <strong id="cancel-student-name" class="text-body"></strong> on textbook <strong id="cancel-book-code" class="kb-code text-primary"></strong>. The textbook will be restored to the public catalogue as <strong class="text-success">Available</strong>.
+              Cancel approved reservation for <strong id="cancel-student-name" class="text-body"></strong> on textbook <bdi id="cancel-book-code" class="kb-code text-primary"></bdi>. The textbook will be restored to the public catalogue as <strong class="text-success">Available</strong>.
             </p>
 
             <div class="mb-3">
@@ -409,7 +449,7 @@
                 id="cancel-reason-input" 
                 name="reason" 
                 class="form-control" 
-                rows="3"
+                rows="3" 
                 placeholder="State the reason the reserved book is being released back to the catalogue..." 
                 required
               ></textarea>
@@ -418,11 +458,11 @@
 
           <div class="modal-footer bg-body-tertiary">
             <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal" onclick="closeCancelModal()">
-              Keep Reserved
+              {{ _t('btn_cancel', 'Keep Reserved') }}
             </button>
             <button type="submit" class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1">
               {{ icon('unlock') }}
-              <span>Confirm Release to Catalogue</span>
+              <span>{{ _t('btn_confirm', 'Confirm Release') }}</span>
             </button>
           </div>
         </form>
@@ -459,8 +499,9 @@ function openRejectModal(requestId, studentName, bookCode) {
   const form = document.getElementById('reject-form');
   document.getElementById('reject-student-name').textContent = studentName;
   document.getElementById('reject-book-code').textContent = bookCode;
-  form.action = '/teacher/requests/' + requestId + '/reject';
   document.getElementById('reject-reason-input').value = '';
+
+  form.action = '/teacher/requests/' + requestId + '/reject';
 
   const bsModal = getBsReqRejectModal();
   if (bsModal) {
@@ -482,19 +523,14 @@ function closeRejectModal() {
   }
 }
 
-function setPresetReason(val) {
-  if (val) {
-    document.getElementById('reject-reason-input').value = val;
-  }
-}
-
 function openCancelModal(requestId, studentName, bookCode) {
   const modalEl = document.getElementById('cancel-modal');
   const form = document.getElementById('cancel-form');
   document.getElementById('cancel-student-name').textContent = studentName;
   document.getElementById('cancel-book-code').textContent = bookCode;
-  form.action = '/teacher/requests/' + requestId + '/cancel-reservation';
   document.getElementById('cancel-reason-input').value = '';
+
+  form.action = '/teacher/requests/' + requestId + '/cancel';
 
   const bsModal = getBsReqCancelModal();
   if (bsModal) {
@@ -513,6 +549,12 @@ function closeCancelModal() {
   } else if (modalEl) {
     modalEl.classList.remove('show');
     modalEl.style.display = 'none';
+  }
+}
+
+function setPresetReason(val) {
+  if (val) {
+    document.getElementById('reject-reason-input').value = val;
   }
 }
 

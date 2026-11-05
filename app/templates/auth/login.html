@@ -3,14 +3,17 @@
 {% block title %}Teacher Sign In - Kitaab Bank{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 440px; margin: 2.5rem auto 4rem;">
-  <div class="card" style="padding: 2.25rem 2rem;">
-    <div class="text-center" style="margin-bottom: 2rem;">
-      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👨‍🏫</div>
-      <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+<div class="container-xxl py-5">
+  {% from 'macros/icons.html' import icon %}
+  <div class="card border shadow-xs mx-auto p-4 p-md-5 my-4" style="max-width: 440px;">
+    <div class="text-center mb-4">
+      <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+        {{ icon('chalkboard-user', extra_class='fs-2') }}
+      </div>
+      <h1 class="h3 fw-bold text-body mb-1">
         Teacher Sign In
       </h1>
-      <p class="text-muted" style="font-size: 0.875rem;">
+      <p class="text-body-secondary small mb-0">
         Enter your school staff credentials to access the administrative desk.
       </p>
     </div>
@@ -21,44 +24,55 @@
         <input type="hidden" name="next" value="{{ next }}">
       {% endif %}
 
-      <div class="mb-2">
-        <label for="username" style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary);">
+      <div class="mb-3">
+        <label for="username" class="form-label small fw-semibold">
           Teacher Username
         </label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          value="{{ username or '' }}"
-          required
-          autofocus
-          autocomplete="username"
-          placeholder="e.g. teacher"
-          style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background-color: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-family: inherit;"
-        >
+        <div class="input-group">
+          <span class="input-group-text bg-body-tertiary text-body-secondary">
+            {{ icon('user') }}
+          </span>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-control"
+            value="{{ username or '' }}"
+            required
+            autofocus
+            autocomplete="username"
+            placeholder="e.g. teacher"
+          >
+        </div>
       </div>
 
-      <div class="mb-3">
-        <label for="password" style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary);">
+      <div class="mb-4">
+        <label for="password" class="form-label small fw-semibold">
           Password
         </label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          required
-          autocomplete="current-password"
-          placeholder="••••••••••••"
-          style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background-color: var(--bg-surface); color: var(--text-primary); font-size: 0.95rem; font-family: inherit;"
-        >
+        <div class="input-group">
+          <span class="input-group-text bg-body-tertiary text-body-secondary">
+            {{ icon('lock') }}
+          </span>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            required
+            autocomplete="current-password"
+            placeholder="••••••••••••"
+          >
+        </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">
+      <button type="submit" class="btn btn-primary w-100 py-2 shadow-xs d-inline-flex align-items-center justify-content-center gap-2">
+        {{ icon('right-to-bracket') }}
         <span>Sign In to Teacher Desk</span>
       </button>
     </form>
 
-    <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+    <div class="mt-4 pt-3 border-top text-center small text-body-secondary">
       <span>Default School Staff Account: <strong>teacher</strong> / <strong>Teacher@123</strong></span>
     </div>
   </div>

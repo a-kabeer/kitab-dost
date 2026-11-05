@@ -3,298 +3,351 @@
 {% block title %}Teacher Dashboard - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
+{% from 'macros/icons.html' import icon %}
+
 <!-- Dashboard Header -->
-<div class="dashboard-header">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
   <div>
-    <h1 class="dashboard-title">Library Overview & Operations</h1>
-    <p class="dashboard-subtitle">Live analytics from local SQLite records.</p>
+    <h1 class="h3 fw-bold text-body mb-1">Library Overview &amp; Operations</h1>
+    <p class="text-body-secondary small mb-0">Live analytics from local SQLite records.</p>
   </div>
-  <div class="d-flex gap-2 align-items-center">
-    <span class="badge badge-success">WAL Concurrency Active</span>
-    <span class="badge badge-primary">Reuse Rate: {{ analytics.summary.reuse_rate }}%</span>
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+      {{ icon('circle-dot') }} WAL Concurrency Active
+    </span>
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+      Reuse Rate: {{ analytics.summary.reuse_rate }}%
+    </span>
   </div>
 </div>
 
 <!-- Pending Actions Alert Banner -->
 {% if analytics.summary.pending_actions > 0 %}
-<div class="alert alert-warning d-flex justify-content-between align-items-center" style="margin-bottom: 2rem;">
+<div class="alert alert-warning border border-warning-subtle shadow-xs d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4" role="alert">
   <div class="d-flex align-items-center gap-2">
-    <span style="font-size: 1.25rem;">⚠️</span>
+    <span class="fs-4 flex-shrink-0 text-warning">{{ icon('triangle-exclamation') }}</span>
     <div>
-      <strong>Pending Teacher Actions Required:</strong>
-      {{ analytics.summary.pending_donations }} donation(s) awaiting review and {{ analytics.summary.pending_requests }} student request(s) awaiting allocation.
+      <strong class="text-warning-emphasis">Pending Teacher Actions Required:</strong>
+      <span class="text-body">{{ analytics.summary.pending_donations }} donation(s) awaiting review and {{ analytics.summary.pending_requests }} student request(s) awaiting allocation.</span>
     </div>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex flex-wrap gap-2 flex-shrink-0">
     {% if analytics.summary.pending_donations > 0 %}
-      <a href="{{ url_for('teacher.donations', status='pending') }}" class="btn btn-sm btn-primary">Review Donations</a>
+      <a href="{{ url_for('teacher.donations', status='pending') }}" class="btn btn-sm btn-primary shadow-xs">Review Donations</a>
     {% endif %}
     {% if analytics.summary.pending_requests > 0 %}
-      <a href="{{ url_for('teacher.requests', status='pending') }}" class="btn btn-sm btn-outline">Review Requests</a>
+      <a href="{{ url_for('teacher.requests', status='pending') }}" class="btn btn-sm btn-outline-secondary">Review Requests</a>
     {% endif %}
   </div>
 </div>
 {% endif %}
 
 <!-- Quick Actions Navigation -->
-<div class="quick-actions-grid">
-  <a href="{{ url_for('teacher.new_book') }}" class="action-pill-card">
-    <div class="action-pill-icon">➕</div>
-    <div>
-      <div>Add Textbook</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">Direct inventory entry</div>
-    </div>
-  </a>
+<div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3 mb-4">
+  <div class="col">
+    <a href="{{ url_for('teacher.new_book') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3 text-center">
+      <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
+        {{ icon('plus') }}
+      </div>
+      <div class="fw-bold text-body small">Add Textbook</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">Direct inventory entry</div>
+    </a>
+  </div>
 
-  <a href="{{ url_for('teacher.donations') }}" class="action-pill-card">
-    <div class="action-pill-icon">📥</div>
-    <div>
-      <div>Donations Queue</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.pending_donations }} pending review</div>
-    </div>
-  </a>
+  <div class="col">
+    <a href="{{ url_for('teacher.donations') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3 text-center">
+      <div class="rounded-circle bg-warning-subtle text-warning-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
+        {{ icon('inbox') }}
+      </div>
+      <div class="fw-bold text-body small">Donations Queue</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.pending_donations }} pending review</div>
+    </a>
+  </div>
 
-  <a href="{{ url_for('teacher.requests') }}" class="action-pill-card">
-    <div class="action-pill-icon">📋</div>
-    <div>
-      <div>Student Requests</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.pending_requests }} pending allocation</div>
-    </div>
-  </a>
+  <div class="col">
+    <a href="{{ url_for('teacher.requests') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3 text-center">
+      <div class="rounded-circle bg-info-subtle text-info-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
+        {{ icon('clipboard-list') }}
+      </div>
+      <div class="fw-bold text-body small">Student Requests</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.pending_requests }} pending allocation</div>
+    </a>
+  </div>
 
-  <a href="{{ url_for('teacher.handovers') }}" class="action-pill-card">
-    <div class="action-pill-icon">🤝</div>
-    <div>
-      <div>Handover Ledger</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.completed_handovers }} fulfilled</div>
-    </div>
-  </a>
+  <div class="col">
+    <a href="{{ url_for('teacher.handovers') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3 text-center">
+      <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
+        {{ icon('handshake') }}
+      </div>
+      <div class="fw-bold text-body small">Handover Ledger</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.completed_handovers }} fulfilled</div>
+    </a>
+  </div>
 
-  <a href="{{ url_for('teacher.inventory') }}" class="action-pill-card">
-    <div class="action-pill-icon">📚</div>
-    <div>
-      <div>Book Inventory</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.total_inventory }} total books</div>
-    </div>
-  </a>
+  <div class="col">
+    <a href="{{ url_for('teacher.inventory') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3 text-center">
+      <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
+        {{ icon('book') }}
+      </div>
+      <div class="fw-bold text-body small">Book Inventory</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.total_inventory }} total books</div>
+    </a>
+  </div>
 
-  <a href="{{ url_for('teacher.qr_sheet') }}" class="action-pill-card">
-    <div class="action-pill-icon">🏷️</div>
-    <div>
-      <div>Print QR Labels</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">A4 sticker sheets</div>
-    </div>
-  </a>
+  <div class="col">
+    <a href="{{ url_for('teacher.qr_sheet') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3 text-center">
+      <div class="rounded-circle bg-secondary-subtle text-secondary-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
+        {{ icon('tag') }}
+      </div>
+      <div class="fw-bold text-body small">Print QR Labels</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">A4 sticker sheets</div>
+    </a>
+  </div>
 </div>
 
 <!-- Primary Metric Cards Grid -->
-<div class="dashboard-metrics">
-  <a href="{{ url_for('teacher.inventory', status='all') }}" class="metric-card" style="text-decoration: none; color: inherit;">
-    <div class="metric-header">
-      <span class="metric-title">Total Inventory</span>
-      <div class="metric-icon">📚</div>
-    </div>
-    <div class="metric-value">{{ analytics.summary.total_inventory }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Manage Inventory →</div>
-  </a>
-
-  <a href="{{ url_for('teacher.inventory', status='available') }}" class="metric-card" style="text-decoration: none; color: inherit;">
-    <div class="metric-header">
-      <span class="metric-title">Available in Catalogue</span>
-      <div class="metric-icon" style="background-color: var(--success-bg); color: var(--success);">🟢</div>
-    </div>
-    <div class="metric-value">{{ analytics.summary.available_books }}</div>
-    <div class="metric-footer">Ready for student borrowing</div>
-  </a>
-
-  <a href="{{ url_for('teacher.requests', status='approved') }}" class="metric-card" style="text-decoration: none; color: inherit;">
-    <div class="metric-header">
-      <span class="metric-title">Reserved for Pickup</span>
-      <div class="metric-icon" style="background-color: var(--warning-bg); color: var(--warning);">🔒</div>
-    </div>
-    <div class="metric-value">{{ analytics.summary.reserved_books }}</div>
-    <div class="metric-footer" style="color: var(--warning); font-weight: 600;">Awaiting Handover →</div>
-  </a>
-
-  <a href="{{ url_for('teacher.handovers') }}" class="metric-card" style="text-decoration: none; color: inherit;">
-    <div class="metric-header">
-      <span class="metric-title">Books Reused (Handovers)</span>
-      <div class="metric-icon" style="background-color: var(--primary-light); color: var(--primary);">🎓</div>
-    </div>
-    <div class="metric-value">{{ analytics.summary.handed_over_books }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Circulation Ledger →</div>
-  </a>
-
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Students Served</span>
-      <div class="metric-icon">👥</div>
-    </div>
-    <div class="metric-value">{{ analytics.summary.unique_recipients }}</div>
-    <div class="metric-footer">Unique student beneficiaries</div>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 mb-4">
+  <div class="col">
+    <a href="{{ url_for('teacher.inventory', status='all') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Total Inventory</span>
+        <div class="text-primary fs-5">{{ icon('book') }}</div>
+      </div>
+      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.total_inventory }}</div>
+      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1">
+        <span>Manage Inventory</span> {{ icon('arrow-right') }}
+      </div>
+    </a>
   </div>
 
-  <a href="{{ url_for('teacher.donations') }}" class="metric-card" style="text-decoration: none; color: inherit;">
-    <div class="metric-header">
-      <span class="metric-title">Total Donations</span>
-      <div class="metric-icon">📥</div>
+  <div class="col">
+    <a href="{{ url_for('teacher.inventory', status='available') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Available in Catalogue</span>
+        <div class="text-success fs-5">{{ icon('book-open-reader') }}</div>
+      </div>
+      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.available_books }}</div>
+      <div class="small text-body-secondary mt-auto">Ready for student borrowing</div>
+    </a>
+  </div>
+
+  <div class="col">
+    <a href="{{ url_for('teacher.requests', status='approved') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Reserved for Pickup</span>
+        <div class="text-warning fs-5">{{ icon('clock') }}</div>
+      </div>
+      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.reserved_books }}</div>
+      <div class="small text-warning fw-semibold mt-auto d-inline-flex align-items-center gap-1">
+        <span>Awaiting Handover</span> {{ icon('arrow-right') }}
+      </div>
+    </a>
+  </div>
+
+  <div class="col">
+    <a href="{{ url_for('teacher.handovers') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Books Reused (Handovers)</span>
+        <div class="text-info fs-5">{{ icon('rotate') }}</div>
+      </div>
+      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.handed_over_books }}</div>
+      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1">
+        <span>Circulation Ledger</span> {{ icon('arrow-right') }}
+      </div>
+    </a>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 border shadow-xs p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Students Served</span>
+        <div class="text-warning fs-5">{{ icon('users') }}</div>
+      </div>
+      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.unique_recipients }}</div>
+      <div class="small text-body-secondary mt-auto">Unique student beneficiaries</div>
     </div>
-    <div class="metric-value">{{ analytics.summary.total_donations }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">View Queue →</div>
-  </a>
+  </div>
+
+  <div class="col">
+    <a href="{{ url_for('teacher.donations') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Total Donations</span>
+        <div class="text-primary fs-5">{{ icon('inbox') }}</div>
+      </div>
+      <div class="fs-2 fw-bold text-body mb-1">{{ analytics.summary.total_donations }}</div>
+      <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1">
+        <span>View Queue</span> {{ icon('arrow-right') }}
+      </div>
+    </a>
+  </div>
 </div>
 
 <!-- Two-Column Analytics Matrix -->
-<div class="analytics-grid-two">
+<div class="row g-4 mb-4">
   <!-- Class-wise Distribution -->
-  <div class="card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-        🏫 Class-wise Book Distribution
-      </h2>
-      <span class="badge badge-outline">Grades 6–8</span>
-    </div>
-
-    <div class="meter-list">
-      {% for cls in analytics.class_distribution %}
-      <div class="meter-item">
-        <div class="meter-header">
-          <span class="meter-label">{{ cls.class_grade }}</span>
-          <span class="meter-stats">
-            <strong>{{ cls.total }}</strong> books ({{ cls.percentage }}%)
-            &bull; <span style="color: var(--success);">{{ cls.available }} Avail</span>
-            &bull; <span style="color: var(--primary);">{{ cls.handed_over }} Reused</span>
-          </span>
-        </div>
-        <div class="meter-track">
-          <div class="meter-fill fill-primary" style="width: {{ cls.percentage }}%;"></div>
-        </div>
+  <div class="col-12 col-lg-6">
+    <div class="card h-100 border shadow-xs p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+          <span class="text-primary">{{ icon('school') }}</span>
+          <span>Class-wise Book Distribution</span>
+        </h2>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">Grades 6–8</span>
       </div>
-      {% else %}
-      <div class="text-secondary" style="padding: 1rem 0;">No class distribution records available yet.</div>
-      {% endfor %}
-    </div>
 
-    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
-      <span>Inventory Spread: Balanced across middle school grades</span>
-      <a href="{{ url_for('teacher.reports') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Full Report →</a>
+      <div class="d-flex flex-column gap-3">
+        {% for cls in analytics.class_distribution %}
+        <div>
+          <div class="d-flex justify-content-between align-items-center small mb-1">
+            <span class="fw-semibold text-body">{{ cls.class_grade }}</span>
+            <span class="text-body-secondary">
+              <strong>{{ cls.total }}</strong> books ({{ cls.percentage }}%)
+              &bull; <span class="text-success">{{ cls.available }} Avail</span>
+              &bull; <span class="text-primary">{{ cls.handed_over }} Reused</span>
+            </span>
+          </div>
+          <div class="progress" role="progressbar" aria-valuenow="{{ cls.percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
+            <div class="progress-bar bg-primary" style="width: {{ cls.percentage }}%;"></div>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-body-secondary small py-3 text-center">No class distribution records available yet.</div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center small text-body-secondary">
+        <span>Inventory Spread: Balanced across middle school grades</span>
+        <a href="{{ url_for('teacher.reports') }}" class="text-primary fw-semibold text-decoration-none d-inline-flex align-items-center gap-1">
+          <span>Full Report</span> {{ icon('arrow-right') }}
+        </a>
+      </div>
     </div>
   </div>
 
   <!-- Status Distribution & Velocity -->
-  <div class="card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-        📊 Circulation Status Breakdown
-      </h2>
-      <span class="badge badge-outline">Real-Time</span>
-    </div>
+  <div class="col-12 col-lg-6">
+    <div class="card h-100 border shadow-xs p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+          <span class="text-primary">{{ icon('chart-pie') }}</span>
+          <span>Circulation Status Breakdown</span>
+        </h2>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">Real-Time</span>
+      </div>
 
-    <div class="meter-list">
-      {% for st in analytics.status_distribution %}
-      <div class="meter-item">
-        <div class="meter-header">
-          <span class="meter-label">
-            <span class="badge badge-{{ st.color }}">{{ st.label }}</span>
-          </span>
-          <span class="meter-stats">
-            <strong>{{ st.count }}</strong> books ({{ st.percentage }}%)
-          </span>
+      <div class="d-flex flex-column gap-3 mb-4">
+        {% for st in analytics.status_distribution %}
+        <div>
+          <div class="d-flex justify-content-between align-items-center small mb-1">
+            <span class="badge bg-{{ 'primary' if st.color == 'primary' else ('success' if st.color == 'success' else ('warning' if st.color == 'warning' else ('danger' if st.color == 'danger' else 'secondary'))) }}-subtle text-{{ 'primary' if st.color == 'primary' else ('success' if st.color == 'success' else ('warning' if st.color == 'warning' else ('danger' if st.color == 'danger' else 'secondary'))) }} border">
+              {{ st.label }}
+            </span>
+            <span class="text-body-secondary">
+              <strong>{{ st.count }}</strong> books ({{ st.percentage }}%)
+            </span>
+          </div>
+          <div class="progress" role="progressbar" aria-valuenow="{{ st.percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
+            <div class="progress-bar bg-{{ 'primary' if st.color == 'primary' else ('success' if st.color == 'success' else ('warning' if st.color == 'warning' else ('danger' if st.color == 'danger' else 'secondary'))) }}" style="width: {{ st.percentage }}%;"></div>
+          </div>
         </div>
-        <div class="meter-track">
-          <div class="meter-fill fill-{{ st.color }}" style="width: {{ st.percentage }}%;"></div>
-        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
 
-    <!-- Handover Velocity Banner -->
-    <div style="margin-top: 1.5rem; padding: 0.85rem 1rem; background-color: var(--bg-muted); border-radius: var(--radius-md); display: flex; justify-content: space-around; text-align: center;">
-      <div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Past 7 Days</div>
-        <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">{{ analytics.velocity.handovers_7d }}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Handovers</div>
-      </div>
-      <div style="border-right: 1px solid var(--border-color);"></div>
-      <div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Past 30 Days</div>
-        <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">{{ analytics.velocity.handovers_30d }}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Handovers</div>
-      </div>
-      <div style="border-right: 1px solid var(--border-color);"></div>
-      <div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">All Time</div>
-        <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">{{ analytics.velocity.total_handovers }}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Reused</div>
+      <!-- Handover Velocity Banner -->
+      <div class="card border bg-body-tertiary p-3 mt-auto">
+        <div class="row text-center g-2">
+          <div class="col-4 border-end">
+            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">Past 7 Days</div>
+            <div class="fs-4 fw-bold text-body">{{ analytics.velocity.handovers_7d }}</div>
+            <div class="small text-body-secondary" style="font-size: 0.725rem;">Handovers</div>
+          </div>
+          <div class="col-4 border-end">
+            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">Past 30 Days</div>
+            <div class="fs-4 fw-bold text-body">{{ analytics.velocity.handovers_30d }}</div>
+            <div class="small text-body-secondary" style="font-size: 0.725rem;">Handovers</div>
+          </div>
+          <div class="col-4">
+            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">All Time</div>
+            <div class="fs-4 fw-bold text-primary">{{ analytics.velocity.total_handovers }}</div>
+            <div class="small text-body-secondary" style="font-size: 0.725rem;">Reused</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Two-Column: Subject Popularity + Recent Activity Feed -->
-<div class="analytics-grid-two">
+<div class="row g-4">
   <!-- Subject Breakdown -->
-  <div class="card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-        📖 Subject Inventory Spread
-      </h2>
-      <a href="{{ url_for('teacher.reports') }}" class="btn btn-sm btn-outline">Detailed Breakdown</a>
-    </div>
-
-    <div class="meter-list">
-      {% for sb in analytics.subject_distribution[:6] %}
-      <div class="meter-item">
-        <div class="meter-header">
-          <span class="meter-label">{{ sb.subject }}</span>
-          <span class="meter-stats">
-            <strong>{{ sb.total }}</strong> books ({{ sb.percentage }}%)
-            &bull; {{ sb.available }} avail
-          </span>
-        </div>
-        <div class="meter-track">
-          <div class="meter-fill fill-info" style="width: {{ sb.percentage }}%;"></div>
-        </div>
+  <div class="col-12 col-lg-6">
+    <div class="card h-100 border shadow-xs p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+          <span class="text-primary">{{ icon('book-bookmark') }}</span>
+          <span>Subject Inventory Spread</span>
+        </h2>
+        <a href="{{ url_for('teacher.reports') }}" class="btn btn-sm btn-outline-secondary">Detailed Breakdown</a>
       </div>
-      {% else %}
-      <div class="text-secondary" style="padding: 1rem 0;">No subject records available.</div>
-      {% endfor %}
+
+      <div class="d-flex flex-column gap-3">
+        {% for sb in analytics.subject_distribution[:6] %}
+        <div>
+          <div class="d-flex justify-content-between align-items-center small mb-1">
+            <span class="fw-semibold text-body">{{ sb.subject }}</span>
+            <span class="text-body-secondary">
+              <strong>{{ sb.total }}</strong> books ({{ sb.percentage }}%)
+              &bull; {{ sb.available }} avail
+            </span>
+          </div>
+          <div class="progress" role="progressbar" aria-valuenow="{{ sb.percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
+            <div class="progress-bar bg-info" style="width: {{ sb.percentage }}%;"></div>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-body-secondary small py-3 text-center">No subject records available.</div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 
   <!-- Recent Activity Stream -->
-  <div class="card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-        📜 Recent Activity Audit Stream
-      </h2>
-      <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-sm btn-outline">View All Logs</a>
-    </div>
+  <div class="col-12 col-lg-6">
+    <div class="card h-100 border shadow-xs p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+          <span class="text-primary">{{ icon('scroll') }}</span>
+          <span>Recent Activity Audit Stream</span>
+        </h2>
+        <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-sm btn-outline-secondary">View All Logs</a>
+      </div>
 
-    <div class="activity-timeline">
-      {% for act in analytics.recent_activity %}
-      <div class="activity-row">
-        <span class="activity-badge
-          {% if 'donation' in act.action %}badge-act-donation
-          {% elif 'request' in act.action %}badge-act-request
-          {% elif 'handover' in act.action %}badge-act-handover
-          {% elif 'book' in act.action %}badge-act-book
-          {% elif 'login' in act.action or 'logout' in act.action %}badge-act-auth
-          {% else %}badge-act-default{% endif %}">
-          {{ act.action.replace('_', ' ') }}
-        </span>
-        <div class="activity-content">
-          <div class="activity-text">{{ act.details }}</div>
-          <div class="activity-time">
-            By <strong>{{ act.actor_name }}</strong> ({{ act.actor_type }}) &bull; {{ act.created_at }}
+      <div class="d-flex flex-column gap-2 overflow-y-auto" style="max-height: 380px;">
+        {% for act in analytics.recent_activity %}
+        <div class="card border p-2 bg-body-tertiary">
+          <div class="d-flex align-items-start gap-2">
+            <span class="badge
+              {% if 'donation' in act.action %}bg-warning-subtle text-warning-emphasis border border-warning-subtle
+              {% elif 'request' in act.action %}bg-primary-subtle text-primary border border-primary-subtle
+              {% elif 'handover' in act.action %}bg-success-subtle text-success border border-success-subtle
+              {% elif 'book' in act.action %}bg-info-subtle text-info-emphasis border border-info-subtle
+              {% else %}bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle{% endif %}">
+              {{ act.action.replace('_', ' ') }}
+            </span>
+            <div class="flex-grow-1 overflow-hidden">
+              <div class="small text-body text-truncate">{{ act.details }}</div>
+              <div class="text-body-secondary" style="font-size: 0.725rem;">
+                By <strong>{{ act.actor_name }}</strong> ({{ act.actor_type }}) &bull; {{ act.created_at }}
+              </div>
+            </div>
           </div>
         </div>
+        {% else %}
+        <div class="text-body-secondary small py-4 text-center">
+          No activity logged yet.
+        </div>
+        {% endfor %}
       </div>
-      {% else %}
-      <div class="text-secondary" style="padding: 1.5rem 0; text-align: center;">
-        No activity logged yet.
-      </div>
-      {% endfor %}
     </div>
   </div>
 </div>

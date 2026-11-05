@@ -834,21 +834,31 @@ Transform the entire presentation layer of Kitaab Bank into a cohesive, professi
 
 ### Test Verification Summary
 
-| Test Suite | Scope | Result | Details |
-|---|---|---|---|
-| `tests/test_browser_ui_redesign.py` | UI/UX Redesign & Modernization Suite | **PASS (9/9)** | Local vendor assets, zero CDN dependencies, multilingual RTL/LTR stylesheet loading, `.kb-code` bidi isolation, DOM ID preservation (`#confirmDemoBox`, scanner IDs), offcanvas navigation drawers, print stylesheet linkage, Zero-FOUC theme guard, accessibility ARIA attributes |
-| `tests/test_phase1.py` | Foundation & Security Regression | **PASS (7/7)** | SQLite WAL mode, dual portals, 100% offline static assets, error handlers, and persistence |
-| `tests/test_phase2.py` | Student Discovery & Catalogue Regression | **PASS (13/13)** | Public index, catalogue filtering, book detail, search, and KPI metric assertions |
-| `tests/test_phase3.py` | Donation Workflow Regression | **PASS (13/13)** | Donation form, Pillow pipeline, secure tokens, review queue, approval & rejection |
-| `tests/test_phase4.py` | Request & Reservation Regression | **PASS (12/12)** | Request submission, atomic reservation lock, private tracking, cancellation |
-| `tests/test_phase5.py` | Physical Handover & Receipt Regression | **PASS (10/10)** | Handover checklist, ledger sequencing, printable receipt, student timeline |
-| `tests/test_phase6.py` | QR System & Scanner Regression | **PASS (14/14)** | Dynamic QR codes, printable labels, dual-mode scanner, camera cleanup |
-| `tests/test_phase7.py` | Teacher Dashboard & Reports Regression | **PASS (15/15)** | Analytics engine, inventory CRUD, reports desk, CSV exports, activity logs |
-| `tests/test_phase8.py` | Multilingual & Hot Backup Regression | **PASS (13/13)** | Hot backups, SHA-256 verification, CLI restore, RTL language switching, demo mode |
-| `tests/test_phase9.py` | Release QA & Data Safety Regression | **PASS (13/13)** | Comprehensive QA, backup integrity, sole backup protection, demo exit safety |
-| `tests/test_final_data_safety.py` | Final Data Safety Hardening Suite | **PASS (10/10)** | Pre-demo backups, real data preservation, rollback recovery, maintenance gate |
-| `tests/test_restore_safety_hardening.py` | Final Restore Safety Hardening Suite | **PASS (8/8)** | Connection draining, HTTP 503 maintenance gate, CLI/Waitress server guard |
-| Combined Test Suite (`tests/`) | Complete Unit & Integration Suite | **PASS (137/137)** | 100% passing across all 12 test modules with exit code 0 |
+#### 1. Discovered Unit & Integration Test Suites (`tests/` Directory)
+
+| Test Suite | Scope | Actual Test Methods | Result | Details |
+|---|---|---|---|---|
+| `tests/test_browser_ui_redesign.py` | UI/UX Redesign & Modernization Suite | 9 | **PASS (9/9)** | Local vendor assets, zero CDN dependencies, multilingual RTL/LTR stylesheet loading, `.kb-code` bidi isolation, DOM ID preservation (`#confirmDemoBox`, scanner IDs), offcanvas navigation drawers, print stylesheet linkage, Zero-FOUC theme guard, accessibility ARIA attributes |
+| `tests/test_final_data_safety.py` | Final Data Safety Hardening Suite | 10 | **PASS (10/10)** | Pre-demo backups, real data preservation, rollback recovery, maintenance gate |
+| `tests/test_phase2.py` | Student Discovery & Catalogue Regression | 12 | **PASS (12/12)** | Public index, catalogue filtering, book detail, search, and KPI metric assertions |
+| `tests/test_phase3.py` | Donation Workflow Regression | 12 | **PASS (12/12)** | Donation form, Pillow pipeline, secure tokens, review queue, approval & rejection |
+| `tests/test_phase4.py` | Request & Reservation Regression | 14 | **PASS (14/14)** | Request submission, atomic reservation lock, private tracking, cancellation |
+| `tests/test_phase5.py` | Physical Handover & Receipt Regression | 17 | **PASS (17/17)** | Handover checklist, ledger sequencing, printable receipt, student timeline |
+| `tests/test_phase6.py` | QR System & Scanner Regression | 14 | **PASS (14/14)** | Dynamic QR codes, printable labels, dual-mode scanner, camera cleanup |
+| `tests/test_phase7.py` | Teacher Dashboard & Reports Regression | 15 | **PASS (15/15)** | Analytics engine, inventory CRUD, reports desk, CSV exports, activity logs |
+| `tests/test_phase8.py` | Multilingual & Hot Backup Regression | 13 | **PASS (13/13)** | Hot backups, SHA-256 verification, CLI restore, RTL language switching, demo mode |
+| `tests/test_phase9.py` | Release QA & Data Safety Regression | 13 | **PASS (13/13)** | Comprehensive QA, backup integrity, sole backup protection, demo exit safety |
+| `tests/test_restore_safety_hardening.py` | Final Restore Safety Hardening Suite | 8 | **PASS (8/8)** | Connection draining, HTTP 503 maintenance gate, CLI/Waitress server guard |
+| **Combined Discovery Suite (`tests/`)** | **All 11 Discovered Test Modules** | **137** | **PASS (137/137)** | **Ran 137 tests in 43.965s - OK (0 failures, 0 errors, 0 skipped)** |
+
+#### 2. Standalone Root Regression & Verification Scripts
+
+| Script | Scope | Verification Stages | Result | Details |
+|---|---|---|---|---|
+| `test_phase1.py` | Foundation, WAL Mode & Security Regression | 7 stages (30 asserts) | **PASS** | SQLite WAL mode, dual portals, 100% offline static assets, error handlers, and persistence |
+| `test_concurrency.py` | SQLite WAL Concurrency Performance | 15 parallel workers | **PASS (15/15)** | 15 concurrent student submissions committed without database locked errors |
+| `test_browser_phase9.py` | Phase 9 Multi-Device Playwright Audit | 6 suites | **PASS** | Desktop, Tablet, iPhone, Android, themes, and RTL with 0 console errors and 0 page exceptions |
+| `scripts/run_visual_acceptance_audit.py` | UI Redesign Visual Acceptance & Wrap Audit | 36 screenshots | **PASS** | 14 desktop & 14 mobile views, 15 navbar viewport wrap checks (EN, UR, SD), 0 CDN leaks |
 
 ### Final Verification Status
 - **All 35/35 frontend UI/UX issues in `docs/UI_UX_ISSUE_REGISTER.md` have been RESOLVED & VERIFIED.**

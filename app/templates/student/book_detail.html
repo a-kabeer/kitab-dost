@@ -18,7 +18,7 @@
     <!-- Left Column: Cover & Quick Status -->
     <div class="book-detail-cover-box">
       <img 
-        src="{{ url_for('static', filename=book.image_path) }}" 
+        src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 
         alt="{{ book.title }} Cover" 
         class="book-detail-cover-img"
       >

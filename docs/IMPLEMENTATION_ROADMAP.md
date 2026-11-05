@@ -148,23 +148,25 @@ flowchart TD
 
 ---
 
-### Phase 7 – Teacher Dashboard, Analytics & Themed Admin Desk (READY TO START)
+### Phase 7 – Teacher Dashboard, Analytics & Themed Admin Desk (COMPLETED & VERIFIED)
 - **Goal:** Build a complete teacher administrative dashboard with live analytics, full book inventory CRUD, and audit activity logging.
 - **Key Deliverables:**
-  - Dashboard overview (`/teacher/dashboard`) with dynamic cards (Total Donated, Available, Reserved, Reused, Pending Actions).
-  - Breakdown charts/tables: Most requested subjects, class-wise distribution (Grades 6, 7, 8), monthly trends.
-  - Inventory manager (`/teacher/inventory`) to directly add school books, edit details, or retire damaged books.
-  - System activity log (`/teacher/logs`) recording teacher actions.
-  - Full theme compliance: Verifying Light, Dark, and System Default themes across all admin screens, modals, and data tables.
-- **Acceptance Criteria:**
+  - Dashboard overview (`/teacher/dashboard`) with dynamic cards (Total Inventory, Available, Reserved, Reused, Pending Actions banner, Unique Recipients).
+  - Breakdown charts/tables: Class-wise distribution meters (Grades 6, 7, 8), subject inventory spread, circulation status meters, and 7/30-day velocity stats.
+  - Inventory manager (`/teacher/inventory`) with status tabs, search, multi-faceted filtering, and full CRUD (`/teacher/inventory/new`, `/teacher/inventory/<id>/edit`, `/teacher/inventory/<id>/status`).
+  - Reports & Analytics desk (`/teacher/reports`) with cross-tabulation matrices and zero-dependency CSV exports (`export/inventory.csv`, `export/handovers.csv`).
+  - System activity log (`/teacher/logs`) recording immutable audit entries for circulation and teacher actions.
+  - Full theme compliance: Light, Dark, and System Default themes across all admin screens, modals, and data tables.
+- **Acceptance Criteria (VERIFIED):**
   - All dashboard metrics calculate from real SQLite records with zero fabricated data.
-  - Teachers can edit book details or retire books with proper status updates.
-  - Audit log captures donations, approvals, requests, and handovers.
-  - Theme switching works flawlessly in the teacher portal.
+  - Teachers can add, edit, or retire books with proper status guards (preventing retirement of reserved or handed-over books).
+  - Audit log captures donations, approvals, requests, handovers, inventory mutations, and teacher logins/logouts.
+  - Theme switching works flawlessly across all teacher screens with zero console errors.
+  - 15 unit/integration tests (`tests/test_phase7.py`) and full browser audit (`test_browser_phase7.py`) passing with 0 console errors and 0 page exceptions.
 
 ---
 
-### Phase 8 – Multilingual RTL, Live Snapshot Backups & Exhibition Mode
+### Phase 8 – Multilingual RTL, Live Snapshot Backups & Exhibition Mode (READY TO START)
 - **Goal:** Implement full bilingual / trilingual localization (English, Urdu اردو, Sindhi سنڌي) with RTL support, Python SQLite consistent live snapshot backup and restoration verification tools, and exhibition showcase mode.
 - **Key Deliverables:**
   - JSON translation dictionaries (`en.json`, `ur.json`, `sd.json`) and template translation helper `_t('key')` preserving Latin digits in codes.

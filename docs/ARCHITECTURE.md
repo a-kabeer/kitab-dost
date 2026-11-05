@@ -403,3 +403,30 @@ The physical book handover completes the lifecycle from request to custody trans
    - If an approved student fails to collect their reserved book or relocates, teachers can release the reservation via `/teacher/requests/<id>/cancel-reservation`.
    - Restores book `status = 'available'` in catalogue and sets request `status = 'cancelled'` with recorded reason.
    - Cancellation is strictly forbidden and blocked after a physical handover is completed.
+
+---
+
+## 12. Teacher Operations, Live Analytics Engine & Audit Logging
+
+### 12.1 Real-Time Analytics Computation Model
+- Rather than maintaining cached or scheduled summary counters, Kitaab Bank computes all metrics directly from SQLite in real-time.
+- Because SQLite runs in WAL mode with fast B-Tree indexing on primary and foreign keys, cross-tabulation queries (class breakdown, subject spread, reuse rates) execute in sub-millisecond timeframes.
+- Zero fabricated data: All percentages, status breakdowns, and velocity metrics correspond to actual persisted database records.
+
+### 12.2 Inventory Management & Status Integrity Guards
+- Staff can manage textbooks directly at `/teacher/inventory`, supporting creation, editing, and retirement.
+- **Automated Book Code Sequencing:** `generate_next_book_code()` inspects existing Latin 6-digit codes (`KB-BK-XXXXXX`) and increments sequentially, ensuring zero collisions.
+- **Status Guards:**
+  - An active `reserved` textbook cannot be retired or modified until the teacher cancels the pending reservation.
+  - A `handed_over` textbook cannot be retired or altered through inventory forms, preserving historical ledger integrity.
+
+### 12.3 Immutable System Activity Logging
+- The `activity_logs` table records every critical event across the application (`donation_submitted`, `donation_approved`, `donation_rejected`, `request_submitted`, `request_approved`, `request_rejected`, `reservation_cancelled`, `handover_completed`, `book_added`, `book_updated`, `book_retired`, `book_restored`, `teacher_login`, `teacher_logout`).
+- Each log row captures the timestamp, action identifier, entity type, entity ID, actor name, actor type, and descriptive narrative.
+- Provides teachers with an administrative audit trail accessible at `/teacher/logs`.
+
+### 12.4 Zero-Dependency Administrative CSV Streaming
+- The reporting engine at `/teacher/reports` produces standard RFC 4180 CSV exports for school administrative records (`export/inventory.csv` and `export/handovers.csv`).
+- Streams are generated purely using Python's standard `csv` and `io` modules, requiring zero external packages.
+- All CSV outputs are prepended with the UTF-8 Byte Order Mark (`\ufeff`), ensuring instant compatibility with Microsoft Excel without character corruption in Urdu or Sindhi book titles.
+

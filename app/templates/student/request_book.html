@@ -44,7 +44,7 @@
     <!-- Selected Book Mini-Card -->
     <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.75rem; display: flex; gap: 1.25rem; align-items: center; box-shadow: var(--shadow-sm); flex-wrap: wrap;">
       <img 
-        src="{{ url_for('static', filename=book.image_path) }}" 
+        src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 
         alt="{{ book.title }} Cover" 
         style="width: 72px; height: 96px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color);"
       >

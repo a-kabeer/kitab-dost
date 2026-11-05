@@ -176,3 +176,26 @@ Uploaded book photographs represent a common attack vector if left unconstrained
 ### 8.4 Zero-Storage QR Generation & Teacher Auth Guards
 - Dynamic QR code generation (`/qr/<book_code>.png`) generates images in-memory via Pillow/qrcode, preventing disk fill attacks or filesystem race conditions.
 - Single book sticker labels (`/teacher/books/<code_or_id>/qr`) and bulk A4 label printing (`/teacher/qr-sheet`) are strictly protected behind teacher session authentication (`@teacher_bp.before_request`). Unauthenticated users cannot view batch label sheets or teacher administration tools.
+
+---
+
+## 9. Teacher Administrative Security, Inventory Authorization & Audit Integrity
+
+### 9.1 Teacher Route Defense & CSRF Session Isolation
+- Every teacher route under `/teacher/*` is gated behind `@teacher_bp.before_request`. Any attempt to access dashboard, inventory, reports, or logs without an active authenticated session results in a 302 redirect to `/auth/login`.
+- All mutation endpoints (`/teacher/inventory/new`, `/teacher/inventory/<id>/edit`, `/teacher/inventory/<id>/status`, `/auth/login`) enforce session CSRF token verification. Missing or mismatched tokens trigger an immediate HTTP 400 rejection.
+- Login redirection strictly validates the `next` query parameter against `is_safe_url()`, completely neutralizing open-redirect vulnerabilities.
+
+### 9.2 Inventory State Machine Integrity & Circulation Defense
+- Books in the inventory cannot have their status changed arbitrarily:
+  - Textbooks with an active reservation (`status = 'reserved'`) cannot be retired or modified until the teacher cancels the reservation.
+  - Textbooks that have completed physical handover (`status = 'handed_over'`) cannot be modified or retired, preserving the historical integrity of the handover ledger.
+- Textbooks added directly by teachers receive unique, sequential Latin codes (`KB-BK-XXXXXX`), validated to prevent identifier collisions.
+
+### 9.3 Immutable Append-Only System Audit Trail
+- The `activity_logs` table operates as an append-only audit trail. It does not expose `UPDATE` or `DELETE` endpoints in the web application.
+- Staff logins, logouts, donation actions, request allocations, handover completions, and inventory mutations are automatically recorded with actor names, roles, and timestamps, ensuring accountability.
+
+### 9.4 CSV Injection Mitigation
+- Exported spreadsheets (`/teacher/reports/export/inventory.csv` and `/teacher/reports/export/handovers.csv`) are generated using Python's standard `csv.writer` with strict quoting.
+- Text cells containing potential spreadsheet formula prefixes (`=`, `+`, `-`, `@`) are safely handled to prevent command execution or DDE injection when opened in external spreadsheet software like Excel or LibreOffice Calc.

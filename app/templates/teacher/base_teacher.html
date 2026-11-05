@@ -118,6 +118,12 @@
             </a>
           </li>
           <li>
+            <a href="{{ url_for('teacher.activity_logs') }}" class="sidebar-link {% if request.endpoint == 'teacher.activity_logs' %}active{% endif %}">
+              <span>📜</span>
+              <span>Activity Logs</span>
+            </a>
+          </li>
+          <li>
             <a href="{{ url_for('teacher.settings') }}" class="sidebar-link {% if request.endpoint == 'teacher.settings' %}active{% endif %}">
               <span>⚙️</span>
               <span>Settings & Backup</span>

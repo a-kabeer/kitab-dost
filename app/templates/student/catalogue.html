@@ -147,7 +147,7 @@
     <article class="book-card">
       <div class="book-card-cover-wrap">
         <img 
-          src="{{ url_for('static', filename=book.image_path) }}" 
+          src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 
           alt="{{ book.title }} Cover" 
           class="book-card-cover-img"
           loading="lazy"

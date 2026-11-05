@@ -3,85 +3,299 @@
 {% block title %}Teacher Dashboard - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
+<!-- Dashboard Header -->
 <div class="dashboard-header">
   <div>
-    <h1 class="dashboard-title">Library Overview</h1>
-    <p class="dashboard-subtitle">Real-time statistics from school local records.</p>
+    <h1 class="dashboard-title">Library Overview & Operations</h1>
+    <p class="dashboard-subtitle">Live analytics from local SQLite records.</p>
   </div>
-  <div>
+  <div class="d-flex gap-2 align-items-center">
     <span class="badge badge-success">WAL Concurrency Active</span>
+    <span class="badge badge-primary">Reuse Rate: {{ analytics.summary.reuse_rate }}%</span>
   </div>
 </div>
 
-<!-- Metric Cards Grid -->
-<div class="dashboard-metrics" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-  <a href="{{ url_for('teacher.requests', status='pending') }}" class="metric-card" style="text-decoration: none; color: inherit;">
-    <div class="metric-header">
-      <span class="metric-title">Pending Requests</span>
-      <div class="metric-icon">📋</div>
+<!-- Pending Actions Alert Banner -->
+{% if analytics.summary.pending_actions > 0 %}
+<div class="alert alert-warning d-flex justify-content-between align-items-center" style="margin-bottom: 2rem;">
+  <div class="d-flex align-items-center gap-2">
+    <span style="font-size: 1.25rem;">⚠️</span>
+    <div>
+      <strong>Pending Teacher Actions Required:</strong>
+      {{ analytics.summary.pending_donations }} donation(s) awaiting review and {{ analytics.summary.pending_requests }} student request(s) awaiting allocation.
     </div>
-    <div class="metric-value">{{ stats.pending_requests }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Review Queue →</div>
+  </div>
+  <div class="d-flex gap-2">
+    {% if analytics.summary.pending_donations > 0 %}
+      <a href="{{ url_for('teacher.donations', status='pending') }}" class="btn btn-sm btn-primary">Review Donations</a>
+    {% endif %}
+    {% if analytics.summary.pending_requests > 0 %}
+      <a href="{{ url_for('teacher.requests', status='pending') }}" class="btn btn-sm btn-outline">Review Requests</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions Navigation -->
+<div class="quick-actions-grid">
+  <a href="{{ url_for('teacher.new_book') }}" class="action-pill-card">
+    <div class="action-pill-icon">➕</div>
+    <div>
+      <div>Add Textbook</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">Direct inventory entry</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('teacher.donations') }}" class="action-pill-card">
+    <div class="action-pill-icon">📥</div>
+    <div>
+      <div>Donations Queue</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.pending_donations }} pending review</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('teacher.requests') }}" class="action-pill-card">
+    <div class="action-pill-icon">📋</div>
+    <div>
+      <div>Student Requests</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.pending_requests }} pending allocation</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('teacher.handovers') }}" class="action-pill-card">
+    <div class="action-pill-icon">🤝</div>
+    <div>
+      <div>Handover Ledger</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.completed_handovers }} fulfilled</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('teacher.inventory') }}" class="action-pill-card">
+    <div class="action-pill-icon">📚</div>
+    <div>
+      <div>Book Inventory</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">{{ analytics.summary.total_inventory }} total books</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('teacher.qr_sheet') }}" class="action-pill-card">
+    <div class="action-pill-icon">🏷️</div>
+    <div>
+      <div>Print QR Labels</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">A4 sticker sheets</div>
+    </div>
+  </a>
+</div>
+
+<!-- Primary Metric Cards Grid -->
+<div class="dashboard-metrics">
+  <a href="{{ url_for('teacher.inventory', status='all') }}" class="metric-card" style="text-decoration: none; color: inherit;">
+    <div class="metric-header">
+      <span class="metric-title">Total Inventory</span>
+      <div class="metric-icon">📚</div>
+    </div>
+    <div class="metric-value">{{ analytics.summary.total_inventory }}</div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Manage Inventory →</div>
+  </a>
+
+  <a href="{{ url_for('teacher.inventory', status='available') }}" class="metric-card" style="text-decoration: none; color: inherit;">
+    <div class="metric-header">
+      <span class="metric-title">Available in Catalogue</span>
+      <div class="metric-icon" style="background-color: var(--success-bg); color: var(--success);">🟢</div>
+    </div>
+    <div class="metric-value">{{ analytics.summary.available_books }}</div>
+    <div class="metric-footer">Ready for student borrowing</div>
   </a>
 
   <a href="{{ url_for('teacher.requests', status='approved') }}" class="metric-card" style="text-decoration: none; color: inherit;">
     <div class="metric-header">
-      <span class="metric-title">Awaiting Handover</span>
-      <div class="metric-icon">🔒</div>
+      <span class="metric-title">Reserved for Pickup</span>
+      <div class="metric-icon" style="background-color: var(--warning-bg); color: var(--warning);">🔒</div>
     </div>
-    <div class="metric-value">{{ stats.approved_requests }}</div>
-    <div class="metric-footer" style="color: var(--success); font-weight: 600;">Approved / Collection →</div>
+    <div class="metric-value">{{ analytics.summary.reserved_books }}</div>
+    <div class="metric-footer" style="color: var(--warning); font-weight: 600;">Awaiting Handover →</div>
   </a>
 
   <a href="{{ url_for('teacher.handovers') }}" class="metric-card" style="text-decoration: none; color: inherit;">
     <div class="metric-header">
-      <span class="metric-title">Completed Handovers</span>
-      <div class="metric-icon">🤝</div>
+      <span class="metric-title">Books Reused (Handovers)</span>
+      <div class="metric-icon" style="background-color: var(--primary-light); color: var(--primary);">🎓</div>
     </div>
-    <div class="metric-value">{{ stats.completed_handovers }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Handover Ledger →</div>
+    <div class="metric-value">{{ analytics.summary.handed_over_books }}</div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Circulation Ledger →</div>
   </a>
 
   <div class="metric-card">
     <div class="metric-header">
-      <span class="metric-title">Books Reused</span>
-      <div class="metric-icon">🎓</div>
+      <span class="metric-title">Students Served</span>
+      <div class="metric-icon">👥</div>
     </div>
-    <div class="metric-value">{{ stats.reused_books }}</div>
-    <div class="metric-footer">Total textbooks circulated</div>
-  </div>
-
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Available in Catalogue</span>
-      <div class="metric-icon">📚</div>
-    </div>
-    <div class="metric-value">{{ stats.available_books }}</div>
-    <div class="metric-footer">Ready for student requests</div>
+    <div class="metric-value">{{ analytics.summary.unique_recipients }}</div>
+    <div class="metric-footer">Unique student beneficiaries</div>
   </div>
 
   <a href="{{ url_for('teacher.donations') }}" class="metric-card" style="text-decoration: none; color: inherit;">
     <div class="metric-header">
-      <span class="metric-title">Pending Donations</span>
+      <span class="metric-title">Total Donations</span>
       <div class="metric-icon">📥</div>
     </div>
-    <div class="metric-value">{{ stats.pending_donations }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Donation Queue →</div>
+    <div class="metric-value">{{ analytics.summary.total_donations }}</div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">View Queue →</div>
   </a>
 </div>
 
-<!-- Status Card -->
-<div class="card" style="margin-top: 1.5rem;">
-  <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
-    System Readiness & Phase 1 Foundation
-  </h2>
-  <p class="text-secondary" style="line-height: 1.6; margin-bottom: 1rem;">
-    The local Flask + Waitress runtime and SQLite Write-Ahead Logging (WAL) database are running smoothly. The Light, Dark, and System theme preferences are fully active across both student and teacher portals.
-  </p>
-  <div class="d-flex gap-2" style="flex-wrap: wrap;">
-    <span class="badge badge-primary">SQLite WAL: Enabled</span>
-    <span class="badge badge-primary">Zero CDN: Verified</span>
-    <span class="badge badge-success">Offline LAN Mode: Ready</span>
+<!-- Two-Column Analytics Matrix -->
+<div class="analytics-grid-two">
+  <!-- Class-wise Distribution -->
+  <div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+        🏫 Class-wise Book Distribution
+      </h2>
+      <span class="badge badge-outline">Grades 6–8</span>
+    </div>
+
+    <div class="meter-list">
+      {% for cls in analytics.class_distribution %}
+      <div class="meter-item">
+        <div class="meter-header">
+          <span class="meter-label">{{ cls.class_grade }}</span>
+          <span class="meter-stats">
+            <strong>{{ cls.total }}</strong> books ({{ cls.percentage }}%)
+            &bull; <span style="color: var(--success);">{{ cls.available }} Avail</span>
+            &bull; <span style="color: var(--primary);">{{ cls.handed_over }} Reused</span>
+          </span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill fill-primary" style="width: {{ cls.percentage }}%;"></div>
+        </div>
+      </div>
+      {% else %}
+      <div class="text-secondary" style="padding: 1rem 0;">No class distribution records available yet.</div>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+      <span>Inventory Spread: Balanced across middle school grades</span>
+      <a href="{{ url_for('teacher.reports') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Full Report →</a>
+    </div>
+  </div>
+
+  <!-- Status Distribution & Velocity -->
+  <div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+        📊 Circulation Status Breakdown
+      </h2>
+      <span class="badge badge-outline">Real-Time</span>
+    </div>
+
+    <div class="meter-list">
+      {% for st in analytics.status_distribution %}
+      <div class="meter-item">
+        <div class="meter-header">
+          <span class="meter-label">
+            <span class="badge badge-{{ st.color }}">{{ st.label }}</span>
+          </span>
+          <span class="meter-stats">
+            <strong>{{ st.count }}</strong> books ({{ st.percentage }}%)
+          </span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill fill-{{ st.color }}" style="width: {{ st.percentage }}%;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Handover Velocity Banner -->
+    <div style="margin-top: 1.5rem; padding: 0.85rem 1rem; background-color: var(--bg-muted); border-radius: var(--radius-md); display: flex; justify-content: space-around; text-align: center;">
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Past 7 Days</div>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">{{ analytics.velocity.handovers_7d }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Handovers</div>
+      </div>
+      <div style="border-right: 1px solid var(--border-color);"></div>
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Past 30 Days</div>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">{{ analytics.velocity.handovers_30d }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Handovers</div>
+      </div>
+      <div style="border-right: 1px solid var(--border-color);"></div>
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">All Time</div>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">{{ analytics.velocity.total_handovers }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Reused</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Two-Column: Subject Popularity + Recent Activity Feed -->
+<div class="analytics-grid-two">
+  <!-- Subject Breakdown -->
+  <div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+        📖 Subject Inventory Spread
+      </h2>
+      <a href="{{ url_for('teacher.reports') }}" class="btn btn-sm btn-outline">Detailed Breakdown</a>
+    </div>
+
+    <div class="meter-list">
+      {% for sb in analytics.subject_distribution[:6] %}
+      <div class="meter-item">
+        <div class="meter-header">
+          <span class="meter-label">{{ sb.subject }}</span>
+          <span class="meter-stats">
+            <strong>{{ sb.total }}</strong> books ({{ sb.percentage }}%)
+            &bull; {{ sb.available }} avail
+          </span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill fill-info" style="width: {{ sb.percentage }}%;"></div>
+        </div>
+      </div>
+      {% else %}
+      <div class="text-secondary" style="padding: 1rem 0;">No subject records available.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Activity Stream -->
+  <div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+        📜 Recent Activity Audit Stream
+      </h2>
+      <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-sm btn-outline">View All Logs</a>
+    </div>
+
+    <div class="activity-timeline">
+      {% for act in analytics.recent_activity %}
+      <div class="activity-row">
+        <span class="activity-badge
+          {% if 'donation' in act.action %}badge-act-donation
+          {% elif 'request' in act.action %}badge-act-request
+          {% elif 'handover' in act.action %}badge-act-handover
+          {% elif 'book' in act.action %}badge-act-book
+          {% elif 'login' in act.action or 'logout' in act.action %}badge-act-auth
+          {% else %}badge-act-default{% endif %}">
+          {{ act.action.replace('_', ' ') }}
+        </span>
+        <div class="activity-content">
+          <div class="activity-text">{{ act.details }}</div>
+          <div class="activity-time">
+            By <strong>{{ act.actor_name }}</strong> ({{ act.actor_type }}) &bull; {{ act.created_at }}
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="text-secondary" style="padding: 1.5rem 0; text-align: center;">
+        No activity logged yet.
+      </div>
+      {% endfor %}
+    </div>
   </div>
 </div>
 {% endblock %}

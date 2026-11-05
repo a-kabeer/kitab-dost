@@ -1,7 +1,7 @@
-from flask import render_template, session, redirect, url_for, flash, request, abort, current_app
+from flask import render_template, session, redirect, url_for, flash, request, abort, current_app, Response
 from . import teacher_bp
 from app.database import get_db
-from app.services import donation_service, request_service, handover_service, book_service, qr_service
+from app.services import donation_service, request_service, handover_service, book_service, qr_service, analytics_service, activity_service
 
 @teacher_bp.context_processor
 def inject_teacher_globals():
@@ -27,35 +27,9 @@ def require_teacher_login():
 @teacher_bp.route('/')
 @teacher_bp.route('/dashboard')
 def dashboard():
-    """Teacher administrative dashboard overview."""
-    db = get_db()
-    cur = db.cursor()
-
-    cur.execute("SELECT COUNT(*) FROM books WHERE status = 'available' AND is_approved = 1;")
-    available_books = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(*) FROM books WHERE status = 'handed_over';")
-    reused_books = cur.fetchone()[0]
-
-    pending_donations = donation_service.get_pending_donations_count()
-    pending_requests = request_service.get_pending_requests_count()
-
-    cur.execute("SELECT COUNT(*) FROM requests WHERE status = 'approved';")
-    approved_requests = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(*) FROM handovers;")
-    completed_handovers = cur.fetchone()[0]
-
-    stats = {
-        'available_books': available_books,
-        'pending_donations': pending_donations,
-        'pending_requests': pending_requests,
-        'approved_requests': approved_requests,
-        'completed_handovers': completed_handovers,
-        'reused_books': reused_books,
-        'total_reused': completed_handovers
-    }
-    return render_template('teacher/dashboard.html', stats=stats)
+    """Teacher administrative dashboard overview with live analytics."""
+    analytics = analytics_service.get_dashboard_analytics()
+    return render_template('teacher/dashboard.html', analytics=analytics)
 
 @teacher_bp.route('/donations')
 def donations():
@@ -395,20 +369,227 @@ def qr_sheet():
 
 @teacher_bp.route('/inventory')
 def inventory():
-    return render_template(
-        'student/placeholder.html',
-        title="Book Inventory Management",
-        icon="📚",
-        description="Full catalog CRUD (adding school books, updating condition, retiring old books) will be implemented in Phase 7."
+    """Teacher inventory management with status filters, search, and pagination."""
+    status_filter = request.args.get('status', 'all').strip()
+    search_query = request.args.get('q', '').strip()
+    class_filter = request.args.get('class_grade', '').strip()
+    subject_filter = request.args.get('subject', '').strip()
+    condition_filter = request.args.get('condition', '').strip()
+    page = request.args.get('page', 1, type=int)
+    if page < 1:
+        page = 1
+
+    per_page = 20
+    offset = (page - 1) * per_page
+
+    status_arg = None if status_filter == 'all' else status_filter
+
+    books, total_count = book_service.get_inventory_books(
+        search_query=search_query,
+        class_grade=class_filter,
+        subject=subject_filter,
+        condition=condition_filter,
+        status=status_arg,
+        sort_by='newest',
+        limit=per_page,
+        offset=offset
     )
+
+    counts = book_service.get_inventory_counts()
+    filter_options = book_service.get_filter_options()
+    total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
+
+    return render_template(
+        'teacher/inventory.html',
+        books=books,
+        total_count=total_count,
+        counts=counts,
+        current_status=status_filter,
+        search_query=search_query,
+        class_filter=class_filter,
+        subject_filter=subject_filter,
+        condition_filter=condition_filter,
+        filter_options=filter_options,
+        current_page=page,
+        total_pages=total_pages
+    )
+
+@teacher_bp.route('/inventory/new', methods=['GET', 'POST'])
+def new_book():
+    """Add a new textbook directly into library inventory."""
+    if request.method == 'POST':
+        teacher_id = session.get('teacher_id')
+        teacher_name = session.get('teacher_name') or 'Teacher'
+        image_file = request.files.get('book_image')
+
+        success, book_id, book_code, err = book_service.add_inventory_book(
+            data=request.form,
+            image_file=image_file,
+            teacher_id=teacher_id,
+            teacher_name=teacher_name
+        )
+
+        if success:
+            flash(f"Textbook added successfully! Book Code assigned: '{book_code}'.", "success")
+            return redirect(url_for('teacher.inventory'))
+        else:
+            flash(f"Failed to add textbook: {err}", "danger")
+            return render_template(
+                'teacher/book_form.html',
+                is_edit=False,
+                action_url=url_for('teacher.new_book'),
+                form_data=request.form
+            ), 400
+
+    return render_template(
+        'teacher/book_form.html',
+        is_edit=False,
+        action_url=url_for('teacher.new_book')
+    )
+
+@teacher_bp.route('/inventory/<int:book_id>/edit', methods=['GET', 'POST'])
+def edit_book(book_id):
+    """Edit metadata and syllabus information of an existing textbook."""
+    book = book_service.get_book_by_code_or_id(book_id)
+    if not book:
+        abort(404)
+
+    if request.method == 'POST':
+        teacher_id = session.get('teacher_id')
+        teacher_name = session.get('teacher_name') or 'Teacher'
+        image_file = request.files.get('book_image')
+
+        success, err = book_service.update_inventory_book(
+            book_id=book_id,
+            data=request.form,
+            image_file=image_file,
+            teacher_id=teacher_id,
+            teacher_name=teacher_name
+        )
+
+        if success:
+            flash(f"Textbook '{book['book_code']}' updated successfully.", "success")
+            return redirect(url_for('teacher.inventory'))
+        else:
+            flash(f"Failed to update textbook: {err}", "danger")
+            return render_template(
+                'teacher/book_form.html',
+                is_edit=True,
+                book=book,
+                action_url=url_for('teacher.edit_book', book_id=book_id),
+                form_data=request.form
+            ), 400
+
+    return render_template(
+        'teacher/book_form.html',
+        is_edit=True,
+        book=book,
+        action_url=url_for('teacher.edit_book', book_id=book_id)
+    )
+
+@teacher_bp.route('/inventory/<int:book_id>/status', methods=['POST'])
+def update_book_status(book_id):
+    """Change textbook status (e.g. retire damaged copy or restore to available)."""
+    teacher_id = session.get('teacher_id')
+    teacher_name = session.get('teacher_name') or 'Teacher'
+    new_status = request.form.get('new_status', '').strip()
+    reason = request.form.get('reason', '').strip()
+
+    success, err = book_service.retire_or_restore_book(
+        book_id=book_id,
+        new_status=new_status,
+        reason=reason,
+        teacher_id=teacher_id,
+        teacher_name=teacher_name
+    )
+
+    if success:
+        action_text = "retired" if new_status == 'retired' else "restored to circulation"
+        flash(f"Textbook has been {action_text} successfully.", "success")
+    else:
+        flash(f"Status update failed: {err}", "danger")
+
+    return redirect(url_for('teacher.inventory', status=request.args.get('status', 'all')))
 
 @teacher_bp.route('/reports')
 def reports():
+    """Teacher administrative reports and statistical analytics desk."""
+    report_data = analytics_service.get_detailed_reports()
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT value FROM system_settings WHERE key = 'school_name' LIMIT 1;")
+    setting_row = cur.fetchone()
+    school_name = setting_row['value'] if setting_row else current_app.config.get('SCHOOL_NAME', 'Government High School')
+
+    return render_template('teacher/reports.html', report=report_data, school_name=school_name)
+
+@teacher_bp.route('/reports/export/inventory.csv')
+def export_inventory_csv():
+    """Download full book inventory as CSV for school spreadsheets."""
+    csv_text = analytics_service.generate_inventory_csv()
+    return Response(
+        csv_text,
+        mimetype='text/csv; charset=utf-8',
+        headers={
+            'Content-Disposition': 'attachment; filename="kitab_bank_inventory.csv"'
+        }
+    )
+
+@teacher_bp.route('/reports/export/handovers.csv')
+def export_handovers_csv():
+    """Download complete handover ledger as CSV for school administration records."""
+    csv_text = analytics_service.generate_handovers_csv()
+    return Response(
+        csv_text,
+        mimetype='text/csv; charset=utf-8',
+        headers={
+            'Content-Disposition': 'attachment; filename="kitab_bank_handovers.csv"'
+        }
+    )
+
+@teacher_bp.route('/logs')
+def activity_logs():
+    """System activity logs and audit trail."""
+    action_filter = request.args.get('action', '').strip()
+    actor_filter = request.args.get('actor_type', '').strip()
+    search_query = request.args.get('q', '').strip()
+    date_from = request.args.get('date_from', '').strip()
+    date_to = request.args.get('date_to', '').strip()
+    page = request.args.get('page', 1, type=int)
+    if page < 1:
+        page = 1
+
+    per_page = 50
+    offset = (page - 1) * per_page
+
+    logs, total_count = activity_service.get_activity_logs(
+        action=action_filter,
+        actor_type=actor_filter,
+        search_query=search_query,
+        date_from=date_from,
+        date_to=date_to,
+        limit=per_page,
+        offset=offset
+    )
+
+    distinct_actions = activity_service.get_distinct_actions()
+    distinct_actors = activity_service.get_distinct_actor_types()
+    total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
+
     return render_template(
-        'student/placeholder.html',
-        title="Library Reports & Analytics",
-        icon="📈",
-        description="Subject-wise distribution, class reports, and CSV exports will be implemented in Phase 7."
+        'teacher/logs.html',
+        logs=logs,
+        total_count=total_count,
+        distinct_actions=distinct_actions,
+        distinct_actors=distinct_actors,
+        action_filter=action_filter,
+        actor_filter=actor_filter,
+        search_query=search_query,
+        date_from=date_from,
+        date_to=date_to,
+        current_page=page,
+        total_pages=total_pages
     )
 
 @teacher_bp.route('/settings')

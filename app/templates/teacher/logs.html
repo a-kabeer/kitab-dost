@@ -1,0 +1,137 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}System Activity Logs - Kitaab Bank{% endblock %}
+
+{% block teacher_content %}
+<div class="dashboard-header">
+  <div>
+    <h1 class="dashboard-title">System Activity Logs & Audit Trail</h1>
+    <p class="dashboard-subtitle">Immutable records of book circulation, staff actions, and student requests.</p>
+  </div>
+  <div>
+    <span class="badge badge-success">Audit Logging Active</span>
+  </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card mb-4" style="padding: 1.25rem;">
+  <form method="GET" action="{{ url_for('teacher.activity_logs') }}" class="d-flex gap-2 flex-wrap align-items-center">
+    <div style="flex: 2; min-width: 200px;">
+      <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by description or actor name...">
+    </div>
+
+    <div style="flex: 1; min-width: 160px;">
+      <select name="action" class="form-control">
+        <option value="">All Actions</option>
+        {% for act in distinct_actions %}
+          <option value="{{ act }}" {% if action_filter == act %}selected{% endif %}>
+            {{ act.replace('_', ' ').capitalize() }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <select name="actor_type" class="form-control">
+        <option value="">All Actors</option>
+        {% for at in distinct_actors %}
+          <option value="{{ at }}" {% if actor_filter == at %}selected{% endif %}>
+            {{ at.capitalize() }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <input type="date" name="date_from" value="{{ date_from }}" class="form-control" style="width: 140px;" title="Date From">
+      <span style="color: var(--text-muted);">-</span>
+      <input type="date" name="date_to" value="{{ date_to }}" class="form-control" style="width: 140px;" title="Date To">
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if search_query or action_filter or actor_filter or date_from or date_to %}
+        <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-outline">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Logs Table Card -->
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 170px;">Timestamp</th>
+          <th style="width: 180px;">Action</th>
+          <th style="width: 130px;">Entity</th>
+          <th style="width: 160px;">Actor</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; font-family: monospace;">
+            {{ log.created_at }}
+          </td>
+          <td>
+            <span class="activity-badge
+              {% if 'donation' in log.action %}badge-act-donation
+              {% elif 'request' in log.action %}badge-act-request
+              {% elif 'handover' in log.action %}badge-act-handover
+              {% elif 'book' in log.action %}badge-act-book
+              {% elif 'login' in log.action or 'logout' in log.action %}badge-act-auth
+              {% else %}badge-act-default{% endif %}">
+              {{ log.action.replace('_', ' ') }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-outline">
+              {{ log.entity_type }}{% if log.entity_id %} #{{ log.entity_id }}{% endif %}
+            </span>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">
+              {{ log.actor_name or 'System' }}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              {{ log.actor_type.capitalize() }}
+            </div>
+          </td>
+          <td style="font-size: 0.875rem; color: var(--text-primary); line-height: 1.4;">
+            {{ log.details }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📜</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">No log entries found</div>
+            <p>Try adjusting your search filters.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination / Summary -->
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
+    <div>
+      Showing <strong>{{ logs|length }}</strong> of <strong>{{ total_count }}</strong> activity records
+    </div>
+    {% if total_pages > 1 %}
+    <div class="d-flex gap-1">
+      {% for p in range(1, total_pages + 1) %}
+        <a href="{{ url_for('teacher.activity_logs', page=p, action=action_filter, actor_type=actor_filter, q=search_query, date_from=date_from, date_to=date_to) }}"
+           class="btn btn-sm {% if p == current_page %}btn-primary{% else %}btn-outline{% endif %}" style="padding: 0.25rem 0.65rem;">
+          {{ p }}
+        </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

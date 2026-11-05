@@ -700,11 +700,12 @@ def delete_backup(backup_id):
 
 @teacher_bp.route('/settings/seed-demo', methods=['POST'])
 def seed_demo():
-    """Reset database and seed realistic exhibition showcase data."""
+    """Reset database and seed realistic exhibition showcase data with mandatory automated safety backup."""
     try:
         from scripts.seed_demo import reset_and_seed_demo_data
         target_db = current_app.config.get('DATABASE_PATH')
-        reset_and_seed_demo_data(target_db=target_db)
+        bck_dir = current_app.config.get('BACKUP_FOLDER')
+        reset_and_seed_demo_data(target_db=target_db, create_safety_backup=True, target_backup_dir=bck_dir)
 
         # Audit log
         activity_service.record_activity(
@@ -713,11 +714,24 @@ def seed_demo():
             entity_id=None,
             actor_type='teacher',
             actor_name=session.get('teacher_name', 'Teacher'),
-            details="Exhibition demo data reseeded successfully (18 textbooks, donations, requests & handovers)."
+            details="Exhibition demo data reseeded successfully (18 textbooks, donations, requests & handovers). Real data protected in automated pre-demo backup."
         )
 
-        flash("Exhibition Demo Mode activated! 18 textbooks across Classes 6–8 and realistic circulation records populated.", "success")
+        flash("Exhibition Demo Mode activated! 18 textbooks across Classes 6–8 and realistic circulation records populated. A safety backup of your previous database was automatically created.", "success")
     except Exception as e:
         flash(f"Exhibition reset failed: {str(e)}", "danger")
 
+    return redirect(url_for('teacher.settings', tab='demo'))
+
+@teacher_bp.route('/settings/exit-demo', methods=['POST'])
+def exit_demo():
+    """Exit exhibition demo mode and restore real school database from the pre-demo safety backup."""
+    success, restored_filename, error = settings_service.exit_demo_mode(
+        teacher_id=session.get('teacher_id'),
+        teacher_name=session.get('teacher_name')
+    )
+    if success:
+        flash(f"Exited Exhibition Demo Mode. School database successfully restored from snapshot '{restored_filename}'.", "success")
+    else:
+        flash(f"Could not restore pre-demo backup: {error}", "danger")
     return redirect(url_for('teacher.settings', tab='demo'))

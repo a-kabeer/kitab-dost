@@ -70,12 +70,24 @@ def create_app(config_name='default'):
         if lang not in translation_service.SUPPORTED_LANGUAGES:
             lang = 'en'
         meta = translation_service.get_language_meta(lang)
+
+        is_demo = False
+        try:
+            db = get_db()
+            cur = db.cursor()
+            cur.execute("SELECT value FROM system_settings WHERE key = 'is_demo_mode' LIMIT 1;")
+            row = cur.fetchone()
+            is_demo = bool(row and row[0] == '1')
+        except Exception:
+            pass
+
         return {
             'current_lang': lang,
             'is_rtl': meta['dir'] == 'rtl',
             'lang_dir': meta['dir'],
             'supported_languages': translation_service.SUPPORTED_LANGUAGES,
-            '_t': lambda key, default=None, **kwargs: translation_service.translate(key, lang=lang, default=default, **kwargs)
+            '_t': lambda key, default=None, **kwargs: translation_service.translate(key, lang=lang, default=default, **kwargs),
+            'is_demo_mode': is_demo
         }
 
     @app.route('/set-language/<lang_code>')

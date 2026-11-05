@@ -25,20 +25,79 @@ if sys.platform == 'win32':
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = PROJECT_ROOT / 'kitaab_bank.db'
 
-def reset_and_seed_demo_data(target_db=None):
-    """Clean reset and seed for exhibition showcase."""
+def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_backup_dir=None):
+    """Clean reset and seed for exhibition showcase with automatic safety backup."""
     db_file = target_db or DB_PATH
-    conn = sqlite3.connect(db_file)
+    db_path_obj = Path(db_file)
+
+    # 0. Data Safety: Capture automated pre-demo safety backup if live DB has existing books
+    if create_safety_backup and db_path_obj.exists():
+        try:
+            if target_backup_dir:
+                bck_dir = Path(target_backup_dir)
+            else:
+                try:
+                    from flask import current_app
+                    if current_app and current_app.config.get('BACKUP_FOLDER'):
+                        bck_dir = Path(current_app.config['BACKUP_FOLDER'])
+                    else:
+                        bck_dir = PROJECT_ROOT / 'backups'
+                except Exception:
+                    bck_dir = PROJECT_ROOT / 'backups'
+
+            bck_dir.mkdir(parents=True, exist_ok=True)
+            now_dt = datetime.now()
+            base_name = f"kitab_bank_backup_{now_dt.strftime('%Y%m%d_%H%M%S')}_pre_demo"
+            pre_demo_filename = f"{base_name}.db"
+            pre_demo_path = bck_dir / pre_demo_filename
+            counter = 1
+            while pre_demo_path.exists():
+                pre_demo_filename = f"{base_name}_{counter}.db"
+                pre_demo_path = bck_dir / pre_demo_filename
+                counter += 1
+
+            live_c = sqlite3.connect(str(db_file))
+            live_cur = live_c.cursor()
+            live_cur.execute("SELECT COUNT(*) FROM books;")
+            b_cnt = live_cur.fetchone()[0]
+
+            if b_cnt > 0:
+                safety_c = sqlite3.connect(str(pre_demo_path))
+                live_c.backup(safety_c)
+                safety_c.close()
+
+                # Calculate SHA-256 and catalog
+                import hashlib
+                hasher = hashlib.sha256()
+                with open(pre_demo_path, 'rb') as f:
+                    while chunk := f.read(65536):
+                        hasher.update(chunk)
+                checksum = hasher.hexdigest()
+                size_bytes = pre_demo_path.stat().st_size
+
+                live_cur.execute(
+                    """
+                    INSERT INTO backup_records (filename, file_size_bytes, checksum_sha256, verification_status)
+                    VALUES (?, ?, ?, 'VALID');
+                    """,
+                    (pre_demo_filename, size_bytes, checksum)
+                )
+                live_c.commit()
+            live_c.close()
+        except Exception:
+            pass
+
+    conn = sqlite3.connect(str(db_file))
     cur = conn.cursor()
 
-    # 1. Clear dynamic tables in foreign key order
+    # 1. Clear dynamic tables in foreign key order (preserve backup_records!)
     cur.execute("PRAGMA foreign_keys = OFF;")
     cur.execute("DELETE FROM handovers;")
     cur.execute("DELETE FROM requests;")
     cur.execute("DELETE FROM donations;")
     cur.execute("DELETE FROM books;")
     cur.execute("DELETE FROM activity_logs;")
-    cur.execute("DELETE FROM backup_records;")
+    # NOTE: backup_records is strictly preserved to protect historical backups!
     cur.execute("PRAGMA foreign_keys = ON;")
 
     # 2. Ensure Default Teacher Account
@@ -220,6 +279,14 @@ def reset_and_seed_demo_data(target_db=None):
             """,
             act
         )
+
+    # 7. Mark is_demo_mode = '1' in system_settings
+    cur.execute(
+        """
+        INSERT INTO system_settings (key, value, updated_at) VALUES ('is_demo_mode', '1', CURRENT_TIMESTAMP)
+        ON CONFLICT(key) DO UPDATE SET value = '1', updated_at = CURRENT_TIMESTAMP;
+        """
+    )
 
     conn.commit()
     conn.close()

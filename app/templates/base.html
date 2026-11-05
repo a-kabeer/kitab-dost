@@ -30,6 +30,16 @@
 </head>
 <body>
 
+  {% if is_demo_mode %}
+  <!-- Exhibition Demo Mode Prominent Banner -->
+  <aside class="demo-banner" style="background: linear-gradient(90deg, #9a3412, #c2410c); color: #ffffff; text-align: center; padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.75rem; border-bottom: 2px solid #7c2d12;" role="status" aria-label="Exhibition Demo Mode Active">
+    <span>✨ <strong>Exhibition Demo Mode Active:</strong> Operating with 18 sample curriculum textbooks. Real school database is preserved in automated backups.</span>
+    {% if session.get('teacher_id') %}
+    <a href="{{ url_for('teacher.settings', tab='demo') }}" style="color: #ffffff; text-decoration: underline; background: rgba(0,0,0,0.25); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Manage / Exit Demo</a>
+    {% endif %}
+  </aside>
+  {% endif %}
+
   <!-- Top Navigation Header -->
   <header class="navbar">
     <div class="container navbar-inner">

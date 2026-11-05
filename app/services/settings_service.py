@@ -113,3 +113,69 @@ def change_teacher_password(teacher_id, current_password, new_password, confirm_
         return True, None
     except Exception as e:
         return False, f"Password change error: {str(e)}"
+
+def is_demo_mode_active():
+    """Check if system is currently in exhibition demo mode."""
+    try:
+        settings = get_system_settings()
+        return settings.get('is_demo_mode') == '1'
+    except Exception:
+        return False
+
+def exit_demo_mode(teacher_id=None, teacher_name=None):
+    """
+    Safely exit demo mode and restore the most recent pre-demo safety backup.
+    Returns (success, restored_filename, error_message).
+    """
+    from app.services import backup_service
+    db = get_db()
+    cur = db.cursor()
+
+    # Find the latest pre-demo backup or latest verified backup
+    cur.execute(
+        """
+        SELECT * FROM backup_records 
+        WHERE verification_status = 'VALID' 
+          AND filename LIKE '%pre_demo%'
+        ORDER BY id DESC LIMIT 1;
+        """
+    )
+    bck = cur.fetchone()
+    if not bck:
+        # Fallback to any latest valid backup
+        cur.execute(
+            """
+            SELECT * FROM backup_records 
+            WHERE verification_status = 'VALID'
+            ORDER BY id DESC LIMIT 1;
+            """
+        )
+        bck = cur.fetchone()
+
+    if not bck:
+        return False, None, "No verified backup found to restore real school data."
+
+    backup_id = bck['id']
+    filename = bck['filename']
+
+    success, pre_restore, err = backup_service.restore_database_from_backup(backup_id, teacher_name=teacher_name)
+    if not success:
+        return False, None, f"Failed to restore backup: {err}"
+
+    # Mark is_demo_mode = '0'
+    db = get_db()
+    with db_transaction(db):
+        db.execute(
+            "INSERT INTO system_settings (key, value, updated_at) VALUES ('is_demo_mode', '0', CURRENT_TIMESTAMP) "
+            "ON CONFLICT(key) DO UPDATE SET value = '0', updated_at = CURRENT_TIMESTAMP;"
+        )
+
+    activity_service.record_activity(
+        action='exhibition_demo_exited',
+        entity_type='system',
+        entity_id=backup_id,
+        actor_type='teacher' if teacher_id else 'system',
+        actor_name=teacher_name or 'Teacher',
+        details=f"Exited Exhibition Demo Mode. Restored school database from snapshot '{filename}'."
+    )
+    return True, filename, None

@@ -177,6 +177,9 @@ class Phase8ComprehensiveTestCase(unittest.TestCase):
     def test_backup_deletion(self):
         """Verify deleting a backup removes file and database catalog record."""
         with self.app.app_context():
+            # Create another backup so deleting this one does not violate the sole backup safety guard
+            s0, _, _ = backup_service.create_database_backup()
+            self.assertTrue(s0)
             success, record, _ = backup_service.create_database_backup()
             self.assertTrue(success)
             backup_id = record['id']

@@ -238,19 +238,40 @@
     </div>
   </div>
 
+  {% if is_demo_mode %}
+  <!-- Active Demo Mode Indicator & Safe Exit -->
+  <div style="background-color: var(--success-bg); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--success-text); font-size: 1rem;">
+        <span>✨</span>
+        <span>Exhibition Demo Mode is Currently ACTIVE</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">
+        Real school data is safely stored in automatic pre-demo snapshots. Click below when the demonstration concludes.
+      </p>
+    </div>
+    <form action="{{ url_for('teacher.exit_demo') }}" method="POST" onsubmit="return confirm('Restore real school database from the pre-demo backup?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-outline" style="font-weight: 600; border-color: var(--success); color: var(--success-text); background-color: var(--bg-surface);">
+        ↩️ Exit Demo & Restore Real Data
+      </button>
+    </form>
+  </div>
+  {% else %}
   <div style="background-color: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.75rem; align-items: flex-start;">
     <span style="font-size: 1.25rem;">⚠️</span>
     <div style="font-size: 0.875rem; color: var(--warning-text);">
-      <strong>Exhibition Reset Warning:</strong>
-      This action clears all existing student requests, donations, handovers, and custom books, then immediately repopulates a standardized exhibition dataset. Always create a live backup before running a demo reset.
+      <strong>Exhibition Safety Defense:</strong>
+      When you activate Exhibition Mode, the system <em>automatically generates a verified live backup</em> of your current school data before populating the 18 sample textbooks. You can revert to your real data at any time.
     </div>
   </div>
+  {% endif %}
 
   <div style="margin-bottom: 1.5rem;">
     <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Included Exhibition Dataset:</h3>
     <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
       <li><strong>18 Standard Curriculum Textbooks:</strong> Balanced across Classes 6, 7, and 8 in English, Urdu, and Sindhi.</li>
-      <li><strong>Realistic Circulation Distribution:</strong> 12 Available, 3 Reserved, and 3 Handed Over.</li>
+      <li><strong>Realistic Circulation Distribution:</strong> 13 Available, 3 Reserved, and 2 Handed Over.</li>
       <li><strong>Full Donation Queue:</strong> Pending student donation with photo, Approved donation, and Rejected donation with clear feedback.</li>
       <li><strong>Request Workflow:</strong> Active reserved request ready for physical handover, pending request, and fulfilled requests.</li>
       <li><strong>Physical Handover Ledger:</strong> Completed handovers with printable receipts (<span class="font-mono">KB-HO-000001</span>, <span class="font-mono">KB-HO-000002</span>).</li>
@@ -259,8 +280,16 @@
     </ul>
   </div>
 
-  <form action="{{ url_for('teacher.seed_demo') }}" method="POST" onsubmit="return confirm('CONFIRM RESET: This will replace current data with the standard 18-book exhibition demonstration baseline. Have you taken a backup? Proceed?');">
+  <form action="{{ url_for('teacher.seed_demo') }}" method="POST" onsubmit="return confirm('CONFIRM RESET: This will activate Exhibition Mode with 18 sample textbooks. An automatic backup of your existing data will be created first. Proceed?');">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div style="margin-bottom: 1.25rem; padding: 0.75rem 1rem; background-color: var(--bg-app); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+      <label style="display: flex; align-items: flex-start; gap: 0.65rem; font-size: 0.85rem; color: var(--text-primary); cursor: pointer; margin: 0;">
+        <input type="checkbox" id="confirmDemoBox" required style="margin-top: 0.2rem;">
+        <span>I confirm activation of Exhibition Mode. I understand an automated safety backup of my real database will be created.</span>
+      </label>
+    </div>
+
     <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
       <a href="{{ url_for('teacher.settings', tab='backup') }}" class="btn btn-outline">Back Up First</a>
       <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 600; background: linear-gradient(135deg, var(--primary), var(--accent));">

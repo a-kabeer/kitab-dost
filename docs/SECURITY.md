@@ -227,7 +227,17 @@ Uploaded book photographs represent a common attack vector if left unconstrained
   3. Strict matching between new password and confirmation fields.
 - Password change events are logged in `activity_logs` without storing the password or hash in the log details.
 
-### 10.4 Live Snapshot Verification & Rollback Defense
-- Backups created via `backup_service.create_database_backup()` are immediately verified using `PRAGMA integrity_check;` and schema inspection.
+### 10.4 Live Snapshot Verification, Automated Rollback & WAL Checkpointing
+- Backups created via `backup_service.create_database_backup()` are immediately verified using `PRAGMA integrity_check;`, SHA-256 digest validation, and core schema verification.
 - The SHA-256 cryptographic digest is stored in `backup_records`.
-- Before executing any database restoration via `scripts/restore_backup.py` or the web interface, the system creates an automated pre-restore safety copy (`backups/pre_restore_YYYYMMDD_HHMMSS.db`). If any error occurs during restoration, this rollback copy guarantees zero data loss.
+- **Pre-Restoration Integrity Check:** Restoring any backup requires valid SHA-256 digest match, SQLite page integrity, and schema compliance. Corrupt files are rejected before live mutations begin.
+- **WAL Checkpointing:** Explicitly executes `PRAGMA wal_checkpoint(TRUNCATE);` before and after database restoration to prevent stale or orphaned WAL journal pages.
+- **Pre-Restore Rollback Copy:** Before executing any database restoration via `scripts/restore_backup.py` or the web interface, the system creates an automated pre-restore safety copy (`backups/pre_restore_YYYYMMDD_HHMMSS.db`). If any error occurs during restoration, this rollback copy is immediately re-applied to guarantee zero live data loss.
+- **Sole Backup Deletion Defense:** `backup_service.delete_backup()` checks total count of remaining verified backups. If `COUNT(*) <= 1`, deletion is rejected with a clear safety warning, preventing accidental total backup loss.
+
+### 10.5 Exhibition Demo Mode Safety Defenses
+- **Automated Pre-Demo Backup:** Resetting demo mode automatically captures a pre-demo safety backup (`kitab_bank_backup_*_pre_demo.db`) of real school records.
+- **Historical Backups Preserved:** `DELETE FROM backup_records;` is forbidden during demo resets; existing backup history is strictly protected.
+- **Visual Alert Banners:** High-visibility amber banner (`✨ Exhibition Demo Mode Active`) displayed across both student and teacher portals whenever demo mode is active.
+- **Mandatory Confirmation Checkbox:** Teacher settings form requires checking `#confirmDemoBox` before triggering demo seeding.
+- **Reversible Safe Exit:** `/teacher/settings/exit-demo` (`exit_demo_mode()`) restores the latest pre-demo safety backup, clears the demo flag, and reverts the school database cleanly.

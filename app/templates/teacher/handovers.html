@@ -1,125 +1,156 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Physical Handover Ledger - Teacher Desk{% endblock %}
 
 {% block teacher_content %}
   <!-- Header -->
-  <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-      <h1 class="dashboard-title">🤝 Physical Handover Ledger</h1>
-      <p class="dashboard-subtitle">
+      <h1 class="h3 fw-bold text-body mb-1">
+        {{ icon('handshake', extra_class='text-primary me-2') }}Physical Handover Ledger
+      </h1>
+      <p class="text-body-secondary mb-0 small">
         Official immutable distribution ledger recording physical book transfers to verified student recipients.
       </p>
     </div>
 
     <div>
-      <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
-        <span>📋</span>
+      <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+        {{ icon('clock-rotate-left') }}
         <span>Awaiting Handover Queue</span>
       </a>
     </div>
   </div>
 
   <!-- Metric Overview Cards -->
-  <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: var(--primary-light); color: var(--primary);">🤝</div>
-      <div class="stat-meta">
-        <div class="stat-label">Total Handovers</div>
-        <div class="stat-value" id="metric-total-handovers">{{ metrics.total_handovers }}</div>
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card border shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3 p-3">
+          <div class="rounded-3 p-3 bg-primary-subtle text-primary fs-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+            {{ icon('handshake') }}
+          </div>
+          <div>
+            <div class="small text-body-secondary fw-semibold">Total Handovers</div>
+            <div class="h3 fw-bold text-body mb-0" id="metric-total-handovers">{{ metrics.total_handovers }}</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: var(--success-bg); color: var(--success-text);">🎓</div>
-      <div class="stat-meta">
-        <div class="stat-label">Student Beneficiaries</div>
-        <div class="stat-value" id="metric-unique-recipients">{{ metrics.unique_recipients }}</div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card border shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3 p-3">
+          <div class="rounded-3 p-3 bg-success-subtle text-success fs-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+            {{ icon('graduation-cap') }}
+          </div>
+          <div>
+            <div class="small text-body-secondary fw-semibold">Student Beneficiaries</div>
+            <div class="h3 fw-bold text-body mb-0" id="metric-unique-recipients">{{ metrics.unique_recipients }}</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: var(--info-bg, rgba(59, 130, 246, 0.1)); color: var(--accent);">📚</div>
-      <div class="stat-meta">
-        <div class="stat-label">Textbooks Reused</div>
-        <div class="stat-value" id="metric-reused-books">{{ metrics.reused_books }}</div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card border shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3 p-3">
+          <div class="rounded-3 p-3 bg-info-subtle text-info-emphasis fs-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+            {{ icon('book-bookmark') }}
+          </div>
+          <div>
+            <div class="small text-body-secondary fw-semibold">Textbooks Reused</div>
+            <div class="h3 fw-bold text-body mb-0" id="metric-reused-books">{{ metrics.reused_books }}</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Search & Filter Bar -->
-  <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem;">
-    <form action="{{ url_for('teacher.handovers') }}" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-      <!-- Search Input -->
-      <div style="flex: 2; min-width: 240px;">
-        <input 
-          type="search" 
-          name="q" 
-          class="form-control" 
-          placeholder="Search by student, roll no, handover code (KB-HO-), or book..." 
-          value="{{ search_query }}"
-        >
-      </div>
+  <!-- Search & Filter Controls -->
+  <div class="card border mb-4 shadow-sm">
+    <div class="card-body p-3">
+      <form action="{{ url_for('teacher.handovers') }}" method="GET" class="row g-2 align-items-center">
+        <!-- Search Input -->
+        <div class="col-12 col-md-5 col-lg-4">
+          <div class="input-group">
+            <span class="input-group-text bg-body-tertiary border-end-0">
+              {{ icon('magnifying-glass', extra_class='text-body-secondary') }}
+            </span>
+            <input 
+              type="search" 
+              name="q" 
+              class="form-control border-start-0" 
+              placeholder="Search student, roll, code (KB-HO-), or book..." 
+              value="{{ search_query }}"
+            >
+          </div>
+        </div>
 
-      <!-- Class Filter -->
-      <div style="flex: 1; min-width: 140px;">
-        <select name="class_grade" class="form-control">
-          <option value="">All Classes</option>
-          {% for c in ['Class 6', 'Class 7', 'Class 8'] %}
-          <option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
-      </div>
+        <!-- Class Filter -->
+        <div class="col-12 col-sm-6 col-md-3 col-lg-2">
+          <select name="class_grade" class="form-select">
+            <option value="">All Classes</option>
+            {% for c in ['Class 6', 'Class 7', 'Class 8'] %}
+            <option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-      <!-- Date Filters -->
-      <div style="min-width: 130px;">
-        <input 
-          type="date" 
-          name="date_from" 
-          class="form-control" 
-          placeholder="From Date" 
-          value="{{ date_from }}"
-          title="Filter from handover date"
-        >
-      </div>
+        <!-- Date From -->
+        <div class="col-6 col-sm-3 col-md-2 col-lg-2">
+          <input 
+            type="date" 
+            name="date_from" 
+            class="form-control" 
+            value="{{ date_from }}"
+            title="Filter from handover date"
+          >
+        </div>
 
-      <div style="min-width: 130px;">
-        <input 
-          type="date" 
-          name="date_to" 
-          class="form-control" 
-          placeholder="To Date" 
-          value="{{ date_to }}"
-          title="Filter up to handover date"
-        >
-      </div>
+        <!-- Date To -->
+        <div class="col-6 col-sm-3 col-md-2 col-lg-2">
+          <input 
+            type="date" 
+            name="date_to" 
+            class="form-control" 
+            value="{{ date_to }}"
+            title="Filter up to handover date"
+          >
+        </div>
 
-      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem;">
-        <span>🔍</span>
-        <span>Filter</span>
-      </button>
+        <!-- Action Buttons -->
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
+            {{ icon('filter') }}
+            <span>Filter</span>
+          </button>
 
-      {% if search_query or class_filter or date_from or date_to %}
-      <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline" style="padding: 0.65rem 1rem;">
-        Reset
-      </a>
-      {% endif %}
-    </form>
+          {% if search_query or class_filter or date_from or date_to %}
+          <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
+            {{ icon('rotate-left') }}
+            <span>Reset</span>
+          </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- Handover Records Table -->
-  <div class="table-card">
+  <!-- Handover Records Table Card -->
+  <div class="card border shadow-sm mb-4">
     {% if handovers and handovers|length > 0 %}
     <div class="table-responsive">
-      <table class="data-table">
-        <thead>
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
           <tr>
-            <th>Handover Ref</th>
-            <th>Textbook</th>
-            <th>Student Recipient</th>
-            <th>Request Ref</th>
-            <th>Confirmed By</th>
-            <th style="text-align: right;">Actions</th>
+            <th scope="col" style="min-width: 150px;">Handover Ref</th>
+            <th scope="col" style="min-width: 220px;">Textbook</th>
+            <th scope="col" style="min-width: 170px;">Student Recipient</th>
+            <th scope="col" style="min-width: 140px;">Request Ref</th>
+            <th scope="col" style="min-width: 140px;">Confirmed By</th>
+            <th scope="col" class="text-end" style="min-width: 170px;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -127,67 +158,69 @@
           <tr>
             <!-- Handover Ref & Date -->
             <td>
-              <div style="font-family: monospace; font-weight: 800; color: var(--primary); font-size: 0.95rem;">
+              <code class="kb-code fw-bold text-primary fs-7 d-block">
                 {{ h.handover_code }}
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                📅 {{ h.handover_date[:16] if h.handover_date else 'Recently' }}
-              </div>
+              </code>
+              <small class="text-body-secondary d-inline-flex align-items-center gap-1 mt-1">
+                {{ icon('calendar-days', extra_class='small') }}
+                <span>{{ h.handover_date[:16] if h.handover_date else 'Recently' }}</span>
+              </small>
             </td>
 
             <!-- Book Details -->
             <td>
-              <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">
+              <div class="fw-semibold text-body mb-1">
                 {{ h.book_title }}
               </div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">
-                <code style="color: var(--primary); font-weight: 700;">{{ h.book_code }}</code> • {{ h.book_class }} • {{ h.book_subject }}
+              <div class="small text-body-secondary">
+                <code class="kb-code text-primary fw-semibold">{{ h.book_code }}</code> &bull; {{ h.book_class }} &bull; {{ h.book_subject }}
               </div>
             </td>
 
             <!-- Student Details -->
             <td>
-              <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">
+              <div class="fw-semibold text-body mb-1">
                 {{ h.recipient_name }}
               </div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem;">
-                Class: <strong>{{ h.recipient_class }}</strong> • Roll: <strong>{{ h.recipient_roll_no }}</strong>
+              <div class="small text-body-secondary">
+                Class: <span class="fw-semibold">{{ h.recipient_class }}</span> &bull; Roll: <span class="fw-semibold">{{ h.recipient_roll_no }}</span>
               </div>
               {% if h.recipient_contact %}
-              <div style="font-size: 0.75rem; color: var(--text-muted);">
-                📞 {{ h.recipient_contact }}
+              <div class="small text-body-secondary mt-1">
+                {{ icon('phone', extra_class='small me-1') }}<span class="kb-code">{{ h.recipient_contact }}</span>
               </div>
               {% endif %}
             </td>
 
             <!-- Tracking Code -->
             <td>
-              <code style="font-family: monospace; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">
+              <code class="kb-code text-body-secondary small d-block mb-1">
                 {{ h.tracking_code }}
               </code>
-              <div style="margin-top: 0.25rem;">
-                <span class="badge badge-success" style="font-size: 0.75rem;">✓ Handed Over</span>
-              </div>
+              <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('check', extra_class='small') }}
+                <span>Handed Over</span>
+              </span>
             </td>
 
             <!-- Teacher -->
             <td>
-              <div style="font-size: 0.85rem; color: var(--text-primary); font-weight: 600;">
+              <div class="small fw-semibold text-body">
                 {{ h.confirming_teacher_name or h.teacher_name }}
               </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <small class="text-body-secondary">
                 Verified Staff
-              </div>
+              </small>
             </td>
 
             <!-- Actions -->
-            <td style="text-align: right;">
-              <div class="btn-group-actions" style="justify-content: flex-end;">
-                <a href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}" class="btn btn-sm btn-outline" title="Inspect full audit record">
-                  🔍 Detail
+            <td class="text-end">
+              <div class="btn-group btn-group-sm" role="group">
+                <a href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}" class="btn btn-outline-secondary" title="Inspect full audit record">
+                  {{ icon('eye', extra_class='me-1') }}Detail
                 </a>
-                <a href="{{ url_for('teacher.handover_receipt', handover_id=h.id) }}" class="btn btn-sm btn-primary" title="Print official receipt" target="_blank">
-                  🖨️ Receipt
+                <a href="{{ url_for('teacher.handover_receipt', handover_id=h.id) }}" class="btn btn-primary" title="Print official receipt" target="_blank">
+                  {{ icon('receipt', extra_class='me-1') }}Receipt
                 </a>
               </div>
             </td>
@@ -197,18 +230,20 @@
       </table>
     </div>
 
-    <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
+    <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center">
       <div>Showing <strong>{{ handovers|length }}</strong> of <strong>{{ total_count }}</strong> completed physical handovers</div>
     </div>
 
     {% else %}
     <!-- Empty State -->
-    <div style="text-align: center; padding: 4rem 1.5rem;">
-      <div style="font-size: 3rem; margin-bottom: 0.75rem;">🤝</div>
-      <h3 style="font-size: 1.25rem; color: var(--text-primary); font-weight: 700; margin-bottom: 0.35rem;">
+    <div class="card-body text-center py-5">
+      <div class="display-6 text-body-secondary mb-3">
+        {{ icon('handshake', extra_class='text-body-tertiary') }}
+      </div>
+      <h3 class="h5 fw-bold text-body mb-2">
         No Handover Records Found
       </h3>
-      <p class="text-muted" style="max-width: 420px; margin: 0 auto 1.5rem;">
+      <p class="text-body-secondary small mb-4 mx-auto" style="max-width: 440px;">
         {% if search_query or class_filter or date_from or date_to %}
         No completed distribution records match your filter criteria. Try clearing search filters.
         {% else %}
@@ -216,12 +251,14 @@
         {% endif %}
       </p>
       {% if search_query or class_filter or date_from or date_to %}
-      <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline">
-        Clear All Filters
+      <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        {{ icon('rotate-left') }}
+        <span>Clear All Filters</span>
       </a>
       {% else %}
-      <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-primary">
-        Inspect Awaiting Requests
+      <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+        {{ icon('clock-rotate-left') }}
+        <span>Inspect Awaiting Requests</span>
       </a>
       {% endif %}
     </div>

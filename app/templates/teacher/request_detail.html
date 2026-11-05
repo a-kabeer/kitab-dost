@@ -1,294 +1,349 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Inspect Request {{ request_item.tracking_code }} - Teacher Desk{% endblock %}
 
 {% block teacher_content %}
   <!-- Breadcrumb -->
-  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
-    <span> / </span>
-    <a href="{{ url_for('teacher.requests') }}" style="color: var(--text-secondary);">Requests Queue</a>
-    <span> / </span>
-    <span style="color: var(--text-primary); font-weight: 600;">{{ request_item.tracking_code }}</span>
-  </div>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.requests') }}" class="text-decoration-none">Requests Queue</a></li>
+      <li class="breadcrumb-item active text-truncate kb-code" aria-current="page" style="max-width: 200px;">{{ request_item.tracking_code }}</li>
+    </ol>
+  </nav>
 
   <!-- Header -->
-  <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-      <h1 class="dashboard-title">Request Inspection</h1>
-      <p class="dashboard-subtitle">
-        Submitted on {{ request_item.created_at }} • Tracking Code: <strong>{{ request_item.tracking_code }}</strong>
+      <h1 class="h3 fw-bold text-body mb-1">
+        {{ icon('magnifying-glass-chart', extra_class='text-primary me-2') }}Request Inspection
+      </h1>
+      <p class="text-body-secondary mb-0 small">
+        Submitted on {{ request_item.created_at }} &bull; Tracking Code: <strong class="kb-code text-primary">{{ request_item.tracking_code }}</strong>
       </p>
     </div>
 
     <div>
-      <a href="{{ url_for('teacher.requests') }}" class="btn btn-outline">
-        ← Back to Queue
+      <a href="{{ url_for('teacher.requests') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        {{ icon('arrow-left') }}
+        <span>Back to Queue</span>
       </a>
     </div>
   </div>
 
   <!-- Two Column Layout -->
-  <div class="book-detail-wrapper" style="margin-bottom: 3rem;">
-    <!-- Left Column: Book Cover & Status -->
-    <div class="book-detail-cover-box">
-      <img 
-        src="{{ url_for('static', filename=request_item.book_image) }}" 
-        alt="{{ request_item.book_title }} Cover" 
-        class="book-detail-cover-img"
-      >
+  <div class="row g-4 mb-5">
+    <!-- Left Column: Book Cover & Status Card -->
+    <div class="col-12 col-lg-4 col-xl-3">
+      <div class="card border shadow-sm sticky-top" style="top: 1.5rem;">
+        <div class="card-body p-3">
+          <div class="position-relative mb-3">
+            <img 
+              src="{{ url_for('static', filename=request_item.book_image) }}" 
+              alt="{{ request_item.book_title }} Cover" 
+              class="img-fluid rounded border w-100 object-fit-cover shadow-sm"
+              style="aspect-ratio: 3/4;"
+            >
+          </div>
 
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.65rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">REQUEST STATUS</span>
-          {% if request_item.status == 'pending' %}
-          <span class="badge badge-warning">⏳ Pending</span>
-          {% elif request_item.status == 'approved' %}
-          <span class="badge badge-success">🔒 Reserved</span>
-          {% elif request_item.status == 'rejected' %}
-          <span class="badge badge-danger">✕ Rejected</span>
-          {% elif request_item.status == 'completed' %}
-          <span class="badge badge-primary">🤝 Handed Over</span>
-          {% endif %}
-        </div>
+          <div class="border-top pt-3 d-flex flex-column gap-2 small">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">REQUEST STATUS</span>
+              {% if request_item.status == 'pending' %}
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('clock', extra_class='small') }}
+                <span>Pending</span>
+              </span>
+              {% elif request_item.status == 'approved' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('lock', extra_class='small') }}
+                <span>Reserved</span>
+              </span>
+              {% elif request_item.status == 'rejected' %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('xmark', extra_class='small') }}
+                <span>Rejected</span>
+              </span>
+              {% elif request_item.status == 'completed' %}
+              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('handshake', extra_class='small') }}
+                <span>Handed Over</span>
+              </span>
+              {% endif %}
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">BOOK STATUS</span>
-          <span class="badge {% if request_item.book_status == 'available' %}badge-success{% elif request_item.book_status == 'reserved' %}badge-warning{% else %}badge-secondary{% endif %}">
-            {{ request_item.book_status|title }}
-          </span>
-        </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">BOOK STATUS</span>
+              <span class="badge {% if request_item.book_status == 'available' %}bg-success-subtle text-success border border-success-subtle{% elif request_item.book_status == 'reserved' %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %}">
+                {{ request_item.book_status|title }}
+              </span>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">BOOK CODE</span>
-          <code style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: var(--primary);">
-            {{ request_item.book_code }}
-          </code>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">BOOK CODE</span>
+              <code class="kb-code text-primary fw-bold">
+                {{ request_item.book_code }}
+              </code>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Right Column: Details & Actions -->
-    <div class="book-detail-info">
-      <!-- Book Header -->
-      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-          <span class="badge badge-primary">{{ request_item.book_class }}</span>
-          <span class="badge badge-secondary">{{ request_item.book_subject }}</span>
-          <span class="badge badge-secondary">{{ request_item.book_condition }}</span>
-        </div>
+    <div class="col-12 col-lg-8 col-xl-9">
+      <div class="d-flex flex-column gap-4">
+        <!-- Book Header Card -->
+        <div class="card border shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-7">{{ request_item.book_class }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ request_item.book_subject }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ request_item.book_condition }}</span>
+            </div>
 
-        <h2 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.35rem;">
-          {{ request_item.book_title }}
-        </h2>
-        <div style="font-size: 1rem; color: var(--text-secondary);">
-          Author / Board: <strong>{{ request_item.book_author or 'Textbook Board' }}</strong>
-        </div>
-      </div>
-
-      <!-- Student Requester Details Card -->
-      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
-        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">
-          👤 Student Requester Information (Verified at Handover)
-        </h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; font-size: 0.9rem;">
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">STUDENT NAME</span>
-            <strong style="color: var(--text-primary);">{{ request_item.requester_name }}</strong>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">CLASS &amp; SECTION</span>
-            <strong style="color: var(--text-primary);">{{ request_item.requester_class }}</strong>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">ROLL NUMBER</span>
-            <strong style="color: var(--text-primary); font-size: 1rem;">{{ request_item.requester_roll_no }}</strong>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">CONTACT PHONE</span>
-            <strong style="color: var(--text-primary);">📞 {{ request_item.requester_contact }}</strong>
+            <h2 class="h3 fw-bold text-body mb-2">
+              {{ request_item.book_title }}
+            </h2>
+            <div class="text-body-secondary fs-6">
+              Author / Board: <strong class="text-body">{{ request_item.book_author or 'Textbook Board' }}</strong>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Student's Message / Note -->
-      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
-        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">
-          Student's Stated Reason / Note
-        </h4>
-        <p style="font-size: 0.95rem; color: var(--text-primary); line-height: 1.6; margin: 0;">
-          {{ request_item.notes or 'No specific note entered by the student.' }}
-        </p>
-      </div>
-
-      <!-- Actions / Status Panel -->
-      {% if request_item.status == 'pending' %}
-      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem;">
-        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
-          Teacher Verification Action
-        </h3>
-        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-          Approving will atomically lock and reserve this textbook for <strong>{{ request_item.requester_name }}</strong>. Other students will see it as reserved.
-        </p>
-
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-          <!-- Approve & Reserve Form -->
-          <form action="{{ url_for('teacher.approve_request', request_id=request_item.id) }}" method="POST" onsubmit="return confirm('Approve request and reserve book \'{{ request_item.book_code }}\' for {{ request_item.requester_name }}?');">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-primary" style="background-color: var(--success); border-color: var(--success); padding: 0.75rem 1.75rem;">
-              <span>🔒</span>
-              <span>Approve &amp; Reserve Book</span>
-            </button>
-          </form>
-
-          <!-- Reject Button -->
-          <button 
-            type="button" 
-            class="btn" 
-            style="background-color: var(--danger-bg); color: var(--danger-text); border-color: var(--danger); padding: 0.75rem 1.5rem;"
-            onclick="document.getElementById('reject-req-section').style.display='block'"
-          >
-            <span>✕</span>
-            <span>Reject Request</span>
-          </button>
-        </div>
-
-        <!-- Inline Rejection Form -->
-        <div id="reject-req-section" style="display: none; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
-          <h4 style="font-size: 0.95rem; color: var(--danger-text); font-weight: 700; margin-bottom: 0.75rem;">
-            State Reason for Rejection
-          </h4>
-          <form action="{{ url_for('teacher.reject_request', request_id=request_item.id) }}" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group">
-              <label for="req-reject-reason" class="form-label">Reason visible on student tracking <span class="required-star">*</span></label>
-              <textarea 
-                id="req-reject-reason" 
-                name="reason" 
-                class="form-control" 
-                placeholder="State why this request cannot be fulfilled..." 
-                required
-              ></textarea>
+        <!-- Student Requester Details Card -->
+        <div class="card border shadow-sm border-info-subtle">
+          <div class="card-header bg-info-subtle py-3 px-4 d-flex align-items-center justify-content-between">
+            <h3 class="h6 fw-bold text-info-emphasis text-uppercase mb-0 tracking-wide fs-7 d-flex align-items-center gap-2">
+              {{ icon('user-shield') }}Student Requester Information (Verified at Handover)
+            </h3>
+            <span class="badge bg-info text-white">Staff Only</span>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">STUDENT NAME</span>
+                <strong class="text-body fs-6">{{ request_item.requester_name }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">CLASS &amp; SECTION</span>
+                <strong class="text-body fs-6">{{ request_item.requester_class }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">ROLL NUMBER</span>
+                <strong class="text-body fs-6 kb-code">{{ request_item.requester_roll_no }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">CONTACT PHONE</span>
+                <strong class="text-body fs-6 kb-code">{{ icon('phone', extra_class='small me-1') }}{{ request_item.requester_contact }}</strong>
+              </div>
             </div>
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('reject-req-section').style.display='none'">
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-sm" style="background-color: var(--danger); color: #ffffff;">
-                Confirm Rejection
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      {% elif request_item.status == 'approved' %}
-      <div style="background-color: var(--success-bg); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 1.5rem; color: var(--success-text);">
-        <div style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.35rem;">
-          🔒 Book Reserved &amp; Awaiting Student Handover
-        </div>
-        <div style="font-size: 0.9rem; margin-bottom: 0.75rem;">
-          Approved by <strong>{{ request_item.reviewer_name or 'Teacher' }}</strong> on {{ request_item.reviewed_at }}.
-        </div>
-        <div style="font-size: 0.85rem; margin-bottom: 1.5rem;">
-          Recipient Student: <strong>{{ request_item.requester_name }}</strong> (Class: {{ request_item.requester_class }}, Roll No: {{ request_item.requester_roll_no }}).
+          </div>
         </div>
 
-        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-          <a 
-            href="{{ url_for('teacher.handover_form', request_id=request_item.id) }}" 
-            class="btn btn-primary" 
-            style="background-color: var(--success); border-color: var(--success); font-weight: 700; padding: 0.65rem 1.5rem;"
-          >
-            <span>🤝</span>
-            <span>Confirm Physical Handover</span>
-          </a>
-
-          <button 
-            type="button" 
-            class="btn btn-outline" 
-            style="color: var(--warning-text); border-color: var(--warning);"
-            onclick="document.getElementById('cancel-req-section').style.display='block'"
-          >
-            <span>✕</span>
-            <span>Release / Cancel Reservation</span>
-          </button>
+        <!-- Student's Message / Note Card -->
+        <div class="card border shadow-sm">
+          <div class="card-header bg-body-tertiary py-3 px-4">
+            <h3 class="h6 fw-bold text-body-secondary text-uppercase mb-0 tracking-wide fs-7">
+              {{ icon('comment-dots', extra_class='me-2') }}Student's Stated Reason / Note
+            </h3>
+          </div>
+          <div class="card-body p-4">
+            <p class="text-body mb-0 leading-relaxed">
+              {{ request_item.notes or 'No specific note entered by the student.' }}
+            </p>
+          </div>
         </div>
 
-        <!-- Inline Cancellation Form -->
-        <div id="cancel-req-section" style="display: none; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
-          <h4 style="font-size: 0.95rem; color: var(--warning-text); font-weight: 700; margin-bottom: 0.75rem;">
-            State Reason for Releasing Reservation Back to Catalogue
-          </h4>
-          <form action="{{ url_for('teacher.cancel_reservation', request_id=request_item.id) }}" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group">
-              <label for="cancel-reason" class="form-label">Cancellation Reason <span class="required-star">*</span></label>
-              <textarea 
-                id="cancel-reason" 
-                name="reason" 
-                class="form-control" 
-                placeholder="e.g. Student did not collect within 5 days, textbook released to catalogue..." 
-                required
-              ></textarea>
-            </div>
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('cancel-req-section').style.display='none'">
-                Keep Reserved
-              </button>
-              <button type="submit" class="btn btn-sm" style="background-color: var(--warning); color: #ffffff;">
-                Confirm Release
+        <!-- Actions / Status Panel -->
+        {% if request_item.status == 'pending' %}
+        <div class="card border border-primary-subtle shadow-sm bg-body">
+          <div class="card-body p-4">
+            <h3 class="h5 fw-bold text-body mb-2 d-flex align-items-center gap-2">
+              {{ icon('clipboard-check', extra_class='text-primary') }}Teacher Verification Action
+            </h3>
+            <p class="text-body-secondary small mb-4">
+              Approving will atomically lock and reserve this textbook for <strong>{{ request_item.requester_name }}</strong>. Other students will see it as reserved.
+            </p>
+
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+              <!-- Approve & Reserve Form -->
+              <form action="{{ url_for('teacher.approve_request', request_id=request_item.id) }}" method="POST" onsubmit="return confirm('Approve request and reserve book \'{{ request_item.book_code }}\' for {{ request_item.requester_name }}?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 py-2">
+                  {{ icon('lock') }}
+                  <span>Approve &amp; Reserve Book</span>
+                </button>
+              </form>
+
+              <!-- Reject Button -->
+              <button 
+                type="button" 
+                class="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3 py-2"
+                onclick="document.getElementById('reject-req-section').style.display='block'; this.style.display='none';"
+              >
+                {{ icon('xmark') }}
+                <span>Reject Request</span>
               </button>
             </div>
-          </form>
+
+            <!-- Inline Rejection Form -->
+            <div id="reject-req-section" style="display: none;" class="mt-4 pt-4 border-top">
+              <h4 class="h6 fw-bold text-danger mb-3 d-flex align-items-center gap-2">
+                {{ icon('triangle-exclamation') }}State Reason for Rejection
+              </h4>
+              <form action="{{ url_for('teacher.reject_request', request_id=request_item.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                  <label for="req-reject-reason" class="form-label small fw-semibold text-body">
+                    Reason visible on student tracking <span class="text-danger">*</span>
+                  </label>
+                  <textarea 
+                    id="req-reject-reason" 
+                    name="reason" 
+                    class="form-control" 
+                    rows="3"
+                    placeholder="State why this request cannot be fulfilled..." 
+                    required
+                  ></textarea>
+                </div>
+                <div class="d-flex gap-2 justify-content-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('reject-req-section').style.display='none'; document.querySelector('[onclick*=\'reject-req-section\']').style.display='inline-flex';">
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1">
+                    {{ icon('circle-xmark') }}
+                    <span>Confirm Rejection</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
-      </div>
-      {% elif request_item.status == 'cancelled' %}
-      <div style="background-color: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: 1.25rem; color: var(--warning-text);">
-        <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">
-          ✕ Reservation Released
+
+        {% elif request_item.status == 'approved' %}
+        <div class="card border border-success-subtle bg-success-subtle shadow-sm">
+          <div class="card-body p-4 text-success-emphasis">
+            <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
+              {{ icon('lock', extra_class='text-success') }}Book Reserved &amp; Awaiting Student Handover
+            </div>
+            <div class="small mb-1">
+              Approved by <strong>{{ request_item.reviewer_name or 'Teacher' }}</strong> on {{ request_item.reviewed_at }}.
+            </div>
+            <div class="small mb-4">
+              Recipient Student: <strong>{{ request_item.requester_name }}</strong> (Class: {{ request_item.requester_class }}, Roll No: {{ request_item.requester_roll_no }}).
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <a 
+                href="{{ url_for('teacher.handover_form', request_id=request_item.id) }}" 
+                class="btn btn-success d-inline-flex align-items-center gap-2 px-4 py-2"
+              >
+                {{ icon('handshake') }}
+                <span>Confirm Physical Handover</span>
+              </a>
+
+              <button 
+                type="button" 
+                class="btn btn-outline-warning d-inline-flex align-items-center gap-2 px-3 py-2"
+                onclick="document.getElementById('cancel-req-section').style.display='block'; this.style.display='none';"
+              >
+                {{ icon('unlock') }}
+                <span>Release / Cancel Reservation</span>
+              </button>
+            </div>
+
+            <!-- Inline Cancellation Form -->
+            <div id="cancel-req-section" style="display: none;" class="mt-4 pt-4 border-top border-warning-subtle">
+              <h4 class="h6 fw-bold text-warning-emphasis mb-3 d-flex align-items-center gap-2">
+                {{ icon('triangle-exclamation') }}State Reason for Releasing Reservation Back to Catalogue
+              </h4>
+              <form action="{{ url_for('teacher.cancel_reservation', request_id=request_item.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                  <label for="cancel-reason" class="form-label small fw-semibold text-body">Cancellation Reason <span class="text-danger">*</span></label>
+                  <textarea 
+                    id="cancel-reason" 
+                    name="reason" 
+                    class="form-control" 
+                    rows="3"
+                    placeholder="e.g. Student did not collect within 5 days, textbook released to catalogue..." 
+                    required
+                  ></textarea>
+                </div>
+                <div class="d-flex gap-2 justify-content-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('cancel-req-section').style.display='none'; document.querySelector('[onclick*=\'cancel-req-section\']').style.display='inline-flex';">
+                    Keep Reserved
+                  </button>
+                  <button type="submit" class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1">
+                    {{ icon('unlock') }}
+                    <span>Confirm Release</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
-        <div style="font-size: 0.85rem; margin-top: 0.35rem;">
-          Reason: <strong>{{ request_item.rejection_reason }}</strong>
+
+        {% elif request_item.status == 'cancelled' %}
+        <div class="card border border-warning-subtle bg-warning-subtle shadow-sm">
+          <div class="card-body p-4 text-warning-emphasis">
+            <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
+              {{ icon('unlock', extra_class='text-warning') }}Reservation Released
+            </div>
+            <div class="small mb-1">
+              Reason: <strong>{{ request_item.rejection_reason }}</strong>
+            </div>
+            <div class="small text-warning-emphasis opacity-75">
+              Released by {{ request_item.reviewer_name or 'Teacher' }} on {{ request_item.reviewed_at }}
+            </div>
+          </div>
         </div>
-        <div style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
-          Released by {{ request_item.reviewer_name or 'Teacher' }} on {{ request_item.reviewed_at }}
+
+        {% elif request_item.status == 'rejected' %}
+        <div class="card border border-danger-subtle bg-danger-subtle shadow-sm">
+          <div class="card-body p-4 text-danger-emphasis">
+            <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
+              {{ icon('circle-xmark', extra_class='text-danger') }}Request Rejected
+            </div>
+            <div class="small mb-1">
+              Reason: <strong>{{ request_item.rejection_reason }}</strong>
+            </div>
+            <div class="small text-danger-emphasis opacity-75">
+              Reviewed by {{ request_item.reviewer_name or 'Teacher' }} on {{ request_item.reviewed_at }}
+            </div>
+          </div>
         </div>
-      </div>
-      {% elif request_item.status == 'rejected' %}
-      <div style="background-color: var(--danger-bg); border: 1px solid var(--danger); border-radius: var(--radius-md); padding: 1.25rem; color: var(--danger-text);">
-        <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">
-          ✕ Request Rejected
-        </div>
-        <div style="font-size: 0.85rem; margin-top: 0.35rem;">
-          Reason: <strong>{{ request_item.rejection_reason }}</strong>
-        </div>
-        <div style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
-          Reviewed by {{ request_item.reviewer_name or 'Teacher' }} on {{ request_item.reviewed_at }}
-        </div>
-      </div>
-      {% elif request_item.status == 'completed' %}
-      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1.5rem; color: var(--primary-text);">
-        <div style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.35rem;">
-          🤝 Physical Handover Completed
-        </div>
-        <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">
-          This book was officially issued to <strong>{{ request_item.requester_name }}</strong>.
-        </div>
-        {% if request_item.handover_code %}
-        <div style="font-size: 0.85rem; margin-bottom: 1rem;">
-          Handover Reference: <code style="font-weight: 700; color: var(--primary);">{{ request_item.handover_code }}</code>
+
+        {% elif request_item.status == 'completed' %}
+        <div class="card border border-primary-subtle bg-primary-subtle shadow-sm">
+          <div class="card-body p-4 text-primary-emphasis">
+            <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
+              {{ icon('handshake', extra_class='text-primary') }}Physical Handover Completed
+            </div>
+            <div class="small mb-2">
+              This book was officially issued to <strong>{{ request_item.requester_name }}</strong>.
+            </div>
+            {% if request_item.handover_code %}
+            <div class="small mb-3">
+              Handover Reference: <code class="kb-code fw-bold text-primary">{{ request_item.handover_code }}</code>
+            </div>
+            {% endif %}
+
+            {% if request_item.handover_id %}
+            <div>
+              <a href="{{ url_for('teacher.handover_receipt', handover_id=request_item.handover_id) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2" target="_blank">
+                {{ icon('receipt') }}
+                <span>View &amp; Print Receipt</span>
+              </a>
+            </div>
+            {% endif %}
+          </div>
         </div>
         {% endif %}
 
-        {% if request_item.handover_id %}
-        <div>
-          <a href="{{ url_for('teacher.handover_receipt', handover_id=request_item.handover_id) }}" class="btn btn-sm btn-primary" target="_blank">
-            🖨️ View &amp; Print Receipt
-          </a>
-        </div>
-        {% endif %}
       </div>
-      {% endif %}
     </div>
   </div>
 {% endblock %}

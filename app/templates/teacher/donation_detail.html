@@ -1,222 +1,266 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Inspect Donation {{ donation.donation_code }} - Teacher Desk{% endblock %}
 
 {% block teacher_content %}
   <!-- Breadcrumb -->
-  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
-    <span> / </span>
-    <a href="{{ url_for('teacher.donations') }}" style="color: var(--text-secondary);">Donation Queue</a>
-    <span> / </span>
-    <span style="color: var(--text-primary); font-weight: 600;">{{ donation.donation_code }}</span>
-  </div>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.donations') }}" class="text-decoration-none">Donation Queue</a></li>
+      <li class="breadcrumb-item active text-truncate kb-code" aria-current="page" style="max-width: 200px;">{{ donation.donation_code }}</li>
+    </ol>
+  </nav>
 
   <!-- Header -->
-  <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-      <h1 class="dashboard-title">Donation Inspection</h1>
-      <p class="dashboard-subtitle">
-        Submitted on {{ donation.created_at }} • Reference Code: <strong>{{ donation.donation_code }}</strong>
+      <h1 class="h3 fw-bold text-body mb-1">
+        {{ icon('magnifying-glass-chart', extra_class='text-primary me-2') }}Donation Inspection
+      </h1>
+      <p class="text-body-secondary mb-0 small">
+        Submitted on {{ donation.created_at }} &bull; Reference Code: <strong class="kb-code text-primary">{{ donation.donation_code }}</strong>
       </p>
     </div>
 
     <div>
-      <a href="{{ url_for('teacher.donations') }}" class="btn btn-outline">
-        ← Back to Queue
+      <a href="{{ url_for('teacher.donations') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        {{ icon('arrow-left') }}
+        <span>Back to Queue</span>
       </a>
     </div>
   </div>
 
-  <!-- Two Column Inspection Wrapper -->
-  <div class="book-detail-wrapper" style="margin-bottom: 3rem;">
-    <!-- Left Column: Photo & Quick Status -->
-    <div class="book-detail-cover-box">
-      {% if donation.temp_image_path %}
-      <a href="{{ url_for('static', filename=donation.temp_image_path) }}" target="_blank">
-        <img 
-          src="{{ url_for('static', filename=donation.temp_image_path) }}" 
-          alt="{{ donation.title }} Photo" 
-          class="book-detail-cover-img"
-          style="cursor: zoom-in;"
-        >
-      </a>
-      <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
-        🔍 Click to inspect original high-resolution photo
-      </div>
-      {% else %}
-      <div style="aspect-ratio: 3/4; background-color: var(--bg-muted); border-radius: var(--radius-md); border: 2px dashed var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--text-muted);">
-        <span style="font-size: 3rem;">📖</span>
-        <span style="font-size: 0.85rem; font-weight: 600;">No Photograph Uploaded</span>
-        <span style="font-size: 0.75rem;">Default curriculum SVG cover will be used</span>
-      </div>
-      {% endif %}
-
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.65rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">STATUS</span>
-          {% if donation.status == 'pending' %}
-          <span class="badge badge-warning">⏳ Pending Review</span>
-          {% elif donation.status == 'approved' %}
-          <span class="badge badge-success">✓ Approved</span>
-          {% elif donation.status == 'rejected' %}
-          <span class="badge badge-danger">✕ Rejected</span>
+  <!-- Two Column Inspection Layout -->
+  <div class="row g-4 mb-5">
+    <!-- Left Column: Photo & Quick Status Card -->
+    <div class="col-12 col-lg-4 col-xl-3">
+      <div class="card border shadow-sm sticky-top" style="top: 1.5rem;">
+        <div class="card-body p-3">
+          {% if donation.temp_image_path %}
+          <div class="position-relative mb-3">
+            <a href="{{ url_for('static', filename=donation.temp_image_path) }}" target="_blank" title="Inspect original high-resolution photo">
+              <img 
+                src="{{ url_for('static', filename=donation.temp_image_path) }}" 
+                alt="{{ donation.title }} Photo" 
+                class="img-fluid rounded border w-100 object-fit-cover shadow-sm"
+                style="aspect-ratio: 3/4; cursor: zoom-in;"
+              >
+            </a>
+            <div class="text-center mt-2 small text-body-secondary">
+              {{ icon('magnifying-glass-plus', extra_class='me-1') }}Click to inspect full photo
+            </div>
+          </div>
+          {% else %}
+          <div class="rounded border border-dashed bg-body-tertiary d-flex flex-column align-items-center justify-content-center p-4 text-center text-body-secondary mb-3" style="aspect-ratio: 3/4;">
+            <div class="display-5 mb-2">{{ icon('book', extra_class='text-body-tertiary') }}</div>
+            <div class="fw-semibold small">No Photograph Uploaded</div>
+            <div class="small text-body-tertiary mt-1">Default curriculum cover will be used</div>
+          </div>
           {% endif %}
-        </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">CONDITION</span>
-          <span class="badge {% if donation.condition_state == 'Like New' %}badge-success{% elif donation.condition_state == 'Good' %}badge-info{% else %}badge-warning{% endif %}">
-            {{ donation.condition_state }}
-          </span>
-        </div>
+          <div class="border-top pt-3 d-flex flex-column gap-2 small">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">STATUS</span>
+              {% if donation.status == 'pending' %}
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('clock', extra_class='small') }}
+                <span>Pending Review</span>
+              </span>
+              {% elif donation.status == 'approved' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('check', extra_class='small') }}
+                <span>Approved</span>
+              </span>
+              {% elif donation.status == 'rejected' %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('xmark', extra_class='small') }}
+                <span>Rejected</span>
+              </span>
+              {% endif %}
+            </div>
 
-        {% if donation.approved_book_code %}
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">BOOK CODE</span>
-          <a href="{{ url_for('student.book_detail', code_or_id=donation.approved_book_code) }}" target="_blank" style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: var(--primary);">
-            {{ donation.approved_book_code }} ↗
-          </a>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">CONDITION</span>
+              <span class="badge {% if donation.condition_state == 'Like New' %}bg-success-subtle text-success border border-success-subtle{% elif donation.condition_state == 'Good' %}bg-info-subtle text-info-emphasis border border-info-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}">
+                {{ donation.condition_state }}
+              </span>
+            </div>
+
+            {% if donation.approved_book_code %}
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">BOOK CODE</span>
+              <a href="{{ url_for('student.book_detail', code_or_id=donation.approved_book_code) }}" target="_blank" class="kb-code text-primary fw-bold text-decoration-none">
+                {{ donation.approved_book_code }} {{ icon('arrow-up-right-from-square', extra_class='small') }}
+              </a>
+            </div>
+            {% endif %}
+          </div>
         </div>
-        {% endif %}
       </div>
     </div>
 
     <!-- Right Column: Details & Actions -->
-    <div class="book-detail-info">
-      <!-- Title & Tags -->
-      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-          <span class="badge badge-primary">{{ donation.class_grade }}</span>
-          <span class="badge badge-secondary">{{ donation.subject }}</span>
-          <span class="badge badge-secondary">{{ donation.language }}</span>
-        </div>
-
-        <h2 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.35rem;">
-          {{ donation.title }}
-        </h2>
-        <div style="font-size: 1rem; color: var(--text-secondary);">
-          Author / Board: <strong>{{ donation.author or 'Not specified' }}</strong>
-        </div>
-      </div>
-
-      <!-- Description / Remarks -->
-      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
-        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">
-          Donor Description &amp; Syllabus Notes
-        </h4>
-        <p style="font-size: 0.95rem; color: var(--text-primary); line-height: 1.6; margin: 0;">
-          {{ donation.description or 'No additional description provided by the student.' }}
-        </p>
-      </div>
-
-      <!-- Student Donor Details Card -->
-      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
-        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">
-          👤 Student Donor Information (Confidential)
-        </h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; font-size: 0.9rem;">
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">STUDENT NAME</span>
-            <strong style="color: var(--text-primary);">{{ donation.donor_name }}</strong>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">CLASS &amp; SECTION</span>
-            <strong style="color: var(--text-primary);">{{ donation.donor_class }}</strong>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">ROLL NUMBER</span>
-            <strong style="color: var(--text-primary);">{{ donation.donor_roll_no or 'N/A' }}</strong>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">CONTACT PHONE</span>
-            <strong style="color: var(--text-primary);">{{ donation.donor_contact or 'N/A' }}</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- Status & Reviewer Panel -->
-      {% if donation.status == 'pending' %}
-      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem;">
-        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
-          Teacher Verification Action
-        </h3>
-        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-          Confirm the book's condition matches the school syllabus. Approving will generate a unique book code and immediately publish the listing in the public catalogue.
-        </p>
-
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-          <!-- Approve Form -->
-          <form action="{{ url_for('teacher.approve_donation', donation_id=donation.id) }}" method="POST" onsubmit="return confirm('Approve this donation and publish it to the school catalogue?');">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-primary" style="background-color: var(--success); border-color: var(--success); padding: 0.75rem 1.75rem;">
-              <span>✓</span>
-              <span>Approve &amp; Publish Book</span>
-            </button>
-          </form>
-
-          <!-- Reject Form -->
-          <button 
-            type="button" 
-            class="btn" 
-            style="background-color: var(--danger-bg); color: var(--danger-text); border-color: var(--danger); padding: 0.75rem 1.5rem;"
-            onclick="document.getElementById('reject-section').style.display='block'"
-          >
-            <span>✕</span>
-            <span>Reject Submission</span>
-          </button>
-        </div>
-
-        <!-- Inline Rejection Form (Hidden by default) -->
-        <div id="reject-section" style="display: none; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
-          <h4 style="font-size: 0.95rem; color: var(--danger-text); font-weight: 700; margin-bottom: 0.75rem;">
-            Confirm Rejection Reason
-          </h4>
-          <form action="{{ url_for('teacher.reject_donation', donation_id=donation.id) }}" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group">
-              <label for="detail-reject-reason" class="form-label">Reason for rejection <span class="required-star">*</span></label>
-              <textarea 
-                id="detail-reject-reason" 
-                name="reason" 
-                class="form-control" 
-                placeholder="Explain why this book cannot be accepted into the catalogue..." 
-                required
-              ></textarea>
+    <div class="col-12 col-lg-8 col-xl-9">
+      <div class="d-flex flex-column gap-4">
+        <!-- Title & Metadata Card -->
+        <div class="card border shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-7">{{ donation.class_grade }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ donation.subject }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ donation.language }}</span>
             </div>
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('reject-section').style.display='none'">
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-sm" style="background-color: var(--danger); color: #ffffff;">
-                Submit Rejection
+
+            <h2 class="h3 fw-bold text-body mb-2">
+              {{ donation.title }}
+            </h2>
+            <div class="text-body-secondary fs-6">
+              Author / Board: <strong class="text-body">{{ donation.author or 'Not specified' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description / Syllabus Remarks Card -->
+        <div class="card border shadow-sm">
+          <div class="card-header bg-body-tertiary py-3 px-4">
+            <h3 class="h6 fw-bold text-body-secondary text-uppercase mb-0 tracking-wide fs-7">
+              {{ icon('file-lines', extra_class='me-2') }}Donor Description &amp; Syllabus Notes
+            </h3>
+          </div>
+          <div class="card-body p-4">
+            <p class="text-body mb-0 leading-relaxed">
+              {{ donation.description or 'No additional description provided by the student.' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Student Donor Information Card (Confidential) -->
+        <div class="card border shadow-sm border-info-subtle">
+          <div class="card-header bg-info-subtle py-3 px-4 d-flex align-items-center justify-content-between">
+            <h3 class="h6 fw-bold text-info-emphasis text-uppercase mb-0 tracking-wide fs-7 d-flex align-items-center gap-2">
+              {{ icon('user-shield') }}Student Donor Information (Confidential)
+            </h3>
+            <span class="badge bg-info text-white">Staff Only</span>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">STUDENT NAME</span>
+                <strong class="text-body fs-6">{{ donation.donor_name }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">CLASS &amp; SECTION</span>
+                <strong class="text-body fs-6">{{ donation.donor_class }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">ROLL NUMBER</span>
+                <strong class="text-body fs-6 kb-code">{{ donation.donor_roll_no or 'N/A' }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">CONTACT PHONE</span>
+                <strong class="text-body fs-6 kb-code">{{ icon('phone', extra_class='small me-1') }}{{ donation.donor_contact or 'N/A' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verification Action / Status Card -->
+        {% if donation.status == 'pending' %}
+        <div class="card border border-primary-subtle shadow-sm bg-body">
+          <div class="card-body p-4">
+            <h3 class="h5 fw-bold text-body mb-2 d-flex align-items-center gap-2">
+              {{ icon('clipboard-check', extra_class='text-primary') }}Teacher Verification Action
+            </h3>
+            <p class="text-body-secondary small mb-4">
+              Confirm the book's condition matches the school syllabus. Approving will generate a unique book code and immediately publish the listing in the public catalogue.
+            </p>
+
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+              <!-- Approve Form -->
+              <form action="{{ url_for('teacher.approve_donation', donation_id=donation.id) }}" method="POST" onsubmit="return confirm('Approve this donation and publish it to the school catalogue?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 py-2">
+                  {{ icon('check') }}
+                  <span>Approve &amp; Publish Book</span>
+                </button>
+              </form>
+
+              <!-- Reject Trigger Button -->
+              <button 
+                type="button" 
+                class="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3 py-2"
+                onclick="document.getElementById('reject-section').classList.remove('d-none'); this.classList.add('d-none');"
+              >
+                {{ icon('xmark') }}
+                <span>Reject Submission</span>
               </button>
             </div>
-          </form>
+
+            <!-- Inline Rejection Form -->
+            <div id="reject-section" class="d-none mt-4 pt-4 border-top">
+              <h4 class="h6 fw-bold text-danger mb-3 d-flex align-items-center gap-2">
+                {{ icon('triangle-exclamation') }}Confirm Rejection Reason
+              </h4>
+              <form action="{{ url_for('teacher.reject_donation', donation_id=donation.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                  <label for="detail-reject-reason" class="form-label small fw-semibold text-body">
+                    Reason for rejection <span class="text-danger">*</span>
+                  </label>
+                  <textarea 
+                    id="detail-reject-reason" 
+                    name="reason" 
+                    class="form-control" 
+                    rows="3"
+                    placeholder="Explain why this book cannot be accepted into the catalogue..." 
+                    required
+                  ></textarea>
+                </div>
+                <div class="d-flex gap-2 justify-content-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('reject-section').classList.add('d-none'); document.querySelector('[onclick*=\'reject-section\']').classList.remove('d-none');">
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1">
+                    {{ icon('circle-xmark') }}
+                    <span>Submit Rejection</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
+
+        {% elif donation.status == 'approved' %}
+        <div class="card border border-success-subtle bg-success-subtle shadow-sm">
+          <div class="card-body p-4 text-success-emphasis">
+            <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
+              {{ icon('circle-check', extra_class='text-success') }}Approved by {{ donation.reviewer_name or 'Teacher' }}
+            </div>
+            <div class="small">
+              Reviewed on {{ donation.reviewed_at }}. Assigned Book Code: <strong class="kb-code">{{ donation.approved_book_code }}</strong>.
+            </div>
+          </div>
+        </div>
+
+        {% elif donation.status == 'rejected' %}
+        <div class="card border border-danger-subtle bg-danger-subtle shadow-sm">
+          <div class="card-body p-4 text-danger-emphasis">
+            <div class="d-flex align-items-center gap-2 fw-bold fs-5 mb-2">
+              {{ icon('circle-xmark', extra_class='text-danger') }}Rejected by {{ donation.reviewer_name or 'Teacher' }}
+            </div>
+            <div class="small mb-1">
+              Reason: <strong>{{ donation.rejection_reason }}</strong>
+            </div>
+            <div class="small text-danger-emphasis opacity-75">
+              Reviewed on {{ donation.reviewed_at }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
       </div>
-      {% elif donation.status == 'approved' %}
-      <div style="background-color: var(--success-bg); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 1.25rem; color: var(--success-text);">
-        <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">
-          ✓ Approved by {{ donation.reviewer_name or 'Teacher' }}
-        </div>
-        <div style="font-size: 0.85rem;">
-          Reviewed on {{ donation.reviewed_at }}. Assigned Book Code: <strong>{{ donation.approved_book_code }}</strong>.
-        </div>
-      </div>
-      {% elif donation.status == 'rejected' %}
-      <div style="background-color: var(--danger-bg); border: 1px solid var(--danger); border-radius: var(--radius-md); padding: 1.25rem; color: var(--danger-text);">
-        <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">
-          ✕ Rejected by {{ donation.reviewer_name or 'Teacher' }}
-        </div>
-        <div style="font-size: 0.85rem; margin-top: 0.35rem;">
-          Reason: <strong>{{ donation.rejection_reason }}</strong>
-        </div>
-        <div style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
-          Reviewed on {{ donation.reviewed_at }}
-        </div>
-      </div>
-      {% endif %}
     </div>
   </div>
 {% endblock %}

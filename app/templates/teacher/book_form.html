@@ -1,154 +1,163 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}{{ 'Edit Textbook' if is_edit else 'Add New Textbook' }} - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
-<div class="dashboard-header">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
-    <h1 class="dashboard-title">{{ 'Edit Textbook: ' ~ book.book_code if is_edit else 'Add New Textbook' }}</h1>
-    <p class="dashboard-subtitle">
+    <h1 class="h3 fw-bold text-body mb-1">
+      {{ icon('pen-to-square' if is_edit else 'circle-plus', extra_class='text-primary me-2') }}{{ 'Edit Textbook: ' ~ book.book_code if is_edit else 'Add New Textbook' }}
+    </h1>
+    <p class="text-body-secondary mb-0 small">
       {{ 'Update catalog metadata and syllabus information.' if is_edit else 'Directly enter school-purchased or institutional textbooks into circulation.' }}
     </p>
   </div>
-  <a href="{{ url_for('teacher.inventory') }}" class="btn btn-outline">← Back to Inventory</a>
+  <a href="{{ url_for('teacher.inventory') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+    {{ icon('arrow-left') }}
+    <span>Back to Inventory</span>
+  </a>
 </div>
 
-<div class="card" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
-  <form method="POST" action="{{ action_url }}" enctype="multipart/form-data">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="card border shadow-sm mx-auto" style="max-width: 840px;">
+  <div class="card-body p-4 p-md-5">
+    <form method="POST" action="{{ action_url }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    {% if is_edit %}
-    <div class="alert alert-info d-flex align-items-center gap-2 mb-4">
-      <span>ℹ️</span>
-      <div>
-        Editing Book Code: <strong>{{ book.book_code }}</strong> &bull; Status: <span class="badge badge-primary">{{ book.status }}</span>
+      {% if is_edit %}
+      <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
+        {{ icon('circle-info', extra_class='fs-5 text-info flex-shrink-0') }}
+        <div>
+          Editing Book Code: <strong class="kb-code">{{ book.book_code }}</strong> &bull; Status: <span class="badge bg-primary">{{ book.status }}</span>
+        </div>
       </div>
-    </div>
-    {% endif %}
+      {% endif %}
 
-    <!-- Title & Author Row -->
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
-      <div>
-        <label class="form-label" style="font-weight: 600;">Textbook Title <span style="color: var(--danger-text);">*</span></label>
-        <input type="text" name="title" class="form-control" required
-               value="{{ form_data.title if form_data else (book.title if is_edit else '') }}"
-               placeholder="e.g. Mathematics for Class 7">
-      </div>
-      <div>
-        <label class="form-label" style="font-weight: 600;">Author / Board</label>
-        <input type="text" name="author" class="form-control"
-               value="{{ form_data.author if form_data else (book.author if is_edit else '') }}"
-               placeholder="e.g. Sindh Textbook Board">
-      </div>
-    </div>
-
-    <!-- Subject, Class & Language Row -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
-      <div>
-        <label class="form-label" style="font-weight: 600;">Subject <span style="color: var(--danger-text);">*</span></label>
-        <select name="subject" class="form-control" required>
-          {% set cur_subj = form_data.subject if form_data else (book.subject if is_edit else '') %}
-          <option value="" disabled {% if not cur_subj %}selected{% endif %}>Select Subject</option>
-          <option value="Mathematics" {% if cur_subj == 'Mathematics' %}selected{% endif %}>Mathematics</option>
-          <option value="General Science" {% if cur_subj == 'General Science' %}selected{% endif %}>General Science</option>
-          <option value="English" {% if cur_subj == 'English' %}selected{% endif %}>English</option>
-          <option value="Urdu" {% if cur_subj == 'Urdu' %}selected{% endif %}>Urdu</option>
-          <option value="Sindhi" {% if cur_subj == 'Sindhi' %}selected{% endif %}>Sindhi</option>
-          <option value="Social Studies" {% if cur_subj == 'Social Studies' %}selected{% endif %}>Social Studies</option>
-          <option value="Computer Science" {% if cur_subj == 'Computer Science' %}selected{% endif %}>Computer Science</option>
-          <option value="Islamiat" {% if cur_subj == 'Islamiat' %}selected{% endif %}>Islamiat</option>
-          <option value="History" {% if cur_subj == 'History' %}selected{% endif %}>History</option>
-          <option value="Geography" {% if cur_subj == 'Geography' %}selected{% endif %}>Geography</option>
-        </select>
+      <!-- Title & Author Row -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-8">
+          <label class="form-label small fw-semibold text-body">Textbook Title <span class="text-danger">*</span></label>
+          <input type="text" name="title" class="form-control" required
+                 value="{{ form_data.title if form_data else (book.title if is_edit else '') }}"
+                 placeholder="e.g. Mathematics for Class 7">
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label small fw-semibold text-body">Author / Board</label>
+          <input type="text" name="author" class="form-control"
+                 value="{{ form_data.author if form_data else (book.author if is_edit else '') }}"
+                 placeholder="e.g. Sindh Textbook Board">
+        </div>
       </div>
 
-      <div>
-        <label class="form-label" style="font-weight: 600;">Class Level <span style="color: var(--danger-text);">*</span></label>
-        <select name="class_grade" class="form-control" required>
-          {% set cur_cls = form_data.class_grade if form_data else (book.class_grade if is_edit else '') %}
-          <option value="" disabled {% if not cur_cls %}selected{% endif %}>Select Class</option>
-          <option value="Class 6" {% if cur_cls == 'Class 6' %}selected{% endif %}>Class 6</option>
-          <option value="Class 7" {% if cur_cls == 'Class 7' %}selected{% endif %}>Class 7</option>
-          <option value="Class 8" {% if cur_cls == 'Class 8' %}selected{% endif %}>Class 8</option>
-        </select>
+      <!-- Subject, Class & Language Row -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-sm-4">
+          <label class="form-label small fw-semibold text-body">Subject <span class="text-danger">*</span></label>
+          <select name="subject" class="form-select" required>
+            {% set cur_subj = form_data.subject if form_data else (book.subject if is_edit else '') %}
+            <option value="" disabled {% if not cur_subj %}selected{% endif %}>Select Subject</option>
+            <option value="Mathematics" {% if cur_subj == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+            <option value="General Science" {% if cur_subj == 'General Science' %}selected{% endif %}>General Science</option>
+            <option value="English" {% if cur_subj == 'English' %}selected{% endif %}>English</option>
+            <option value="Urdu" {% if cur_subj == 'Urdu' %}selected{% endif %}>Urdu</option>
+            <option value="Sindhi" {% if cur_subj == 'Sindhi' %}selected{% endif %}>Sindhi</option>
+            <option value="Social Studies" {% if cur_subj == 'Social Studies' %}selected{% endif %}>Social Studies</option>
+            <option value="Computer Science" {% if cur_subj == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+            <option value="Islamiat" {% if cur_subj == 'Islamiat' %}selected{% endif %}>Islamiat</option>
+            <option value="History" {% if cur_subj == 'History' %}selected{% endif %}>History</option>
+            <option value="Geography" {% if cur_subj == 'Geography' %}selected{% endif %}>Geography</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-sm-4">
+          <label class="form-label small fw-semibold text-body">Class Level <span class="text-danger">*</span></label>
+          <select name="class_grade" class="form-select" required>
+            {% set cur_cls = form_data.class_grade if form_data else (book.class_grade if is_edit else '') %}
+            <option value="" disabled {% if not cur_cls %}selected{% endif %}>Select Class</option>
+            <option value="Class 6" {% if cur_cls == 'Class 6' %}selected{% endif %}>Class 6</option>
+            <option value="Class 7" {% if cur_cls == 'Class 7' %}selected{% endif %}>Class 7</option>
+            <option value="Class 8" {% if cur_cls == 'Class 8' %}selected{% endif %}>Class 8</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-sm-4">
+          <label class="form-label small fw-semibold text-body">Language <span class="text-danger">*</span></label>
+          <select name="language" class="form-select" required>
+            {% set cur_lang = form_data.language if form_data else (book.language if is_edit else 'Urdu') %}
+            <option value="Urdu" {% if cur_lang == 'Urdu' %}selected{% endif %}>Urdu (اردو)</option>
+            <option value="English" {% if cur_lang == 'English' %}selected{% endif %}>English</option>
+            <option value="Sindhi" {% if cur_lang == 'Sindhi' %}selected{% endif %}>Sindhi (سنڌي)</option>
+          </select>
+        </div>
       </div>
 
-      <div>
-        <label class="form-label" style="font-weight: 600;">Language <span style="color: var(--danger-text);">*</span></label>
-        <select name="language" class="form-control" required>
-          {% set cur_lang = form_data.language if form_data else (book.language if is_edit else 'Urdu') %}
-          <option value="Urdu" {% if cur_lang == 'Urdu' %}selected{% endif %}>Urdu (اردو)</option>
-          <option value="English" {% if cur_lang == 'English' %}selected{% endif %}>English</option>
-          <option value="Sindhi" {% if cur_lang == 'Sindhi' %}selected{% endif %}>Sindhi (سنڌي)</option>
-        </select>
+      <!-- Publisher, Edition Year & Condition Row -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-sm-4">
+          <label class="form-label small fw-semibold text-body">Publisher</label>
+          <input type="text" name="publisher" class="form-control"
+                 value="{{ form_data.publisher if form_data else (book.publisher if is_edit else '') }}"
+                 placeholder="e.g. STBB Jamshoro">
+        </div>
+
+        <div class="col-12 col-sm-4">
+          <label class="form-label small fw-semibold text-body">Edition Year</label>
+          <input type="number" name="edition_year" class="form-control" min="2000" max="2030"
+                 value="{{ form_data.edition_year if form_data else (book.edition_year if is_edit else '2024') }}"
+                 placeholder="e.g. 2024">
+        </div>
+
+        <div class="col-12 col-sm-4">
+          <label class="form-label small fw-semibold text-body">Physical Condition <span class="text-danger">*</span></label>
+          <select name="condition_state" class="form-select" required>
+            {% set cur_cond = form_data.condition_state if form_data else (book.condition_state if is_edit else 'Good') %}
+            <option value="Like New" {% if cur_cond == 'Like New' %}selected{% endif %}>Like New (Unused / Crisp)</option>
+            <option value="Good" {% if cur_cond == 'Good' %}selected{% endif %}>Good (Lightly Used / Intact)</option>
+            <option value="Fair" {% if cur_cond == 'Fair' %}selected{% endif %}>Fair (Visible Wear / Readable)</option>
+          </select>
+        </div>
       </div>
-    </div>
 
-    <!-- Publisher, Edition Year & Condition Row -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
-      <div>
-        <label class="form-label" style="font-weight: 600;">Publisher</label>
-        <input type="text" name="publisher" class="form-control"
-               value="{{ form_data.publisher if form_data else (book.publisher if is_edit else '') }}"
-               placeholder="e.g. STBB Jamshoro">
+      <!-- Description / Remarks -->
+      <div class="mb-3">
+        <label class="form-label small fw-semibold text-body">Description &amp; Notes</label>
+        <textarea name="description" class="form-control" rows="3"
+                  placeholder="Optional notes regarding syllabus edition, textbook chapter inclusions, or physical copy remarks...">{{ form_data.description if form_data else (book.description if is_edit else '') }}</textarea>
       </div>
 
-      <div>
-        <label class="form-label" style="font-weight: 600;">Edition Year</label>
-        <input type="number" name="edition_year" class="form-control" min="2000" max="2030"
-               value="{{ form_data.edition_year if form_data else (book.edition_year if is_edit else '2024') }}"
-               placeholder="e.g. 2024">
-      </div>
+      <!-- Book Cover Image Upload -->
+      <div class="mb-4">
+        <label class="form-label small fw-semibold text-body">Book Cover Photograph (Optional)</label>
+        <div class="d-flex gap-3 align-items-center">
+          <div class="flex-grow-1">
+            <input type="file" name="book_image" id="bookImageInput" class="form-control" accept="image/png, image/jpeg, image/webp">
+            <div class="form-text small">
+              Accepted formats: JPG, PNG, WEBP (Max 3MB). Re-encoded locally with Pillow.
+            </div>
+          </div>
 
-      <div>
-        <label class="form-label" style="font-weight: 600;">Physical Condition <span style="color: var(--danger-text);">*</span></label>
-        <select name="condition_state" class="form-control" required>
-          {% set cur_cond = form_data.condition_state if form_data else (book.condition_state if is_edit else 'Good') %}
-          <option value="Like New" {% if cur_cond == 'Like New' %}selected{% endif %}>Like New (Unused / Crisp)</option>
-          <option value="Good" {% if cur_cond == 'Good' %}selected{% endif %}>Good (Lightly Used / Intact)</option>
-          <option value="Fair" {% if cur_cond == 'Fair' %}selected{% endif %}>Fair (Visible Wear / Readable)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Description / Remarks -->
-    <div style="margin-bottom: 1.25rem;">
-      <label class="form-label" style="font-weight: 600;">Description & Notes</label>
-      <textarea name="description" class="form-control" rows="3"
-                placeholder="Optional notes regarding syllabus edition, textbook chapter inclusions, or physical copy remarks...">{{ form_data.description if form_data else (book.description if is_edit else '') }}</textarea>
-    </div>
-
-    <!-- Book Cover Image Upload -->
-    <div style="margin-bottom: 2rem;">
-      <label class="form-label" style="font-weight: 600;">Book Cover Photograph (Optional)</label>
-      <div style="display: flex; gap: 1.5rem; align-items: center;">
-        <div style="flex: 1;">
-          <input type="file" name="book_image" id="bookImageInput" class="form-control" accept="image/png, image/jpeg, image/webp">
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
-            Accepted formats: JPG, PNG, WEBP (Max 3MB). Re-encoded locally with Pillow.
+          <!-- Cover Preview -->
+          <div id="imagePreviewBox" class="rounded border border-dashed bg-body-tertiary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0" style="width: 72px; height: 96px;">
+            {% if is_edit and book.image_path %}
+              <img id="previewImg" src="{{ url_for('static', filename=book.image_path) }}" class="w-100 h-100 object-fit-cover" alt="Cover">
+            {% else %}
+              <span id="previewPlaceholder" class="text-body-secondary fs-3">{{ icon('book') }}</span>
+              <img id="previewImg" style="display: none;" class="w-100 h-100 object-fit-cover" alt="Cover">
+            {% endif %}
           </div>
         </div>
-
-        <!-- Cover Preview -->
-        <div id="imagePreviewBox" style="width: 72px; height: 96px; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--bg-muted);">
-          {% if is_edit and book.image_path %}
-            <img id="previewImg" src="{{ url_for('static', filename=book.image_path) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Cover">
-          {% else %}
-            <span id="previewPlaceholder" style="font-size: 1.5rem; color: var(--text-muted);">📖</span>
-            <img id="previewImg" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Cover">
-          {% endif %}
-        </div>
       </div>
-    </div>
 
-    <!-- Submit Bar -->
-    <div class="d-flex justify-content-end gap-2" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-      <a href="{{ url_for('teacher.inventory') }}" class="btn btn-outline">Cancel</a>
-      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.75rem;">
-        {{ 'Save Changes' if is_edit else 'Add Textbook to Catalogue' }}
-      </button>
-    </div>
-  </form>
+      <!-- Submit Bar -->
+      <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+        <a href="{{ url_for('teacher.inventory') }}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2">
+          {{ icon('check') }}
+          <span>{{ 'Save Changes' if is_edit else 'Add Textbook to Catalogue' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}
 

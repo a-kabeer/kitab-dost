@@ -1,194 +1,215 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Confirm Physical Handover - {{ req.tracking_code }} - Teacher Desk{% endblock %}
 
 {% block teacher_content %}
   <!-- Breadcrumb -->
-  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
-    <span> / </span>
-    <a href="{{ url_for('teacher.requests') }}" style="color: var(--text-secondary);">Requests</a>
-    <span> / </span>
-    <a href="{{ url_for('teacher.request_detail', request_id=req.id) }}" style="color: var(--text-secondary);">{{ req.tracking_code }}</a>
-    <span> / </span>
-    <span style="color: var(--text-primary); font-weight: 600;">Confirm Handover</span>
-  </div>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.requests') }}" class="text-decoration-none">Requests</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.request_detail', request_id=req.id) }}" class="text-decoration-none kb-code">{{ req.tracking_code }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Confirm Handover</li>
+    </ol>
+  </nav>
 
   <!-- Header -->
-  <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-      <h1 class="dashboard-title">🤝 Confirm Physical Book Handover</h1>
-      <p class="dashboard-subtitle">
+      <h1 class="h3 fw-bold text-body mb-1">
+        {{ icon('handshake', extra_class='text-primary me-2') }}Confirm Physical Book Handover
+      </h1>
+      <p class="text-body-secondary mb-0 small">
         Verify student credentials before physically transferring textbook custody. Presentation of tracking code alone is not proof of identity.
       </p>
     </div>
 
     <div>
-      <a href="{{ url_for('teacher.request_detail', request_id=req.id) }}" class="btn btn-outline">
-        ← Cancel &amp; Back
+      <a href="{{ url_for('teacher.request_detail', request_id=req.id) }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        {{ icon('arrow-left') }}
+        <span>Cancel &amp; Back</span>
       </a>
     </div>
   </div>
 
   <!-- Two Column Layout: Verification Details & Action Form -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; align-items: start;">
+  <div class="row g-4 mb-5">
     
     <!-- Left Column: Verification Snapshot -->
-    <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-sm);">
-      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-        <span>👤</span>
-        <span>Student Identity Verification Checklist</span>
-      </h3>
-
-      <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">
-          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">FULL NAME</span>
-          <strong style="font-size: 1.05rem; color: var(--text-primary);" id="verify-student-name">{{ req.requester_name }}</strong>
+    <div class="col-12 col-lg-5">
+      <div class="card border shadow-sm mb-4">
+        <div class="card-header bg-body-tertiary py-3 px-4">
+          <h3 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+            {{ icon('user-check', extra_class='text-primary') }}Student Identity Verification Checklist
+          </h3>
         </div>
+        <div class="card-body p-4">
+          <div class="d-flex flex-column gap-3 mb-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+              <span class="small text-body-secondary fw-semibold">FULL NAME</span>
+              <strong class="fs-6 text-body" id="verify-student-name">{{ req.requester_name }}</strong>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">
-          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">CLASS &amp; SECTION</span>
-          <span class="badge badge-primary" style="font-size: 0.9rem;" id="verify-student-class">{{ req.requester_class }}</span>
-        </div>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+              <span class="small text-body-secondary fw-semibold">CLASS &amp; SECTION</span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-7" id="verify-student-class">{{ req.requester_class }}</span>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">
-          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">SCHOOL ROLL NO.</span>
-          <span class="badge badge-secondary" style="font-size: 0.95rem; font-weight: 700;" id="verify-student-roll">{{ req.requester_roll_no }}</span>
-        </div>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+              <span class="small text-body-secondary fw-semibold">SCHOOL ROLL NO.</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7 kb-code" id="verify-student-roll">{{ req.requester_roll_no }}</span>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem;">
-          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">PARENT / CONTACT</span>
-          <span style="font-size: 0.9rem; color: var(--text-secondary);">📞 {{ req.requester_contact }}</span>
-        </div>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+              <span class="small text-body-secondary fw-semibold">PARENT / CONTACT</span>
+              <span class="small text-body kb-code">{{ icon('phone', extra_class='small me-1') }}{{ req.requester_contact }}</span>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">REQUEST TRACKING CODE</span>
-          <code style="font-family: monospace; font-size: 0.95rem; font-weight: 800; color: var(--primary);" id="verify-tracking-code">{{ req.tracking_code }}</code>
-        </div>
-      </div>
-
-      <!-- Book Snapshot -->
-      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-        <span>📚</span>
-        <span>Reserved Textbook Snapshot</span>
-      </h3>
-
-      <div style="display: flex; gap: 1rem; align-items: center; background-color: var(--bg-muted); border-radius: var(--radius-md); padding: 1rem;">
-        {% if req.book_image %}
-        <img 
-          src="{{ url_for('static', filename=req.book_image) }}" 
-          alt="{{ req.book_title }}" 
-          style="width: 56px; height: 76px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color);"
-        >
-        {% endif %}
-        <div>
-          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.25rem;">
-            {{ req.book_title }}
-          </h4>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;">
-            Official Book Code: <code style="font-weight: 700; color: var(--primary);">{{ req.book_code }}</code>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small text-body-secondary fw-semibold">REQUEST TRACKING CODE</span>
+              <code class="kb-code fw-bold text-primary fs-7" id="verify-tracking-code">{{ req.tracking_code }}</code>
+            </div>
           </div>
-          <div style="display: flex; gap: 0.35rem;">
-            <span class="badge badge-secondary" style="font-size: 0.75rem;">{{ req.book_class }}</span>
-            <span class="badge badge-secondary" style="font-size: 0.75rem;">{{ req.book_subject }}</span>
+
+          <!-- Book Snapshot -->
+          <h4 class="h6 fw-bold text-body mb-3 pt-2 border-top d-flex align-items-center gap-2">
+            {{ icon('book-bookmark', extra_class='text-primary') }}Reserved Textbook Snapshot
+          </h4>
+
+          <div class="d-flex gap-3 align-items-center bg-body-tertiary rounded-3 p-3 border">
+            {% if req.book_image %}
+            <img 
+              src="{{ url_for('static', filename=req.book_image) }}" 
+              alt="{{ req.book_title }}" 
+              class="rounded border object-fit-cover shadow-sm flex-shrink-0"
+              style="width: 56px; height: 76px;"
+            >
+            {% else %}
+            <div class="rounded border border-dashed bg-body d-flex align-items-center justify-content-center text-body-secondary flex-shrink-0" style="width: 56px; height: 76px;">
+              {{ icon('book', extra_class='fs-4') }}
+            </div>
+            {% endif %}
+            <div class="overflow-hidden">
+              <h5 class="fs-6 fw-bold text-body text-truncate mb-1" title="{{ req.book_title }}">
+                {{ req.book_title }}
+              </h5>
+              <div class="small text-body-secondary mb-2">
+                Book Code: <code class="kb-code text-primary fw-bold">{{ req.book_code }}</code>
+              </div>
+              <div class="d-flex gap-1 flex-wrap">
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-8">{{ req.book_class }}</span>
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-8">{{ req.book_subject }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Right Column: Handover Confirmation Form -->
-    <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-sm);">
-      <form action="{{ url_for('teacher.confirm_handover', request_id=req.id) }}" method="POST" id="handover-form" novalidate>
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-12 col-lg-7">
+      <div class="card border shadow-sm">
+        <div class="card-header bg-body-tertiary py-3 px-4">
+          <h3 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+            {{ icon('shield-halved', extra_class='text-success') }}Mandatory Distribution Checks
+          </h3>
+        </div>
+        <div class="card-body p-4">
+          <form action="{{ url_for('teacher.confirm_handover', request_id=req.id) }}" method="POST" id="handover-form" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-          Mandatory Distribution Checks
-        </h3>
-
-        <!-- Mandatory Checkbox 1: Identity Verified -->
-        <div style="background-color: var(--bg-muted); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
-          <label style="display: flex; gap: 0.85rem; align-items: flex-start; cursor: pointer; user-select: none;">
-            <input 
-              type="checkbox" 
-              name="confirm_id" 
-              id="confirm_id" 
-              value="1" 
-              required 
-              style="width: 1.35rem; height: 1.35rem; margin-top: 0.15rem; cursor: pointer; accent-color: var(--primary);"
-            >
-            <div>
-              <strong style="color: var(--text-primary); font-size: 0.95rem; display: block; margin-bottom: 0.25rem;">
-                1. Student Identity Confirmed <span class="required-star">*</span>
-              </strong>
-              <span style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; display: block;">
-                I have verified that the recipient student is present in person and their Full Name, Class, and Roll Number match the school admission register.
-              </span>
+            <!-- Mandatory Checkbox 1: Identity Verified -->
+            <div class="card border bg-body-tertiary mb-3">
+              <div class="card-body p-3">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input mt-1" 
+                    type="checkbox" 
+                    name="confirm_id" 
+                    id="confirm_id" 
+                    value="1" 
+                    required 
+                    style="cursor: pointer; width: 1.25rem; height: 1.25rem;"
+                  >
+                  <label class="form-check-label ms-2" for="confirm_id" style="cursor: pointer;">
+                    <strong class="text-body d-block mb-1">
+                      1. Student Identity Confirmed <span class="text-danger">*</span>
+                    </strong>
+                    <span class="small text-body-secondary d-block leading-normal">
+                      I have verified that the recipient student is present in person and their Full Name, Class, and Roll Number match the school admission register.
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
-          </label>
-        </div>
 
-        <!-- Mandatory Checkbox 2: Physical Book Handed Over -->
-        <div style="background-color: var(--bg-muted); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
-          <label style="display: flex; gap: 0.85rem; align-items: flex-start; cursor: pointer; user-select: none;">
-            <input 
-              type="checkbox" 
-              name="confirm_physical" 
-              id="confirm_physical" 
-              value="1" 
-              required 
-              style="width: 1.35rem; height: 1.35rem; margin-top: 0.15rem; cursor: pointer; accent-color: var(--primary);"
-            >
-            <div>
-              <strong style="color: var(--text-primary); font-size: 0.95rem; display: block; margin-bottom: 0.25rem;">
-                2. Physical Book Handed Over <span class="required-star">*</span>
-              </strong>
-              <span style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; display: block;">
-                I have inspected physical textbook <strong>{{ req.book_code }}</strong> and handed it over to the student for the ongoing academic term.
-              </span>
+            <!-- Mandatory Checkbox 2: Physical Book Handed Over -->
+            <div class="card border bg-body-tertiary mb-4">
+              <div class="card-body p-3">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input mt-1" 
+                    type="checkbox" 
+                    name="confirm_physical" 
+                    id="confirm_physical" 
+                    value="1" 
+                    required 
+                    style="cursor: pointer; width: 1.25rem; height: 1.25rem;"
+                  >
+                  <label class="form-check-label ms-2" for="confirm_physical" style="cursor: pointer;">
+                    <strong class="text-body d-block mb-1">
+                      2. Physical Book Handed Over <span class="text-danger">*</span>
+                    </strong>
+                    <span class="small text-body-secondary d-block leading-normal">
+                      I have inspected physical textbook <strong class="kb-code text-primary">{{ req.book_code }}</strong> and handed it over to the student for the ongoing academic term.
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
-          </label>
-        </div>
 
-        <!-- Optional Handover Notes / Remarks -->
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-          <label for="remarks" class="form-label">
-            Handover Remarks / Condition Notes (Optional)
-          </label>
-          <textarea 
-            id="remarks" 
-            name="remarks" 
-            class="form-control" 
-            placeholder="e.g. Verified against roll register. All pages and binding checked in good condition..."
-            rows="3"
-            maxlength="500"
-          >{{ form_data.get('remarks', '') if form_data else '' }}</textarea>
-        </div>
+            <!-- Optional Handover Notes / Remarks -->
+            <div class="mb-4">
+              <label for="remarks" class="form-label small fw-semibold text-body">
+                Handover Remarks / Condition Notes (Optional)
+              </label>
+              <textarea 
+                id="remarks" 
+                name="remarks" 
+                class="form-control" 
+                placeholder="e.g. Verified against roll register. All pages and binding checked in good condition..."
+                rows="3"
+                maxlength="500"
+              >{{ form_data.get('remarks', '') if form_data else '' }}</textarea>
+            </div>
 
-        <!-- Audit Warning Callout -->
-        <div style="background-color: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 2rem; display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.85rem; color: var(--warning-text);">
-          <span style="font-size: 1.3rem; line-height: 1;">⚠️</span>
-          <div>
-            <strong>Irreversible Handover Transaction:</strong> Confirming this distribution generates a permanent ledger record (<code>KB-HO-XXXXXX</code>) and updates the book to <em>Handed Over</em>. Once completed, this transaction cannot be cancelled or deleted.
-          </div>
-        </div>
+            <!-- Audit Warning Callout -->
+            <div class="alert alert-warning d-flex align-items-start gap-2 mb-4" role="alert">
+              {{ icon('triangle-exclamation', extra_class='fs-5 text-warning flex-shrink-0 mt-1') }}
+              <div class="small">
+                <strong>Irreversible Handover Transaction:</strong> Confirming this distribution generates a permanent ledger record (<code class="kb-code">KB-HO-XXXXXX</code>) and updates the book to <em>Handed Over</em>. Once completed, this transaction cannot be cancelled or deleted.
+              </div>
+            </div>
 
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 1rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
-          <a href="{{ url_for('teacher.request_detail', request_id=req.id) }}" class="btn btn-outline">
-            Cancel
-          </a>
-          <button 
-            type="submit" 
-            id="submit-handover-btn" 
-            class="btn btn-primary" 
-            style="background-color: var(--success); border-color: var(--success); padding: 0.75rem 2rem; font-size: 1rem;"
-            onclick="return confirm('Confirm physical handover of book \'{{ req.book_code }}\' to student {{ req.requester_name }}?');"
-          >
-            <span>🤝</span>
-            <span>Confirm Handover &amp; Issue Receipt</span>
-          </button>
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 justify-content-end align-items-center flex-wrap pt-3 border-top">
+              <a href="{{ url_for('teacher.request_detail', request_id=req.id) }}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+              <button 
+                type="submit" 
+                id="submit-handover-btn" 
+                class="btn btn-success d-inline-flex align-items-center gap-2 px-4 py-2"
+                onclick="return confirm('Confirm physical handover of book \'{{ req.book_code }}\' to student {{ req.requester_name }}?');"
+              >
+                {{ icon('handshake') }}
+                <span>Confirm Handover &amp; Issue Receipt</span>
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
 
   </div>

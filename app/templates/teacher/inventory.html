@@ -1,206 +1,257 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Book Inventory - Kitaab Bank{% endblock %}
 
 {% block teacher_content %}
-<div class="dashboard-header">
+<!-- Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
-    <h1 class="dashboard-title">Book Inventory Management</h1>
-    <p class="dashboard-subtitle">Manage school catalogue, edit textbook details, print stickers, and retire books.</p>
+    <h1 class="h3 fw-bold text-body mb-1">
+      {{ icon('boxes-stacked', extra_class='text-primary me-2') }}Book Inventory Management
+    </h1>
+    <p class="text-body-secondary mb-0 small">
+      Manage school catalogue, edit textbook details, print stickers, and retire books.
+    </p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-outline">🏷️ Bulk QR Sheet</a>
-    <a href="{{ url_for('teacher.new_book') }}" class="btn btn-primary">➕ Add New Textbook</a>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('teacher.qr_sheet') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+      {{ icon('qrcode') }}
+      <span>Bulk QR Sheet</span>
+    </a>
+    <a href="{{ url_for('teacher.new_book') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+      {{ icon('plus') }}
+      <span>Add New Textbook</span>
+    </a>
   </div>
 </div>
 
 <!-- Status Filter Tabs Bar -->
-<div class="filter-tabs-bar">
+<div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap flex-sm-wrap">
   <a href="{{ url_for('teacher.inventory', status='all', q=search_query, class_grade=class_filter, subject=subject_filter, condition=condition_filter) }}"
-     class="filter-tab {% if current_status == 'all' %}active{% endif %}">
-    <span>📚 All Books</span>
-    <span class="badge badge-primary">{{ counts.all }}</span>
+     class="btn btn-sm text-nowrap {% if current_status == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
+    {{ icon('book-bookmark', extra_class='small') }}
+    <span>All Books</span>
+    <span class="badge {% if current_status == 'all' %}bg-white text-primary{% else %}bg-primary{% endif %} rounded-pill">
+      {{ counts.all }}
+    </span>
   </a>
 
   <a href="{{ url_for('teacher.inventory', status='available', q=search_query, class_grade=class_filter, subject=subject_filter, condition=condition_filter) }}"
-     class="filter-tab {% if current_status == 'available' %}active{% endif %}">
-    <span>🟢 Available</span>
-    <span class="badge badge-success">{{ counts.available }}</span>
+     class="btn btn-sm text-nowrap {% if current_status == 'available' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
+    {{ icon('circle-check', extra_class='small') }}
+    <span>Available</span>
+    <span class="badge {% if current_status == 'available' %}bg-white text-primary{% else %}bg-success{% endif %} rounded-pill">
+      {{ counts.available }}
+    </span>
   </a>
 
   <a href="{{ url_for('teacher.inventory', status='reserved', q=search_query, class_grade=class_filter, subject=subject_filter, condition=condition_filter) }}"
-     class="filter-tab {% if current_status == 'reserved' %}active{% endif %}">
-    <span>🔒 Reserved</span>
-    <span class="badge badge-warning">{{ counts.reserved }}</span>
+     class="btn btn-sm text-nowrap {% if current_status == 'reserved' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
+    {{ icon('lock', extra_class='small') }}
+    <span>Reserved</span>
+    <span class="badge {% if current_status == 'reserved' %}bg-white text-primary{% else %}bg-warning text-dark{% endif %} rounded-pill">
+      {{ counts.reserved }}
+    </span>
   </a>
 
   <a href="{{ url_for('teacher.inventory', status='handed_over', q=search_query, class_grade=class_filter, subject=subject_filter, condition=condition_filter) }}"
-     class="filter-tab {% if current_status == 'handed_over' %}active{% endif %}">
-    <span>🤝 Handed Over</span>
-    <span class="badge badge-primary">{{ counts.handed_over }}</span>
+     class="btn btn-sm text-nowrap {% if current_status == 'handed_over' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
+    {{ icon('handshake', extra_class='small') }}
+    <span>Handed Over</span>
+    <span class="badge {% if current_status == 'handed_over' %}bg-white text-primary{% else %}bg-info text-white{% endif %} rounded-pill">
+      {{ counts.handed_over }}
+    </span>
   </a>
 
   <a href="{{ url_for('teacher.inventory', status='retired', q=search_query, class_grade=class_filter, subject=subject_filter, condition=condition_filter) }}"
-     class="filter-tab {% if current_status == 'retired' %}active{% endif %}">
-    <span>⚠️ Retired</span>
-    <span class="badge badge-danger">{{ counts.retired }}</span>
+     class="btn btn-sm text-nowrap {% if current_status == 'retired' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
+    {{ icon('triangle-exclamation', extra_class='small') }}
+    <span>Retired</span>
+    <span class="badge {% if current_status == 'retired' %}bg-white text-primary{% else %}bg-danger{% endif %} rounded-pill">
+      {{ counts.retired }}
+    </span>
   </a>
 </div>
 
 <!-- Search & Filtering Toolbar -->
-<div class="card mb-4" style="padding: 1.25rem;">
-  <form method="GET" action="{{ url_for('teacher.inventory') }}" class="d-flex gap-2 flex-wrap align-items-center">
-    <input type="hidden" name="status" value="{{ current_status }}">
+<div class="card border mb-4 shadow-sm">
+  <div class="card-body p-3">
+    <form method="GET" action="{{ url_for('teacher.inventory') }}" class="row g-2 align-items-center">
+      <input type="hidden" name="status" value="{{ current_status }}">
 
-    <div style="flex: 2; min-width: 200px;">
-      <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by title, author, book code, or publisher...">
-    </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-body-tertiary border-end-0">
+            {{ icon('magnifying-glass', extra_class='text-body-secondary') }}
+          </span>
+          <input type="search" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search title, author, book code...">
+        </div>
+      </div>
 
-    <div style="flex: 1; min-width: 140px;">
-      <select name="class_grade" class="form-control">
-        <option value="">All Classes</option>
-        <option value="Class 6" {% if class_filter == 'Class 6' %}selected{% endif %}>Class 6</option>
-        <option value="Class 7" {% if class_filter == 'Class 7' %}selected{% endif %}>Class 7</option>
-        <option value="Class 8" {% if class_filter == 'Class 8' %}selected{% endif %}>Class 8</option>
-      </select>
-    </div>
+      <div class="col-6 col-md-2">
+        <select name="class_grade" class="form-select">
+          <option value="">All Classes</option>
+          <option value="Class 6" {% if class_filter == 'Class 6' %}selected{% endif %}>Class 6</option>
+          <option value="Class 7" {% if class_filter == 'Class 7' %}selected{% endif %}>Class 7</option>
+          <option value="Class 8" {% if class_filter == 'Class 8' %}selected{% endif %}>Class 8</option>
+        </select>
+      </div>
 
-    <div style="flex: 1; min-width: 140px;">
-      <select name="subject" class="form-control">
-        <option value="">All Subjects</option>
-        {% for subj in filter_options.subjects %}
-          <option value="{{ subj }}" {% if subject_filter == subj %}selected{% endif %}>{{ subj }}</option>
-        {% endfor %}
-      </select>
-    </div>
+      <div class="col-6 col-md-2">
+        <select name="subject" class="form-select">
+          <option value="">All Subjects</option>
+          {% for subj in filter_options.subjects %}
+            <option value="{{ subj }}" {% if subject_filter == subj %}selected{% endif %}>{{ subj }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <div style="flex: 1; min-width: 140px;">
-      <select name="condition" class="form-control">
-        <option value="">All Conditions</option>
-        <option value="Like New" {% if condition_filter == 'Like New' %}selected{% endif %}>Like New</option>
-        <option value="Good" {% if condition_filter == 'Good' %}selected{% endif %}>Good</option>
-        <option value="Fair" {% if condition_filter == 'Fair' %}selected{% endif %}>Fair</option>
-      </select>
-    </div>
+      <div class="col-6 col-md-2">
+        <select name="condition" class="form-select">
+          <option value="">All Conditions</option>
+          <option value="Like New" {% if condition_filter == 'Like New' %}selected{% endif %}>Like New</option>
+          <option value="Good" {% if condition_filter == 'Good' %}selected{% endif %}>Good</option>
+          <option value="Fair" {% if condition_filter == 'Fair' %}selected{% endif %}>Fair</option>
+        </select>
+      </div>
 
-    <div>
-      <button type="submit" class="btn btn-primary">Filter</button>
-      {% if search_query or class_filter or subject_filter or condition_filter or current_status != 'all' %}
-        <a href="{{ url_for('teacher.inventory') }}" class="btn btn-outline">Reset</a>
-      {% endif %}
-    </div>
-  </form>
+      <div class="col-6 col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1">
+          {{ icon('filter') }}
+          <span>Filter</span>
+        </button>
+        {% if search_query or class_filter or subject_filter or condition_filter or current_status != 'all' %}
+          <a href="{{ url_for('teacher.inventory') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
+            {{ icon('rotate-left') }}
+            <span>Reset</span>
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Inventory Table Card -->
-<div class="table-card">
+<div class="card border shadow-sm mb-4">
   <div class="table-responsive">
-    <table class="data-table">
-      <thead>
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
         <tr>
-          <th style="width: 120px;">Book Code</th>
-          <th style="width: 60px;">Cover</th>
-          <th>Title & Author</th>
-          <th>Class & Subject</th>
-          <th>Condition</th>
-          <th>Status</th>
-          <th>Date Added</th>
-          <th style="text-align: right; width: 220px;">Actions</th>
+          <th scope="col" style="min-width: 140px;">Book Code</th>
+          <th scope="col" style="width: 60px;">Cover</th>
+          <th scope="col" style="min-width: 220px;">Title &amp; Author</th>
+          <th scope="col" style="min-width: 140px;">Class &amp; Subject</th>
+          <th scope="col" style="min-width: 120px;">Condition</th>
+          <th scope="col" style="min-width: 130px;">Status</th>
+          <th scope="col" style="min-width: 120px;">Date Added</th>
+          <th scope="col" class="text-end" style="min-width: 200px;">Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for book in books %}
         <tr>
           <td>
-            <span class="badge badge-primary font-mono" style="font-weight: 700; letter-spacing: 0.05em;">{{ book.book_code }}</span>
+            <code class="kb-code fw-bold text-primary fs-7 d-block">
+              {{ book.book_code }}
+            </code>
           </td>
           <td>
             {% if book.image_path %}
-              <img src="{{ url_for('static', filename=book.image_path) }}" alt="{{ book.title }}" class="table-thumb">
+              <img src="{{ url_for('static', filename=book.image_path) }}" alt="{{ book.title }}" class="rounded border object-fit-cover" style="width: 44px; height: 58px;">
             {% else %}
-              <div class="table-thumb" style="display: flex; align-items: center; justify-content: center; background: var(--bg-muted);">📖</div>
+              <div class="rounded border border-dashed bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary" style="width: 44px; height: 58px;">
+                {{ icon('book', extra_class='fs-5') }}
+              </div>
             {% endif %}
           </td>
           <td>
-            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem;">
+            <div class="fw-semibold text-body text-truncate mb-1" style="max-width: 240px;" title="{{ book.title }}">
               {{ book.title }}
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">
+            <div class="small text-body-secondary">
               {{ book.author or 'Unknown Author' }} &bull; {{ book.language }}
               {% if book.publisher %}&bull; {{ book.publisher }}{% endif %}
             </div>
           </td>
           <td>
-            <span class="badge badge-outline">{{ book.class_grade }}</span>
-            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            <div class="mb-1">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ book.class_grade }}</span>
+            </div>
+            <div class="small text-body-secondary">
               {{ book.subject }}
             </div>
           </td>
           <td>
             <span class="badge
-              {% if book.condition_state == 'Like New' %}badge-success
-              {% elif book.condition_state == 'Good' %}badge-primary
-              {% else %}badge-warning{% endif %}">
+              {% if book.condition_state == 'Like New' %}bg-success-subtle text-success border border-success-subtle
+              {% elif book.condition_state == 'Good' %}bg-info-subtle text-info-emphasis border border-info-subtle
+              {% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}">
               {{ book.condition_state }}
             </span>
           </td>
           <td>
             <span class="badge
-              {% if book.status == 'available' %}badge-success
-              {% elif book.status == 'reserved' %}badge-warning
-              {% elif book.status == 'handed_over' %}badge-primary
-              {% elif book.status == 'retired' %}badge-danger
-              {% else %}badge-outline{% endif %}">
+              {% if book.status == 'available' %}bg-success-subtle text-success border border-success-subtle
+              {% elif book.status == 'reserved' %}bg-warning-subtle text-warning-emphasis border border-warning-subtle
+              {% elif book.status == 'handed_over' %}bg-info-subtle text-info-emphasis border border-info-subtle
+              {% elif book.status == 'retired' %}bg-danger-subtle text-danger border border-danger-subtle
+              {% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %}">
               {{ book.status.replace('_', ' ').capitalize() }}
             </span>
           </td>
-          <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">
+          <td class="small text-body-secondary text-nowrap">
             {{ book.created_at[:10] if book.created_at else '—' }}
           </td>
-          <td style="text-align: right;">
-            <div class="btn-group-actions" style="justify-content: flex-end;">
+          <td class="text-end">
+            <div class="btn-group btn-group-sm" role="group">
               <!-- Print QR Sticker -->
               <a href="{{ url_for('teacher.book_qr_label', code_or_id=book.book_code) }}"
-                 class="btn btn-sm btn-outline" title="Print Sticker Label">
-                🏷️ QR
+                 class="btn btn-outline-secondary" title="Print Sticker Label" target="_blank">
+                {{ icon('qrcode', extra_class='me-1') }}QR
               </a>
 
               <!-- Edit Book -->
               <a href="{{ url_for('teacher.edit_book', book_id=book.id) }}"
-                 class="btn btn-sm btn-outline" title="Edit Textbook Details">
-                ✏️ Edit
+                 class="btn btn-outline-secondary" title="Edit Textbook Details">
+                {{ icon('pen-to-square', extra_class='me-1') }}Edit
               </a>
 
               <!-- Status Action (Retire or Restore) -->
               {% if book.status == 'available' %}
-                <button type="button" class="btn btn-sm btn-outline" style="color: var(--danger-text);"
+                <button type="button" class="btn btn-outline-danger" title="Retire Book"
                         onclick="openRetireModal({{ book.id }}, '{{ book.book_code }}', '{{ book.title|replace('\'', '\\\'') }}')">
-                  Retire
+                  {{ icon('box-archive', extra_class='me-1') }}Retire
                 </button>
               {% elif book.status == 'retired' %}
-                <form method="POST" action="{{ url_for('teacher.update_book_status', book_id=book.id) }}" style="display: inline;"
+                <form method="POST" action="{{ url_for('teacher.update_book_status', book_id=book.id) }}" class="d-inline"
                       onsubmit="return confirm('Restore this book back to Available status in catalogue?');">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <input type="hidden" name="new_status" value="available">
-                  <button type="submit" class="btn btn-sm btn-outline" style="color: var(--success);">
-                    Restore
+                  <button type="submit" class="btn btn-outline-success" title="Restore Book">
+                    {{ icon('rotate-left', extra_class='me-1') }}Restore
                   </button>
                 </form>
               {% elif book.status == 'reserved' %}
-                <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Reserved</span>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Reserved</span>
               {% elif book.status == 'handed_over' %}
-                <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Circulated</span>
+                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Circulated</span>
               {% endif %}
             </div>
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
-            <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">No textbooks found</div>
-            <p>Try adjusting your search criteria or add a new book to the inventory.</p>
-            <a href="{{ url_for('teacher.new_book') }}" class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">➕ Add New Book</a>
+          <td colspan="8" class="text-center py-5 text-body-secondary">
+            <div class="display-6 mb-3 text-body-tertiary">
+              {{ icon('book-open', extra_class='text-body-tertiary') }}
+            </div>
+            <h4 class="h5 fw-bold text-body mb-2">No textbooks found</h4>
+            <p class="small text-body-secondary mb-3">Try adjusting your search criteria or add a new book to the inventory.</p>
+            <a href="{{ url_for('teacher.new_book') }}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2">
+              {{ icon('plus') }}
+              <span>Add New Book</span>
+            </a>
           </td>
         </tr>
         {% endfor %}
@@ -209,78 +260,111 @@
   </div>
 
   <!-- Pagination / Results Summary -->
-  <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
+  <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
       Showing <strong>{{ books|length }}</strong> of <strong>{{ total_count }}</strong> textbooks
     </div>
     {% if total_pages > 1 %}
-    <div class="d-flex gap-1">
-      {% for p in range(1, total_pages + 1) %}
-        <a href="{{ url_for('teacher.inventory', page=p, status=current_status, q=search_query, class_grade=class_filter, subject=subject_filter, condition=condition_filter) }}"
-           class="btn btn-sm {% if p == current_page %}btn-primary{% else %}btn-outline{% endif %}" style="padding: 0.25rem 0.65rem;">
-          {{ p }}
-        </a>
-      {% endfor %}
-    </div>
+    <nav aria-label="Inventory page navigation">
+      <ul class="pagination pagination-sm mb-0">
+        {% for p in range(1, total_pages + 1) %}
+          <li class="page-item {% if p == current_page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('teacher.inventory', page=p, status=current_status, q=search_query, class_grade=class_filter, subject=subject_filter, condition=condition_filter) }}">
+              {{ p }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
     {% endif %}
   </div>
 </div>
 
 <!-- Modal: Retire Book -->
-<div id="retireModal" class="modal-overlay">
-  <div class="modal-box">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--danger-text); margin: 0;">
-        ⚠️ Retire Textbook
-      </h3>
-      <button type="button" class="btn btn-sm btn-outline" onclick="closeRetireModal()">✕</button>
+<div class="modal fade" id="retireModal" tabindex="-1" aria-labelledby="retireModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title text-danger fw-bold d-flex align-items-center gap-2" id="retireModalLabel">
+          {{ icon('triangle-exclamation') }}Retire Textbook
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeRetireModal()" aria-label="Close"></button>
+      </div>
+
+      <form id="retireForm" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="new_status" value="retired">
+
+        <div class="modal-body">
+          <p class="small text-body-secondary mb-3">
+            You are retiring textbook <strong id="retireBookCode" class="kb-code text-primary"></strong> (<span id="retireBookTitle" class="text-body fw-semibold"></span>). Retired books are removed from student discovery.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-body">Retirement Reason</label>
+            <select name="reason_preset" class="form-select form-select-sm mb-2" onchange="document.getElementById('retireReason').value = this.value;">
+              <option value="Damaged / Pages Missing / Torn Binding">Damaged / Pages Missing / Torn Binding</option>
+              <option value="Outdated Curriculum / Syllabus Replaced">Outdated Curriculum / Syllabus Replaced</option>
+              <option value="Lost / Unaccounted Copy">Lost / Unaccounted Copy</option>
+              <option value="Other">Other (Enter custom reason below)</option>
+            </select>
+            <input type="text" id="retireReason" name="reason" class="form-control"
+                   value="Damaged / Pages Missing / Torn Binding" placeholder="Specify retirement reason...">
+          </div>
+        </div>
+
+        <div class="modal-footer bg-body-tertiary">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal" onclick="closeRetireModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1">
+            {{ icon('box-archive') }}
+            <span>Confirm Retirement</span>
+          </button>
+        </div>
+      </form>
     </div>
-
-    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
-      You are retiring textbook <strong id="retireBookCode"></strong> (<span id="retireBookTitle"></span>). Retired books are removed from student discovery.
-    </p>
-
-    <form id="retireForm" method="POST" action="">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <input type="hidden" name="new_status" value="retired">
-
-      <div class="mb-3">
-        <label class="form-label" style="font-weight: 600;">Retirement Reason</label>
-        <select name="reason_preset" class="form-control mb-2" onchange="document.getElementById('retireReason').value = this.value;">
-          <option value="Damaged / Pages Missing / Torn Binding">Damaged / Pages Missing / Torn Binding</option>
-          <option value="Outdated Curriculum / Syllabus Replaced">Outdated Curriculum / Syllabus Replaced</option>
-          <option value="Lost / Unaccounted Copy">Lost / Unaccounted Copy</option>
-          <option value="Other">Other (Enter custom reason below)</option>
-        </select>
-        <input type="text" id="retireReason" name="reason" class="form-control"
-               value="Damaged / Pages Missing / Torn Binding" placeholder="Specify retirement reason...">
-      </div>
-
-      <div class="d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-outline" onclick="closeRetireModal()">Cancel</button>
-        <button type="submit" class="btn btn-sm" style="background-color: var(--danger); color: #fff;">Confirm Retirement</button>
-      </div>
-    </form>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+let bsRetireModal = null;
+
+function getBsRetireModal() {
+  const modalEl = document.getElementById('retireModal');
+  if (!modalEl) return null;
+  if (!bsRetireModal && window.bootstrap && window.bootstrap.Modal) {
+    bsRetireModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  }
+  return bsRetireModal;
+}
+
 function openRetireModal(bookId, bookCode, bookTitle) {
+  const modalEl = document.getElementById('retireModal');
   document.getElementById('retireBookCode').textContent = bookCode;
   document.getElementById('retireBookTitle').textContent = bookTitle;
   document.getElementById('retireForm').action = "{{ url_for('teacher.inventory') }}/" + bookId + "/status";
-  document.getElementById('retireModal').classList.add('show');
+
+  const bsModal = getBsRetireModal();
+  if (bsModal) {
+    bsModal.show();
+  } else if (modalEl) {
+    modalEl.classList.add('show');
+    modalEl.style.display = 'block';
+  }
 }
 
 function closeRetireModal() {
-  document.getElementById('retireModal').classList.remove('show');
+  const modalEl = document.getElementById('retireModal');
+  const bsModal = getBsRetireModal();
+  if (bsModal) {
+    bsModal.hide();
+  } else if (modalEl) {
+    modalEl.classList.remove('show');
+    modalEl.style.display = 'none';
+  }
 }
-
-// Close on backdrop click
-document.getElementById('retireModal').addEventListener('click', function(e) {
-  if (e.target === this) closeRetireModal();
-});
 </script>
 {% endblock %}

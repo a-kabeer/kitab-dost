@@ -1,176 +1,204 @@
 {% extends "teacher/base_teacher.html" %}
+{% from "macros/icons.html" import icon %}
 
 {% block title %}Handover {{ handover.handover_code }} - Audit Record - Teacher Desk{% endblock %}
 
 {% block teacher_content %}
   <!-- Breadcrumb -->
-  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-    <a href="{{ url_for('teacher.dashboard') }}" style="color: var(--text-secondary);">Dashboard</a>
-    <span> / </span>
-    <a href="{{ url_for('teacher.handovers') }}" style="color: var(--text-secondary);">Handover Ledger</a>
-    <span> / </span>
-    <span style="color: var(--text-primary); font-weight: 600;">{{ handover.handover_code }}</span>
-  </div>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('teacher.handovers') }}" class="text-decoration-none">Handover Ledger</a></li>
+      <li class="breadcrumb-item active text-truncate kb-code" aria-current="page" style="max-width: 200px;">{{ handover.handover_code }}</li>
+    </ol>
+  </nav>
 
   <!-- Header -->
-  <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-      <h1 class="dashboard-title">🤝 Physical Handover Record</h1>
-      <p class="dashboard-subtitle">
-        Official Distribution Reference: <strong>{{ handover.handover_code }}</strong> • Completed on {{ handover.handover_date }}
+      <h1 class="h3 fw-bold text-body mb-1">
+        {{ icon('handshake', extra_class='text-primary me-2') }}Physical Handover Record
+      </h1>
+      <p class="text-body-secondary mb-0 small">
+        Official Distribution Reference: <strong class="kb-code text-primary">{{ handover.handover_code }}</strong> &bull; Completed on {{ handover.handover_date }}
       </p>
     </div>
 
-    <div style="display: flex; gap: 0.75rem;">
-      <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline">
-        ← Back to Ledger
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('teacher.handovers') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        {{ icon('arrow-left') }}
+        <span>Back to Ledger</span>
       </a>
-      <a href="{{ url_for('teacher.handover_receipt', handover_id=handover.id) }}" class="btn btn-primary" target="_blank">
-        🖨️ Print Receipt
+      <a href="{{ url_for('teacher.handover_receipt', handover_id=handover.id) }}" class="btn btn-primary d-inline-flex align-items-center gap-2" target="_blank">
+        {{ icon('receipt') }}
+        <span>Print Receipt</span>
       </a>
     </div>
   </div>
 
   <!-- Two Column Layout: Book Information & Handover Audit -->
-  <div class="book-detail-wrapper" style="margin-bottom: 3rem;">
-    <!-- Left Column: Book Cover & Codes -->
-    <div class="book-detail-cover-box">
-      {% if handover.book_image %}
-      <img 
-        src="{{ url_for('static', filename=handover.book_image) }}" 
-        alt="{{ handover.book_title }} Cover" 
-        class="book-detail-cover-img"
-      >
-      {% endif %}
+  <div class="row g-4 mb-5">
+    <!-- Left Column: Book Cover & Codes Card -->
+    <div class="col-12 col-lg-4 col-xl-3">
+      <div class="card border shadow-sm sticky-top" style="top: 1.5rem;">
+        <div class="card-body p-3">
+          {% if handover.book_image %}
+          <div class="position-relative mb-3">
+            <img 
+              src="{{ url_for('static', filename=handover.book_image) }}" 
+              alt="{{ handover.book_title }} Cover" 
+              class="img-fluid rounded border w-100 object-fit-cover shadow-sm"
+              style="aspect-ratio: 3/4;"
+            >
+          </div>
+          {% else %}
+          <div class="rounded border border-dashed bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary mb-3" style="aspect-ratio: 3/4;">
+            {{ icon('book', extra_class='display-5 text-body-tertiary') }}
+          </div>
+          {% endif %}
 
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">HANDOVER REF</span>
-          <code style="font-family: monospace; font-size: 0.95rem; font-weight: 800; color: var(--primary);">
-            {{ handover.handover_code }}
-          </code>
-        </div>
+          <div class="border-top pt-3 d-flex flex-column gap-2 small">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">HANDOVER REF</span>
+              <code class="kb-code fw-bold text-primary">
+                {{ handover.handover_code }}
+              </code>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">REQUEST REF</span>
-          <code style="font-family: monospace; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">
-            {{ handover.tracking_code }}
-          </code>
-        </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">REQUEST REF</span>
+              <code class="kb-code text-body-secondary fw-bold">
+                {{ handover.tracking_code }}
+              </code>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">BOOK CODE</span>
-          <code style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: var(--primary);">
-            {{ handover.book_code }}
-          </code>
-        </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">BOOK CODE</span>
+              <code class="kb-code fw-bold text-primary">
+                {{ handover.book_code }}
+              </code>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">STATUS</span>
-          <span class="badge badge-success">✓ Completed &amp; Reused</span>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-body-secondary fw-semibold">STATUS</span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                {{ icon('check', extra_class='small') }}
+                <span>Completed &amp; Reused</span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Right Column: Full Transaction & Recipient Audit -->
-    <div class="book-detail-info">
-      <!-- Book Header -->
-      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-          <span class="badge badge-primary">{{ handover.book_class }}</span>
-          <span class="badge badge-secondary">{{ handover.book_subject }}</span>
-          <span class="badge badge-secondary">{{ handover.book_condition }}</span>
+    <div class="col-12 col-lg-8 col-xl-9">
+      <div class="d-flex flex-column gap-4">
+        <!-- Book Header Card -->
+        <div class="card border shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-7">{{ handover.book_class }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ handover.book_subject }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ handover.book_condition }}</span>
+            </div>
+
+            <h2 class="h3 fw-bold text-body mb-2">
+              {{ handover.book_title }}
+            </h2>
+
+            <p class="text-body-secondary mb-0">
+              Author: <strong class="text-body">{{ handover.book_author or 'Curriculum Board' }}</strong>
+            </p>
+          </div>
         </div>
 
-        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem;">
-          {{ handover.book_title }}
-        </h2>
-
-        <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">
-          Author: <strong>{{ handover.book_author or 'Curriculum Board' }}</strong>
-        </p>
-      </div>
-
-      <!-- Student Recipient Information -->
-      <div style="border-bottom: 1px solid var(--border-color); padding: 1.25rem 0;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.85rem;">
-          👤 Student Recipient Details (Verified Identity)
-        </h3>
-
-        <div class="meta-table">
-          <div class="meta-row">
-            <span class="meta-label">Student Name:</span>
-            <span class="meta-value"><strong>{{ handover.recipient_name }}</strong></span>
+        <!-- Student Recipient Information Card -->
+        <div class="card border shadow-sm border-info-subtle">
+          <div class="card-header bg-info-subtle py-3 px-4 d-flex align-items-center justify-content-between">
+            <h3 class="h6 fw-bold text-info-emphasis text-uppercase mb-0 tracking-wide fs-7 d-flex align-items-center gap-2">
+              {{ icon('user-check') }}Student Recipient Details (Verified Identity)
+            </h3>
+            <span class="badge bg-info text-white">Staff Only</span>
           </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">STUDENT NAME</span>
+                <strong class="text-body fs-6">{{ handover.recipient_name }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">CLASS &amp; SECTION</span>
+                <strong class="text-body fs-6">{{ handover.recipient_class }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">SCHOOL ROLL NO.</span>
+                <strong class="text-body fs-6 kb-code">{{ handover.recipient_roll_no }}</strong>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <span class="small text-body-secondary d-block fw-semibold">PARENT / PHONE</span>
+                <strong class="text-body fs-6 kb-code">{{ icon('phone', extra_class='small me-1') }}{{ handover.recipient_contact or 'Not provided' }}</strong>
+              </div>
 
-          <div class="meta-row">
-            <span class="meta-label">Class &amp; Section:</span>
-            <span class="meta-value"><strong>{{ handover.recipient_class }}</strong></span>
+              {% if handover.request_notes %}
+              <div class="col-12 pt-2 border-top">
+                <span class="small text-body-secondary d-block fw-semibold mb-1">STUDENT REQUEST NOTE</span>
+                <span class="small text-body fst-italic">"{{ handover.request_notes }}"</span>
+              </div>
+              {% endif %}
+            </div>
           </div>
-
-          <div class="meta-row">
-            <span class="meta-label">School Roll No.:</span>
-            <span class="meta-value"><code>{{ handover.recipient_roll_no }}</code></span>
-          </div>
-
-          <div class="meta-row">
-            <span class="meta-label">Parent / Contact Phone:</span>
-            <span class="meta-value">{{ handover.recipient_contact or 'Not provided' }}</span>
-          </div>
-
-          {% if handover.request_notes %}
-          <div class="meta-row">
-            <span class="meta-label">Student Request Note:</span>
-            <span class="meta-value" style="font-style: italic;">"{{ handover.request_notes }}"</span>
-          </div>
-          {% endif %}
         </div>
-      </div>
 
-      <!-- Distribution & Verification Details -->
-      <div style="border-bottom: 1px solid var(--border-color); padding: 1.25rem 0;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.85rem;">
-          📝 Handover Confirmation Audit
-        </h3>
-
-        <div class="meta-table">
-          <div class="meta-row">
-            <span class="meta-label">Confirming Teacher:</span>
-            <span class="meta-value"><strong>{{ handover.confirming_teacher_name or handover.teacher_name }}</strong></span>
+        <!-- Distribution & Verification Details Card -->
+        <div class="card border shadow-sm">
+          <div class="card-header bg-body-tertiary py-3 px-4">
+            <h3 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
+              {{ icon('clipboard-check', extra_class='text-primary') }}Handover Confirmation Audit
+            </h3>
           </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-12 col-sm-6">
+                <span class="small text-body-secondary d-block fw-semibold">CONFIRMING TEACHER</span>
+                <strong class="text-body fs-6">{{ handover.confirming_teacher_name or handover.teacher_name }}</strong>
+              </div>
+              <div class="col-12 col-sm-6">
+                <span class="small text-body-secondary d-block fw-semibold">TIMESTAMP</span>
+                <span class="small text-body kb-code">{{ handover.handover_date }}</span>
+              </div>
+              <div class="col-12 col-sm-6">
+                <span class="small text-body-secondary d-block fw-semibold">IDENTITY CHECK</span>
+                <span class="small text-success fw-semibold d-inline-flex align-items-center gap-1">
+                  {{ icon('circle-check') }}Verified against school records
+                </span>
+              </div>
+              <div class="col-12 col-sm-6">
+                <span class="small text-body-secondary d-block fw-semibold">PHYSICAL CUSTODY</span>
+                <span class="small text-success fw-semibold d-inline-flex align-items-center gap-1">
+                  {{ icon('circle-check') }}Physically inspected and distributed
+                </span>
+              </div>
 
-          <div class="meta-row">
-            <span class="meta-label">Timestamp:</span>
-            <span class="meta-value">{{ handover.handover_date }}</span>
+              {% if handover.remarks %}
+              <div class="col-12 pt-2 border-top">
+                <span class="small text-body-secondary d-block fw-semibold mb-1">HANDOVER REMARKS</span>
+                <span class="small text-body">{{ handover.remarks }}</span>
+              </div>
+              {% endif %}
+            </div>
           </div>
-
-          <div class="meta-row">
-            <span class="meta-label">Identity Check:</span>
-            <span class="meta-value" style="color: var(--success-text); font-weight: 600;">✓ Verified against school records</span>
-          </div>
-
-          <div class="meta-row">
-            <span class="meta-label">Physical Custody:</span>
-            <span class="meta-value" style="color: var(--success-text); font-weight: 600;">✓ Physically inspected and distributed</span>
-          </div>
-
-          {% if handover.remarks %}
-          <div class="meta-row">
-            <span class="meta-label">Handover Remarks:</span>
-            <span class="meta-value">{{ handover.remarks }}</span>
-          </div>
-          {% endif %}
         </div>
-      </div>
 
-      <!-- Immutable Audit Notice -->
-      <div style="background-color: var(--bg-muted); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 0.75rem; align-items: center;">
-        <span style="font-size: 1.25rem;">🔒</span>
-        <div>
-          <strong>Immutable Record:</strong> This physical handover transaction has been permanently recorded in the school circulation ledger. To preserve data integrity and audit compliance, completed handovers cannot be edited, rolled back, or deleted.
+        <!-- Immutable Audit Notice -->
+        <div class="alert alert-secondary border d-flex align-items-center gap-3 mb-0" role="alert">
+          {{ icon('lock', extra_class='fs-4 text-body-secondary flex-shrink-0') }}
+          <div class="small">
+            <strong>Immutable Record:</strong> This physical handover transaction has been permanently recorded in the school circulation ledger. To preserve data integrity and audit compliance, completed handovers cannot be edited, rolled back, or deleted.
+          </div>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
 {% endblock %}

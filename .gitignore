@@ -37,3 +37,4 @@ app/static/uploads/qr/*
 Thumbs.db
 .vscode/
 .idea/
+*.rar

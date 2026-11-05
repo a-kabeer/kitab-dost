@@ -229,3 +229,30 @@ This document serves as the central, page-by-page register of all user-confirmed
 | `rtl_sindhi_catalogue_desktop.png` | 1440x900 | Sindhi / Light (RTL) | Sindhi RTL book catalogue with `.kb-code` bidi isolation | **VERIFIED** |
 | `theme_dark_home_desktop.png` | 1440x900 | English / Dark | Public homepage in high-contrast Dark theme | **VERIFIED** |
 | `theme_dark_dashboard_desktop.png` | 1440x900 | English / Dark | Teacher dashboard in high-contrast Dark theme | **VERIFIED** |
+
+---
+
+## 8. Stage 0 Post-Acceptance Correction & Polish Issue Register
+
+This section tracks visual, localization, and responsive defects identified during the full-page visual acceptance audit of the 36 baseline screenshots (`docs/ui-redesign-evidence/`).
+
+### Defect Tracking Matrix
+
+| Issue ID | Severity | Category | Description | Scope / Affected Files | Status |
+|---|---|---|---|---|---|
+| `DEF-LOC-01` | P0 | Localization | Incomplete template localization: ~80% of interface text hardcoded in English, missing `_t()` wrappers. | All student & teacher templates, `en.json`, `ur.json`, `sd.json` | **OPEN** |
+| `DEF-LOC-02` | P0 | Localization / Bidi | RTL punctuation inversion and unisolated mixed English/Urdu codes. Missing `<bdi>` wrappers. | All templates rendering codes or mixed text | **OPEN** |
+| `DEF-IMG-01` | P0 | Assets / Images | Missing subject SVGs in `app/static/img/covers/` and lack of `onerror` fallback on `<img>` tags. | `static/img/covers/`, `donation_service.py`, all templates | **OPEN** |
+| `DEF-IMG-02` | P0 | Visual / Assets | Cluttered `placeholder.svg` artwork reducing visual clarity when used as default fallback. | `app/static/img/covers/placeholder.svg` | **OPEN** |
+| `DEF-TAB-01` | P0 | Responsive / Tables | Teacher management tables horizontally unreadable and broken on screens <768px. | `donations.html`, `requests.html`, `inventory.html`, `handovers.html` | **OPEN** |
+| `DEF-TAB-02` | P0 | Layout / Desktop | Teacher action columns clipped or requiring horizontal scroll on desktop viewports. | Teacher table templates & CSS | **OPEN** |
+| `DEF-NAV-01` | P1 | Navigation / Mobile | Cluttered mobile topbar in Teacher Portal displaying 6+ controls instead of clean drawer structure. | `app/templates/teacher/base_teacher.html` | **OPEN** |
+| `DEF-NAV-02` | P1 | Navigation / Desktop | Student desktop "Teacher Sign In" wrapping onto multiple lines on mid-desktop viewports. | `app/templates/base.html` | **OPEN** |
+| `DEF-CAT-01` | P1 | Layout / Mobile | Extreme mobile catalogue height (34,402px) due to stacked vertical cards. Needs horizontal layout. | `app/templates/student/catalogue.html` | **OPEN** |
+| `DEF-CAT-02` | P1 | Layout / Mobile | Filter controls occupy excessive vertical screen real estate on mobile catalogue. | `app/templates/student/catalogue.html` | **OPEN** |
+| `DEF-DET-01` | P1 | Layout / Mobile | Book cover on mobile book detail takes up entire viewport height before metadata is visible. | `app/templates/student/book_detail.html` | **OPEN** |
+| `DEF-TAB-03` | P2 | Navigation / UI | Tab navigation (`.nav-pills`) wrapping or clipping on narrow viewports in management desks. | `donations.html`, `requests.html`, `inventory.html`, `settings.html` | **OPEN** |
+| `DEF-SET-01` | P2 | Form / UI | Settings page tabs and backup tables overcrowded on mobile devices. | `app/templates/teacher/settings.html` | **OPEN** |
+| `DEF-HERO-01` | P2 | Visual / Polish | Student homepage hero vertical rhythm and CTA touch target spacing on mobile. | `app/templates/student/index.html` | **OPEN** |
+| `DEF-KPI-01` | P2 | Layout / Polish | Teacher dashboard KPI cards stacking unevenly on mid-tier mobile viewports. | `app/templates/teacher/dashboard.html` | **OPEN** |
+

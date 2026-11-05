@@ -1,0 +1,4 @@
+{# Central Reusable Font Awesome 7.3.1 Icon Macro for Kitaab Bank #}
+{% macro icon(name, style='solid', extra_class='', title='', aria_hidden=true) -%}
+  <i class="fa-{{ style }} fa-{{ name }}{% if extra_class %} {{ extra_class }}{% endif %}"{% if aria_hidden %} aria-hidden="true"{% endif %}{% if title %} title="{{ title }}"{% endif %}></i>
+{%- endmacro %}

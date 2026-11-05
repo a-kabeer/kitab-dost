@@ -22,7 +22,7 @@ This document serves as the central, page-by-page register of all user-confirmed
 
 | Issue ID | Page / Component | Severity | Resolution Summary | Validation Evidence | Status |
 |---|---|---|---|---|---|
-| **ISSUE-NAV-01** | Global Navigation (Desktop Header) | **Critical (P0)** | Implemented Bootstrap 5.3.8 `navbar-expand-xxl` (1400px breakpoint). Below 1400px, navigation cleanly collapses into `#studentNavOffcanvas` drawer. Zero horizontal text-wrapping between 1024px and 1366px in EN, UR, SD. | Commit `d277958`, verified via `tests/test_browser_ui_redesign.py`. | **RESOLVED & VERIFIED** |
+| **ISSUE-NAV-01** | Global Navigation (Desktop Header) | **Critical (P0)** | Implemented Bootstrap 5.3.8 `navbar-expand-xxl` (1400px breakpoint) with `container-fluid px-3 px-xxl-4` and `.text-nowrap` nav-links. Below 1400px, navigation cleanly collapses into `#studentNavOffcanvas` drawer. Zero horizontal text-wrapping and zero overflow across 1024px, 1280px, 1366px, 1400px, 1440px in EN, UR, SD. | Commits `d277958`, visual audit `scripts/run_visual_acceptance_audit.py`, verified via `tests/test_browser_ui_redesign.py`. | **RESOLVED & VERIFIED** |
 | **ISSUE-NAV-02** | Global Navigation (Mobile Navbar) | **Critical (P0)** | Replaced custom dropdown menu with accessible Bootstrap 5.3 Offcanvas drawer (`#studentNavOffcanvas`), full backdrop dismissal, 48px touch targets, and locale/theme selector footer. | Commit `d277958`, verified via `tests/test_browser_ui_redesign.py`. | **RESOLVED & VERIFIED** |
 | **ISSUE-CSS-01** | Global Stylesheets (`components.css`, `main.css`, `student.css`, `teacher.css`) | **Major (P1)** | Replaced over 39 KB of redundant bespoke CSS with native Bootstrap 5.3.8 utility and component classes (`container`, `row`, `col-*`, `btn`, `card`, `badge`, `alert`, `table`, `modal`). | Commits `07355ac`, `d277958`, `e940d4e`. All 137 tests passing. | **RESOLVED & VERIFIED** |
 | **ISSUE-ICO-01** | Universal Iconography (All Portals & Templates) | **Moderate (P2)** | Vendored Font Awesome 7.3.1 Free locally (Zero CDN). Implemented central Jinja icon macro `{{ icon(name) }}`. Replaced informal emojis across all 33 templates with consistent SVGs/webfonts. | Commit `07355ac`, `docs/UI_UX_ICON_MAP.md`. | **RESOLVED & VERIFIED** |
@@ -186,3 +186,46 @@ This document serves as the central, page-by-page register of all user-confirmed
 - **Moderate (P2) Issues:** **14 / 14 RESOLVED**
 - **Minor (P3) Issues:** **3 / 3 RESOLVED**
 - **Full Test Suite:** **137 / 137 tests passing (OK)**
+
+---
+
+## 7. Visual Acceptance & Evidence Register (`docs/ui-redesign-evidence/`)
+
+| Screenshot File | Viewport | Locale / Theme | Scope / Description | Status |
+|---|---|---|---|---|
+| `student_home_desktop.png` | 1440x900 | English / Light | Public homepage with hero, search, KPIs, and uniform 3:4 book cards | **VERIFIED** |
+| `student_home_mobile.png` | 390x844 | English / Light | Public homepage mobile view, zero horizontal overflow | **VERIFIED** |
+| `student_catalogue_desktop.png` | 1440x900 | English / Light | Discovery catalogue with filter toolbar and active badge pills | **VERIFIED** |
+| `student_catalogue_mobile.png` | 390x844 | English / Light | Catalogue mobile grid with responsive filters | **VERIFIED** |
+| `student_book_detail_desktop.png` | 1440x900 | English / Light | Two-column book detail with official code & QR labels | **VERIFIED** |
+| `student_book_detail_mobile.png` | 390x844 | English / Light | Responsive single-column stacked book detail | **VERIFIED** |
+| `student_donate_desktop.png` | 1440x900 | English / Light | Book donation desk with styled file upload | **VERIFIED** |
+| `student_donate_mobile.png` | 390x844 | English / Light | Mobile donation form with touch-friendly fields | **VERIFIED** |
+| `student_request_desktop.png` | 1440x900 | English / Light | Student book request form with textbook preview card | **VERIFIED** |
+| `student_request_mobile.png` | 390x844 | English / Light | Mobile book request form with input formatting | **VERIFIED** |
+| `student_track_desktop.png` | 1440x900 | English / Light | Request tracking desk with status callout & book summary | **VERIFIED** |
+| `student_track_mobile.png` | 390x844 | English / Light | Mobile request tracking with masked student identity | **VERIFIED** |
+| `student_scan_desktop.png` | 1440x900 | English / Light | Dual-mode QR camera and manual lookup desk | **VERIFIED** |
+| `student_scan_mobile.png` | 390x844 | English / Light | Mobile QR scan screen with fallback input | **VERIFIED** |
+| `nav_offcanvas_mobile_open.png` | 390x844 | English / Light | Student mobile offcanvas drawer (<1400px) open | **VERIFIED** |
+| `teacher_dashboard_desktop.png` | 1440x900 | English / Light | Teacher executive desk with 6 KPIs and progress bars | **VERIFIED** |
+| `teacher_dashboard_mobile.png` | 390x844 | English / Light | Mobile teacher dashboard with compact action cards | **VERIFIED** |
+| `teacher_donations_desktop.png` | 1440x900 | English / Light | Donation queue with filter pills and modal reject | **VERIFIED** |
+| `teacher_donations_mobile.png` | 390x844 | English / Light | Mobile responsive donation review queue | **VERIFIED** |
+| `teacher_requests_desktop.png` | 1440x900 | English / Light | Student request ledger with status filtering | **VERIFIED** |
+| `teacher_requests_mobile.png` | 390x844 | English / Light | Mobile student request ledger | **VERIFIED** |
+| `teacher_handovers_desktop.png` | 1440x900 | English / Light | Physical handover verification ledger | **VERIFIED** |
+| `teacher_handovers_mobile.png` | 390x844 | English / Light | Mobile physical handover ledger | **VERIFIED** |
+| `teacher_inventory_desktop.png` | 1440x900 | English / Light | Textbook inventory with covers and retirement actions | **VERIFIED** |
+| `teacher_inventory_mobile.png` | 390x844 | English / Light | Mobile textbook inventory table | **VERIFIED** |
+| `teacher_reports_desktop.png` | 1440x900 | English / Light | Analytical reports with circulation matrix and CSV export | **VERIFIED** |
+| `teacher_reports_mobile.png` | 390x844 | English / Light | Mobile reports and statistics breakdown | **VERIFIED** |
+| `teacher_settings_desktop.png` | 1440x900 | English / Light | Teacher settings with 4 tabs and `#confirmDemoBox` | **VERIFIED** |
+| `teacher_settings_mobile.png` | 390x844 | English / Light | Mobile teacher settings and backup catalog | **VERIFIED** |
+| `teacher_nav_offcanvas_mobile_open.png` | 390x844 | English / Light | Teacher mobile sidebar offcanvas drawer open (<992px) | **VERIFIED** |
+| `rtl_urdu_home_desktop.png` | 1440x900 | Urdu / Light (RTL) | Urdu RTL homepage with Nastaliq typography | **VERIFIED** |
+| `rtl_urdu_dashboard_desktop.png` | 1440x900 | Urdu / Light (RTL) | Teacher dashboard rendered in Urdu RTL | **VERIFIED** |
+| `rtl_sindhi_home_desktop.png` | 1440x900 | Sindhi / Light (RTL) | Sindhi RTL homepage with native typography | **VERIFIED** |
+| `rtl_sindhi_catalogue_desktop.png` | 1440x900 | Sindhi / Light (RTL) | Sindhi RTL book catalogue with `.kb-code` bidi isolation | **VERIFIED** |
+| `theme_dark_home_desktop.png` | 1440x900 | English / Dark | Public homepage in high-contrast Dark theme | **VERIFIED** |
+| `theme_dark_dashboard_desktop.png` | 1440x900 | English / Dark | Teacher dashboard in high-contrast Dark theme | **VERIFIED** |

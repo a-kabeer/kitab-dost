@@ -52,9 +52,9 @@
   <!-- Top Navigation Header -->
   <header class="sticky-top bg-body border-bottom shadow-xs">
     <nav class="navbar navbar-expand-xxl py-2" aria-label="Main Navigation">
-      <div class="container-xxl">
+      <div class="container-fluid px-3 px-xxl-4">
         <!-- Brand -->
-        <a href="{{ url_for('student.index') }}" class="navbar-brand d-flex align-items-center gap-2 me-3 text-decoration-none">
+        <a href="{{ url_for('student.index') }}" class="navbar-brand d-flex align-items-center gap-2 me-2 text-decoration-none">
           <div class="brand-logo-icon bg-primary text-white rounded-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 2.5rem; height: 2.5rem; font-size: 1.25rem;">
             {{ icon('book-open-reader') }}
           </div>
@@ -66,39 +66,39 @@
 
         <!-- Desktop Navigation Links (>= xxl, 1400px - completely eliminates horizontal wrapping) -->
         <div class="collapse navbar-collapse d-none d-xxl-flex justify-content-center" id="desktopNavbarNav">
-          <ul class="navbar-nav mx-auto gap-1">
+          <ul class="navbar-nav mx-auto gap-1" style="font-size: 0.9375rem;">
             <li class="nav-item">
-              <a href="{{ url_for('student.index') }}" class="nav-link px-3 rounded-2 d-flex align-items-center gap-2 {% if request.endpoint == 'student.index' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
+              <a href="{{ url_for('student.index') }}" class="nav-link px-2 px-xxl-3 rounded-2 text-nowrap d-flex align-items-center gap-1 gap-xxl-2 {% if request.endpoint == 'student.index' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
                 {{ icon('house') }}
                 <span>{{ _t('nav_home', 'Home') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ url_for('student.catalogue') }}" class="nav-link px-3 rounded-2 d-flex align-items-center gap-2 {% if request.endpoint == 'student.catalogue' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
+              <a href="{{ url_for('student.catalogue') }}" class="nav-link px-2 px-xxl-3 rounded-2 text-nowrap d-flex align-items-center gap-1 gap-xxl-2 {% if request.endpoint == 'student.catalogue' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
                 {{ icon('book-bookmark') }}
                 <span>{{ _t('nav_catalogue', 'Browse Books') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ url_for('student.donate') }}" class="nav-link px-3 rounded-2 d-flex align-items-center gap-2 {% if request.endpoint == 'student.donate' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
+              <a href="{{ url_for('student.donate') }}" class="nav-link px-2 px-xxl-3 rounded-2 text-nowrap d-flex align-items-center gap-1 gap-xxl-2 {% if request.endpoint == 'student.donate' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
                 {{ icon('hand-holding-heart') }}
                 <span>{{ _t('nav_donate', 'Donate a Book') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ url_for('student.track') }}" class="nav-link px-3 rounded-2 d-flex align-items-center gap-2 {% if request.endpoint == 'student.track' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
+              <a href="{{ url_for('student.track') }}" class="nav-link px-2 px-xxl-3 rounded-2 text-nowrap d-flex align-items-center gap-1 gap-xxl-2 {% if request.endpoint == 'student.track' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
                 {{ icon('route') }}
                 <span>{{ _t('nav_track', 'Track Request') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ url_for('student.scan') }}" class="nav-link px-3 rounded-2 d-flex align-items-center gap-2 {% if request.endpoint == 'student.scan' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
+              <a href="{{ url_for('student.scan') }}" class="nav-link px-2 px-xxl-3 rounded-2 text-nowrap d-flex align-items-center gap-1 gap-xxl-2 {% if request.endpoint == 'student.scan' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
                 {{ icon('qrcode') }}
                 <span>{{ _t('nav_scan', 'Scan QR') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ url_for('student.about') }}" class="nav-link px-3 rounded-2 d-flex align-items-center gap-2 {% if request.endpoint == 'student.about' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
+              <a href="{{ url_for('student.about') }}" class="nav-link px-2 px-xxl-3 rounded-2 text-nowrap d-flex align-items-center gap-1 gap-xxl-2 {% if request.endpoint == 'student.about' %}active fw-semibold text-primary bg-primary-subtle{% endif %}">
                 {{ icon('circle-info') }}
                 <span>{{ _t('nav_about', 'About') }}</span>
               </a>

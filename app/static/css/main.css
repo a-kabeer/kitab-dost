@@ -1,54 +1,71 @@
 /* ==========================================================================
    Kitaab Bank - Main Stylesheet & Design System Tokens
-   Zero external dependencies. 100% Offline-compatible.
+   Bootstrap 5.3.8 Coordinated Architecture. 100% Offline-compatible.
    ========================================================================== */
 
-:root {
-  /* Color Palette - Light Mode (Default) */
-  --bg-app: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #ffffff;
-  --bg-muted: #f1f5f9;
-  --bg-subtle: #e2e8f0;
+:root, [data-bs-theme="light"], [data-theme="light"] {
+  /* Brand Core (Educational Blue & Teal) */
+  --kb-primary: #0284c7;
+  --kb-primary-hover: #0369a1;
+  --kb-primary-subtle: #e0f2fe;
+  --kb-primary-border: #bae6fd;
+  --kb-primary-text: #0369a1;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-inverse: #ffffff;
+  --kb-accent: #0d9488;
+  --kb-accent-hover: #0f766e;
+  --kb-accent-subtle: #ccfbf1;
 
-  --border-color: #e2e8f0;
-  --border-subtle: #cbd5e1;
-  --border-strong: #94a3b8;
+  /* Bootstrap 5.3 Variable Overrides */
+  --bs-primary: #0284c7;
+  --bs-primary-rgb: 2, 132, 199;
+  --bs-primary-hover: #0369a1;
+  --bs-primary-bg-subtle: #e0f2fe;
+  --bs-primary-border-subtle: #bae6fd;
+  --bs-primary-text-emphasis: #0369a1;
 
-  /* Brand Accents (Educational Blue & Teal) */
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
-  --primary-light: #e0f2fe;
-  --primary-border: #bae6fd;
-  --primary-text: #0369a1;
+  --bs-teal: #0d9488;
+  --bs-teal-rgb: 13, 148, 136;
 
-  --accent: #0d9488;
-  --accent-hover: #0f766e;
-  --accent-light: #ccfbf1;
+  /* Surfaces & Backgrounds */
+  --kb-bg-body: #f8fafc;
+  --kb-bg-surface: #ffffff;
+  --kb-bg-surface-elevated: #ffffff;
+  --kb-bg-muted: #f1f5f9;
+  --kb-bg-subtle: #e2e8f0;
+
+  --bs-body-bg: #f8fafc;
+  --bs-body-color: #0f172a;
+
+  /* Text & Hierarchy */
+  --kb-text-primary: #0f172a;
+  --kb-text-secondary: #475569;
+  --kb-text-muted: #64748b;
+  --kb-text-inverse: #ffffff;
+
+  /* Borders & Dividers */
+  --kb-border: #e2e8f0;
+  --kb-border-subtle: #cbd5e1;
+  --kb-border-strong: #94a3b8;
+  --bs-border-color: #e2e8f0;
 
   /* Semantic Alerts */
-  --success: #16a34a;
-  --success-bg: #dcfce7;
-  --success-text: #15803d;
-  --warning: #d97706;
-  --warning-bg: #fef3c7;
-  --warning-text: #b45309;
-  --danger: #dc2626;
-  --danger-bg: #fee2e2;
-  --danger-text: #b91c1c;
+  --kb-success: #16a34a;
+  --kb-success-subtle: #dcfce7;
+  --kb-success-text: #15803d;
+  --kb-warning: #d97706;
+  --kb-warning-subtle: #fef3c7;
+  --kb-warning-text: #b45309;
+  --kb-danger: #dc2626;
+  --kb-danger-subtle: #fee2e2;
+  --kb-danger-text: #b91c1c;
 
   /* Shadows & Elevation */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --kb-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --kb-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --kb-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
 
   /* Typography */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-urdu: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", "Arabic Typesetting", Tahoma, sans-serif;
   --line-height-normal: 1.5;
 
@@ -57,7 +74,7 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-full: 9999px;
-  --container-max-width: 1200px;
+  --container-max-width: 1320px;
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
 }
@@ -65,117 +82,117 @@
 /* ==========================================================================
    Dark Mode Overrides
    ========================================================================== */
-[data-theme="dark"] {
-  --bg-app: #090d16;
-  --bg-surface: #111827;
-  --bg-surface-elevated: #1f2937;
-  --bg-muted: #1e293b;
-  --bg-subtle: #334155;
+[data-bs-theme="dark"], [data-theme="dark"] {
+  --kb-primary: #38bdf8;
+  --kb-primary-hover: #7dd3fc;
+  --kb-primary-subtle: #082f49;
+  --kb-primary-border: #075985;
+  --kb-primary-text: #bae6fd;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-inverse: #0f172a;
+  --kb-accent: #2dd4bf;
+  --kb-accent-hover: #5eead4;
+  --kb-accent-subtle: #134e4a;
 
-  --border-color: #1e293b;
-  --border-subtle: #334155;
-  --border-strong: #475569;
+  --bs-primary: #38bdf8;
+  --bs-primary-rgb: 56, 189, 248;
+  --bs-primary-hover: #7dd3fc;
+  --bs-primary-bg-subtle: #082f49;
+  --bs-primary-border-subtle: #075985;
+  --bs-primary-text-emphasis: #bae6fd;
 
-  --primary: #38bdf8;
-  --primary-hover: #7dd3fc;
-  --primary-light: #082f49;
-  --primary-border: #075985;
-  --primary-text: #bae6fd;
+  --kb-bg-body: #090d16;
+  --kb-bg-surface: #111827;
+  --kb-bg-surface-elevated: #1f2937;
+  --kb-bg-muted: #1e293b;
+  --kb-bg-subtle: #334155;
 
-  --accent: #2dd4bf;
-  --accent-hover: #5eead4;
-  --accent-light: #134e4a;
+  --bs-body-bg: #090d16;
+  --bs-body-color: #f8fafc;
 
-  --success: #22c55e;
-  --success-bg: #052e16;
-  --success-text: #86efac;
-  --warning: #f59e0b;
-  --warning-bg: #451a03;
-  --warning-text: #fcd34d;
-  --danger: #ef4444;
-  --danger-bg: #450a0a;
-  --danger-text: #fca5a5;
+  --kb-text-primary: #f8fafc;
+  --kb-text-secondary: #cbd5e1;
+  --kb-text-muted: #94a3b8;
+  --kb-text-inverse: #0f172a;
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --kb-border: #1e293b;
+  --kb-border-subtle: #334155;
+  --kb-border-strong: #475569;
+  --bs-border-color: #1e293b;
+
+  --kb-success: #22c55e;
+  --kb-success-subtle: #052e16;
+  --kb-success-text: #86efac;
+  --kb-warning: #f59e0b;
+  --kb-warning-subtle: #451a03;
+  --kb-warning-text: #fcd34d;
+  --kb-danger: #ef4444;
+  --kb-danger-subtle: #450a0a;
+  --kb-danger-text: #fca5a5;
+
+  --kb-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --kb-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35);
+  --kb-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.45);
 }
 
 /* Base Reset & Document Styles */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 html {
   font-size: 16px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  overflow-x: hidden;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-app);
-  color: var(--text-primary);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
   line-height: var(--line-height-normal);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  transition: background-color var(--transition-normal), color var(--transition-normal);
-  overflow-x: hidden;
-}
-
-a {
-  color: var(--primary);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-a:hover {
-  color: var(--primary-hover);
-}
-
-img, svg {
-  max-width: 100%;
-  display: block;
-}
-
-/* Layout Container */
-.container {
-  width: 100%;
-  max-width: var(--container-max-width);
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
 }
 
 .main-content {
-  flex: 1;
-  padding-top: 1.5rem;
-  padding-bottom: 3rem;
+  flex: 1 0 auto;
 }
 
-/* Utility Classes */
-.text-center { text-align: center; }
-.text-muted { color: var(--text-muted); }
-.text-bold { font-weight: 600; }
-.d-flex { display: flex; }
-.align-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-1 { gap: 0.5rem; }
-.gap-2 { gap: 1rem; }
-.gap-3 { gap: 1.5rem; }
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-3 { margin-top: 1.5rem; }
-.mb-1 { margin-bottom: 0.5rem; }
-.mb-2 { margin-bottom: 1rem; }
-.mb-3 { margin-bottom: 1.5rem; }
+/* Strict Bidirectional Isolation for Technical Codes */
+.kb-code,
+.book-code,
+.tracking-code,
+.handover-code,
+.donation-code,
+.font-mono {
+  direction: ltr !important;
+  display: inline-block;
+  unicode-bidi: isolate;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Brand Logo Icon Badge */
+.brand-logo-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  background: linear-gradient(135deg, var(--kb-primary), var(--kb-accent));
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: var(--kb-shadow-sm);
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--kb-text-primary);
+}
+
+.brand-subtitle {
+  font-size: 0.725rem;
+  font-weight: 500;
+  color: var(--kb-text-muted);
+}

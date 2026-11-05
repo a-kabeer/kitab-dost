@@ -1,7 +1,7 @@
 /**
  * Kitaab Bank - Zero-FOUC Theme Management Engine
  * Supports: Light, Dark, System Default
- * Fully offline, zero dependencies.
+ * Fully offline, zero dependencies. Coordinated with Bootstrap 5.3 data-bs-theme.
  */
 
 (function () {
@@ -24,20 +24,20 @@
   function applyTheme(preference) {
     const activeTheme = resolveTheme(preference);
     document.documentElement.setAttribute('data-theme', activeTheme);
+    document.documentElement.setAttribute('data-bs-theme', activeTheme);
     document.documentElement.setAttribute('data-theme-preference', preference);
     localStorage.setItem(STORAGE_KEY, preference);
     updateUI(preference, activeTheme);
   }
 
   function updateUI(preference, activeTheme) {
-    // Update theme toggle button text/icon if present
     const labelEls = document.querySelectorAll('[data-theme-label]');
     const iconEls = document.querySelectorAll('[data-theme-icon]');
 
     const icons = {
-      light: '☀️',
-      dark: '🌙',
-      system: '💻'
+      light: '<i class="fa-solid fa-sun text-warning" aria-hidden="true"></i>',
+      dark: '<i class="fa-solid fa-moon text-info" aria-hidden="true"></i>',
+      system: '<i class="fa-solid fa-desktop text-secondary" aria-hidden="true"></i>'
     };
 
     const labels = {
@@ -47,7 +47,7 @@
     };
 
     iconEls.forEach(el => {
-      el.textContent = icons[preference] || '☀️';
+      el.innerHTML = icons[preference] || icons.light;
     });
 
     labelEls.forEach(el => {
@@ -70,33 +70,35 @@
     const currentPref = getSavedPreference();
     applyTheme(currentPref);
 
-    // Toggle dropdown open/close
-    document.querySelectorAll('[data-theme-toggle]').forEach(toggleBtn => {
-      toggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const menu = toggleBtn.closest('.theme-selector-wrap').querySelector('.theme-dropdown-menu');
-        if (menu) {
-          menu.classList.toggle('show');
-        }
-      });
-    });
+    // Theme selection buttons (delegated for dynamically created or offcanvas buttons)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-theme-set]');
+      if (!btn) return;
+      e.preventDefault();
+      const targetTheme = btn.getAttribute('data-theme-set');
+      applyTheme(targetTheme);
 
-    // Close theme dropdown on outside click
-    document.addEventListener('click', () => {
+      // Close legacy menus if open
       document.querySelectorAll('.theme-dropdown-menu.show').forEach(menu => {
         menu.classList.remove('show');
       });
     });
 
-    // Theme selection buttons
-    document.querySelectorAll('[data-theme-set]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetTheme = btn.getAttribute('data-theme-set');
-        applyTheme(targetTheme);
-        document.querySelectorAll('.theme-dropdown-menu.show').forEach(menu => {
-          menu.classList.remove('show');
-        });
+    // Legacy theme toggle support if present
+    document.querySelectorAll('[data-theme-toggle]').forEach(toggleBtn => {
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wrap = toggleBtn.closest('.theme-selector-wrap');
+        if (wrap) {
+          const menu = wrap.querySelector('.theme-dropdown-menu');
+          if (menu) menu.classList.toggle('show');
+        }
+      });
+    });
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.theme-dropdown-menu.show').forEach(menu => {
+        menu.classList.remove('show');
       });
     });
 

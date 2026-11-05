@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ current_lang }}" dir="{{ lang_dir }}" data-theme="light">
+<html lang="{{ current_lang }}" dir="{{ lang_dir }}" data-theme="light" data-bs-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,13 +13,20 @@
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
         document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-bs-theme', theme);
         document.documentElement.setAttribute('data-theme-preference', saved);
       } catch (e) {}
     })();
   </script>
 
-  <!-- 100% Offline Local CSS & Favicon -->
+  <!-- 100% Offline Local Assets -->
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  {% if is_rtl %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.rtl.min.css') }}">
+  {% else %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
+  {% endif %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
@@ -28,157 +35,191 @@
   {% endif %}
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100 bg-body text-body">
+  {% from 'macros/icons.html' import icon %}
+
+  {# Reusable Teacher Navigation Links Macro #}
+  {% macro teacher_nav_items() %}
+    <div class="mb-4">
+      <div class="text-uppercase small fw-bold text-body-secondary px-3 mb-2" style="font-size: 0.725rem; letter-spacing: 0.05em;">
+        Circulation & Review
+      </div>
+      <div class="nav flex-column gap-1">
+        <a href="{{ url_for('teacher.dashboard') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint == 'teacher.dashboard' %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('chart-pie') }}</span>
+          <span>Overview</span>
+        </a>
+        <a href="{{ url_for('teacher.donations') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint in ('teacher.donations', 'teacher.donation_detail') %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('inbox') }}</span>
+          <span>Donation Queue</span>
+          {% if pending_donations_count and pending_donations_count > 0 %}
+          <span class="badge bg-warning text-dark ms-auto">{{ pending_donations_count }}</span>
+          {% endif %}
+        </a>
+        <a href="{{ url_for('teacher.requests') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint in ('teacher.requests', 'teacher.request_detail') %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('clipboard-list') }}</span>
+          <span>Student Requests</span>
+          {% if pending_requests_count and pending_requests_count > 0 %}
+          <span class="badge bg-info text-dark ms-auto">{{ pending_requests_count }}</span>
+          {% endif %}
+        </a>
+        <a href="{{ url_for('teacher.handovers') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint in ('teacher.handovers', 'teacher.handover_confirm', 'teacher.handover_receipt') %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('handshake') }}</span>
+          <span>Book Handover</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <div class="text-uppercase small fw-bold text-body-secondary px-3 mb-2" style="font-size: 0.725rem; letter-spacing: 0.05em;">
+        Management & Tools
+      </div>
+      <div class="nav flex-column gap-1">
+        <a href="{{ url_for('teacher.inventory') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint in ('teacher.inventory', 'teacher.add_book', 'teacher.edit_book') %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('book') }}</span>
+          <span>Book Inventory</span>
+        </a>
+        <a href="{{ url_for('teacher.qr_sheet') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint in ('teacher.qr_sheet', 'teacher.book_qr_label') %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('tag') }}</span>
+          <span>Print QR Labels</span>
+        </a>
+        <a href="{{ url_for('teacher.reports') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint == 'teacher.reports' %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('chart-column') }}</span>
+          <span>Reports & Stats</span>
+        </a>
+        <a href="{{ url_for('teacher.activity_logs') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint == 'teacher.activity_logs' %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('scroll') }}</span>
+          <span>Activity Logs</span>
+        </a>
+        <a href="{{ url_for('teacher.settings') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint == 'teacher.settings' %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
+          <span class="fs-5" style="width: 24px; text-align: center;">{{ icon('gear') }}</span>
+          <span>Settings & Backup</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-auto pt-3 border-top">
+      <div class="d-flex align-items-center gap-2 px-2 py-1 bg-body-tertiary rounded-3 border">
+        <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px;">
+          {{ icon('chalkboard-user') }}
+        </div>
+        <div class="overflow-hidden">
+          <div class="fw-bold small text-truncate">{{ session.get('teacher_name', 'Teacher') }}</div>
+          <div class="text-body-secondary" style="font-size: 0.725rem;">Staff Access (Local)</div>
+        </div>
+      </div>
+    </div>
+  {% endmacro %}
 
   {% if is_demo_mode %}
   <!-- Exhibition Demo Mode Prominent Banner -->
-  <aside class="demo-banner" style="background: linear-gradient(90deg, #9a3412, #c2410c); color: #ffffff; text-align: center; padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.75rem; border-bottom: 2px solid #7c2d12;" role="status" aria-label="Exhibition Demo Mode Active">
-    <span>✨ <strong>Exhibition Demo Mode Active:</strong> Operating with 18 sample curriculum textbooks. Real school database is preserved in automated backups.</span>
-    <a href="{{ url_for('teacher.settings', tab='demo') }}" style="color: #ffffff; text-decoration: underline; background: rgba(0,0,0,0.25); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Manage / Exit Demo</a>
+  <aside class="alert alert-warning mb-0 border-0 rounded-0 py-2 d-flex flex-wrap align-items-center justify-content-center text-center gap-2 shadow-sm" role="status" aria-label="Exhibition Demo Mode Active">
+    <span>{{ icon('wand-magic-sparkles', extra_class='text-warning') }} <strong>Exhibition Demo Mode Active:</strong> Operating with 18 sample curriculum textbooks. Real school database is preserved in automated backups.</span>
+    <a href="{{ url_for('teacher.settings', tab='demo') }}" class="btn btn-warning btn-sm py-0 px-2 fw-bold text-decoration-none shadow-xs">Manage / Exit Demo</a>
   </aside>
   {% endif %}
 
-  <!-- Teacher Top Navbar -->
-  <header class="navbar">
-    <div class="container navbar-inner" style="max-width: 100%; padding: 0 1.5rem;">
-      <a href="{{ url_for('teacher.dashboard') }}" class="brand-link">
-        <div class="brand-logo-icon" style="background: linear-gradient(135deg, var(--accent), var(--primary));">👨‍🏫</div>
-        <div class="brand-meta">
-          <span class="brand-title">Teacher Dashboard</span>
-          <span class="brand-subtitle">Kitaab Bank Administrative Desk</span>
-        </div>
-      </a>
+  <!-- Teacher Topbar Navbar -->
+  <header class="sticky-top bg-body border-bottom shadow-xs">
+    <div class="container-fluid px-3 py-2 d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <!-- Mobile/Tablet Hamburger Toggle (Below lg, < 992px) -->
+        <button class="btn btn-outline-secondary btn-sm d-lg-none p-2 border-0 rounded-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#teacherSidebarOffcanvas" aria-controls="teacherSidebarOffcanvas" aria-label="Toggle Teacher Navigation">
+          <i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i>
+        </button>
 
-      <!-- Right Header Actions (Language Switcher + Theme Switcher + Student View Switch) -->
-      <div class="nav-actions">
-        <!-- Language Switcher Dropdown -->
-        <div class="theme-selector-wrap" style="position: relative;">
-          <button type="button" class="theme-btn" id="langTeacherBtn" aria-label="Select Language">
-            <span>🌐</span>
-            <span style="font-weight: 600;">{{ supported_languages[current_lang].native_name }}</span>
-            <span style="font-size: 0.65rem;">▼</span>
-          </button>
-          <div class="theme-dropdown-menu" id="langTeacherMenu" style="min-width: 140px;">
-            {% for code, lang_info in supported_languages.items() %}
-            <a href="{{ url_for('set_language', lang_code=code) }}" class="theme-option" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; {% if code == current_lang %}font-weight: 700; color: var(--primary);{% endif %}">
-              <span>{{ lang_info.native_name }}</span>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">{{ lang_info.name }}</span>
-            </a>
-            {% endfor %}
+        <a href="{{ url_for('teacher.dashboard') }}" class="navbar-brand d-flex align-items-center gap-2 my-0 text-decoration-none">
+          <div class="brand-logo-icon bg-primary text-white rounded-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 2.25rem; height: 2.25rem;">
+            {{ icon('chalkboard-user') }}
           </div>
+          <div>
+            <span class="brand-title fw-bold text-body d-block" style="font-size: 1.1rem; line-height: 1.2;">Teacher Dashboard</span>
+            <span class="brand-subtitle text-body-secondary small d-none d-sm-block" style="font-size: 0.725rem;">Kitaab Bank Administrative Desk</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- Language Switcher Dropdown -->
+        <div class="dropdown">
+          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Select Language">
+            {{ icon('globe') }}
+            <span class="d-none d-sm-inline fw-semibold">{{ supported_languages[current_lang].native_name }}</span>
+          </button>
+          <ul class="dropdown-menu {% if is_rtl %}dropdown-menu-start{% else %}dropdown-menu-end{% endif %} shadow-sm border-subtle">
+            {% for code, lang_info in supported_languages.items() %}
+            <li>
+              <a href="{{ url_for('set_language', lang_code=code) }}" class="dropdown-item d-flex justify-content-between align-items-center gap-3 py-2 {% if code == current_lang %}active fw-bold{% endif %}">
+                <span>{{ lang_info.native_name }}</span>
+                <small class="text-body-secondary">{{ lang_info.name }}</small>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
         </div>
 
         <!-- Theme Switcher Dropdown -->
-        <div class="theme-selector-wrap">
-          <button type="button" class="theme-btn" data-theme-toggle aria-label="Toggle Theme">
-            <span data-theme-icon>☀️</span>
-            <span data-theme-label>Theme</span>
-            <span style="font-size: 0.65rem;">▼</span>
+        <div class="dropdown">
+          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Toggle Theme">
+            <span data-theme-icon>{{ icon('sun', extra_class='text-warning') }}</span>
+            <span class="d-none d-sm-inline" data-theme-label>Theme</span>
           </button>
-          <div class="theme-dropdown-menu">
-            <button type="button" class="theme-option" data-theme-set="light">☀️ Light Mode</button>
-            <button type="button" class="theme-option" data-theme-set="dark">🌙 Dark Mode</button>
-            <button type="button" class="theme-option" data-theme-set="system">💻 System Default</button>
-          </div>
+          <ul class="dropdown-menu {% if is_rtl %}dropdown-menu-start{% else %}dropdown-menu-end{% endif %} shadow-sm border-subtle">
+            <li><button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2" data-theme-set="light">{{ icon('sun', extra_class='text-warning') }} Light Mode</button></li>
+            <li><button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2" data-theme-set="dark">{{ icon('moon', extra_class='text-info') }} Dark Mode</button></li>
+            <li><button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2" data-theme-set="system">{{ icon('desktop', extra_class='text-secondary') }} System Default</button></li>
+          </ul>
         </div>
 
-        <a href="{{ url_for('student.index') }}" class="btn btn-outline btn-sm">Public Portal ↗</a>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm" style="color: var(--danger-text); background-color: var(--danger-bg); border-color: var(--danger); font-size: 0.85rem;">Sign Out</a>
+        <a href="{{ url_for('student.index') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+          {{ icon('arrow-up-right-from-square') }} <span class="d-none d-md-inline">Public Portal</span>
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1">
+          {{ icon('arrow-right-from-bracket') }} <span class="d-none d-md-inline">Sign Out</span>
+        </a>
       </div>
     </div>
   </header>
 
+  <!-- Mobile/Tablet Offcanvas Drawer (< lg, < 992px) -->
+  <div class="offcanvas {% if is_rtl %}offcanvas-end{% else %}offcanvas-start{% endif %} d-lg-none" tabindex="-1" id="teacherSidebarOffcanvas" aria-labelledby="teacherSidebarOffcanvasLabel">
+    <div class="offcanvas-header border-bottom py-3">
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-logo-icon bg-primary text-white rounded-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 2.25rem; height: 2.25rem;">
+          {{ icon('chalkboard-user') }}
+        </div>
+        <div>
+          <h5 class="offcanvas-title fw-bold fs-6 mb-0" id="teacherSidebarOffcanvasLabel">Teacher Desk</h5>
+          <span class="small text-body-secondary" style="font-size: 0.7rem;">Management & Circulation</span>
+        </div>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column justify-content-between p-3">
+      {{ teacher_nav_items() }}
+    </div>
+  </div>
+
   <!-- Teacher Workspace Shell -->
-  <div class="teacher-shell">
-    <!-- Sidebar Navigation -->
-    <aside class="teacher-sidebar">
-      <div>
-        <div class="sidebar-heading">Circulation & Review</div>
-        <ul class="sidebar-nav">
-          <li>
-            <a href="{{ url_for('teacher.dashboard') }}" class="sidebar-link {% if request.endpoint == 'teacher.dashboard' %}active{% endif %}">
-              <span>📊</span>
-              <span>Overview</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('teacher.donations') }}" class="sidebar-link {% if request.endpoint in ('teacher.donations', 'teacher.donation_detail') %}active{% endif %}">
-              <span>📥</span>
-              <span>Donation Queue</span>
-              <span class="badge badge-warning sidebar-badge">{{ pending_donations_count }}</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('teacher.requests') }}" class="sidebar-link {% if request.endpoint in ('teacher.requests', 'teacher.request_detail') %}active{% endif %}">
-              <span>📋</span>
-              <span>Student Requests</span>
-              <span class="badge badge-primary sidebar-badge">{{ pending_requests_count }}</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('teacher.handovers') }}" class="sidebar-link {% if request.endpoint == 'teacher.handovers' %}active{% endif %}">
-              <span>🤝</span>
-              <span>Book Handover</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <div class="sidebar-heading">Management & Tools</div>
-        <ul class="sidebar-nav">
-          <li>
-            <a href="{{ url_for('teacher.inventory') }}" class="sidebar-link {% if request.endpoint == 'teacher.inventory' %}active{% endif %}">
-              <span>📚</span>
-              <span>Book Inventory</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('teacher.qr_sheet') }}" class="sidebar-link {% if request.endpoint in ('teacher.qr_sheet', 'teacher.book_qr_label') %}active{% endif %}">
-              <span>🏷️</span>
-              <span>Print QR Labels</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('teacher.reports') }}" class="sidebar-link {% if request.endpoint == 'teacher.reports' %}active{% endif %}">
-              <span>📈</span>
-              <span>Reports & Stats</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('teacher.activity_logs') }}" class="sidebar-link {% if request.endpoint == 'teacher.activity_logs' %}active{% endif %}">
-              <span>📜</span>
-              <span>Activity Logs</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('teacher.settings') }}" class="sidebar-link {% if request.endpoint == 'teacher.settings' %}active{% endif %}">
-              <span>⚙️</span>
-              <span>Settings & Backup</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-        <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem;">
-          👤 {{ session.get('teacher_name', 'Teacher') }}
-        </div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">
-          <span>Staff Access: Authenticated (Local)</span>
-        </div>
-      </div>
+  <div class="d-flex flex-grow-1 overflow-hidden" id="teacherLayoutWrap">
+    <!-- Desktop Persistent Sidebar (>= lg, >= 992px) -->
+    <aside class="teacher-sidebar d-none d-lg-flex flex-column flex-shrink-0 p-3 bg-body border-end shadow-xs" style="width: 260px; min-height: calc(100vh - 61px);">
+      {{ teacher_nav_items() }}
     </aside>
 
     <!-- Main Content Area -->
-    <main class="teacher-main">
+    <main class="teacher-main flex-grow-1 p-3 p-md-4 overflow-y-auto bg-body-tertiary">
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
-            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
-              <span>ℹ️</span>
-              <div>{{ message }}</div>
+            {% set alert_type = 'danger' if category in ('error', 'danger') else ('warning' if category == 'warning' else ('success' if category == 'success' else 'primary')) %}
+            {% set alert_icon = 'circle-xmark' if alert_type == 'danger' else ('triangle-exclamation' if alert_type == 'warning' else ('circle-check' if alert_type == 'success' else 'circle-info')) %}
+            <div class="alert alert-{{ alert_type }} alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm mb-3" role="alert">
+              <span class="fs-5 flex-shrink-0">{{ icon(alert_icon) }}</span>
+              <div class="flex-grow-1">{{ message }}</div>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           {% endfor %}
         {% endif %}
@@ -189,21 +230,8 @@
   </div>
 
   <!-- Offline Local JavaScript -->
+  <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-  <script>
-    // Language dropdown toggle
-    const langBtn = document.getElementById('langTeacherBtn');
-    const langMenu = document.getElementById('langTeacherMenu');
-    if (langBtn && langMenu) {
-      langBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        langMenu.classList.toggle('show');
-      });
-      document.addEventListener('click', () => {
-        langMenu.classList.remove('show');
-      });
-    }
-  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

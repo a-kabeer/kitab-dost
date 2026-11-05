@@ -363,12 +363,13 @@ The following core improvements have been fully integrated into the architecture
 
 ### Network & Wi-Fi LAN Access Note
 - **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
-- **Current Machine Wi-Fi IP:** `192.168.100.14` (DHCP lease renewed from previous `172.31.161.179` and `10.0.0.35`).
-- **Connection Refused Explanation (`ERR_CONNECTION_REFUSED`):**
-  - The previous IP `172.31.161.179` is no longer assigned to this machine by the local router. Any browser attempting to connect to `172.31.161.179:5000` will fail with `ERR_CONNECTION_REFUSED`.
+- **Current Machine Wi-Fi IP:** `10.0.0.36` (DHCP lease renewed at 10:35 AM today on network `bbrouter`).
+- **Connection Diagnostics:**
+  - `Test-NetConnection -ComputerName 10.0.0.36 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
+  - `http://10.0.0.36:5000`: **HTTP 200 OK** (Verified responsive).
 - **Current Active URLs:**
   - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
-  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://192.168.100.14:5000`**
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://10.0.0.36:5000`**
 
 ### Stopping Point
 - **Phase 4 – Book Request System & Atomic Reservation Lock is 100% COMPLETE & VERIFIED.**
@@ -451,12 +452,13 @@ The following core improvements have been fully integrated into the architecture
 
 ### Network & Wi-Fi LAN Access Note
 - **Active Server Status:** Running via Waitress WSGI on `0.0.0.0:5000` with 6 worker threads.
-- **Current Machine Wi-Fi IP:** `192.168.100.14` (DHCP lease renewed from previous `172.31.161.179` and `10.0.0.35`).
-- **Connection Refused Explanation (`ERR_CONNECTION_REFUSED`):**
-  - The previous IP `172.31.161.179` is no longer assigned to this machine by the local router. Any browser attempting to connect to `172.31.161.179:5000` will fail with `ERR_CONNECTION_REFUSED`.
+- **Current Machine Wi-Fi IP:** `10.0.0.36` (DHCP lease renewed at 10:35 AM today on network `bbrouter`).
+- **Connection Diagnostics:**
+  - `Test-NetConnection -ComputerName 10.0.0.36 -Port 5000`: **TcpTestSucceeded = True** (Verified live).
+  - `http://10.0.0.36:5000`: **HTTP 200 OK** (Verified responsive).
 - **Current Active URLs:**
   - Local Host Computer: `http://127.0.0.1:5000` or `http://localhost:5000`
-  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://192.168.100.14:5000`**
+  - Mobile Phones & Other Devices on Same Wi-Fi: **`http://10.0.0.36:5000`**
 
 ### Stopping Point
 - **Phase 5 – Physical Handover Ledger & Circulation Defense is 100% COMPLETE & VERIFIED.**

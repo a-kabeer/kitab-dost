@@ -199,6 +199,36 @@
                 >
                   ✕ Reject
                 </button>
+
+                {% elif r.status == 'approved' %}
+                <!-- Handover Button -->
+                <a 
+                  href="{{ url_for('teacher.handover_form', request_id=r.id) }}" 
+                  class="btn btn-sm btn-primary" 
+                  style="background-color: var(--success); border-color: var(--success);"
+                >
+                  🤝 Handover
+                </a>
+
+                <!-- Cancel Reservation Button -->
+                <button 
+                  type="button" 
+                  class="btn btn-sm" 
+                  style="background-color: var(--warning-bg); color: var(--warning-text); border-color: var(--warning);"
+                  onclick="openCancelModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')"
+                >
+                  ✕ Release
+                </button>
+
+                {% elif r.status == 'completed' and r.handover_id %}
+                <!-- Printable Receipt -->
+                <a 
+                  href="{{ url_for('teacher.handover_receipt', handover_id=r.handover_id) }}" 
+                  class="btn btn-sm btn-outline" 
+                  target="_blank"
+                >
+                  🖨️ Receipt
+                </a>
                 {% endif %}
               </div>
             </td>
@@ -280,6 +310,61 @@
   </div>
 </div>
 
+<!-- Reservation Release / Cancellation Modal -->
+<div id="cancel-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+      <h3 style="margin: 0; font-size: 1.2rem; color: var(--warning-text); font-weight: 700;">
+        Release Book Reservation
+      </h3>
+      <button type="button" onclick="closeCancelModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">
+        ✕
+      </button>
+    </div>
+
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+      Cancel approved reservation for <strong id="cancel-student-name"></strong> on textbook <strong id="cancel-book-code"></strong>. The textbook will be restored to the public catalogue as <strong>Available</strong>.
+    </p>
+
+    <form id="cancel-form" method="POST" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label class="form-label">Common Release Reasons</label>
+        <select class="form-control" onchange="setCancelPreset(this.value)">
+          <option value="">-- Select a preset reason or enter below --</option>
+          <option value="Student failed to collect textbook within 5 school days">Student failed to collect textbook within 5 school days</option>
+          <option value="Student obtained textbook from an alternate source">Student obtained textbook from an alternate source</option>
+          <option value="Student requested reservation cancellation">Student requested reservation cancellation</option>
+          <option value="Student transferred to another school or section">Student transferred to another school or section</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="cancel-reason-input" class="form-label">
+          Cancellation Reason <span class="required-star">*</span>
+        </label>
+        <textarea 
+          id="cancel-reason-input" 
+          name="reason" 
+          class="form-control" 
+          placeholder="State the reason the reserved book is being released back to the catalogue..." 
+          required
+        ></textarea>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-outline" onclick="closeCancelModal()">
+          Keep Reserved
+        </button>
+        <button type="submit" class="btn btn-sm" style="background-color: var(--warning); color: #ffffff; padding: 0.6rem 1.25rem;">
+          Confirm Release to Catalogue
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 function openRejectModal(requestId, studentName, bookCode) {
   const modal = document.getElementById('reject-modal');
@@ -298,6 +383,26 @@ function closeRejectModal() {
 function setPresetReason(val) {
   if (val) {
     document.getElementById('reject-reason-input').value = val;
+  }
+}
+
+function openCancelModal(requestId, studentName, bookCode) {
+  const modal = document.getElementById('cancel-modal');
+  const form = document.getElementById('cancel-form');
+  document.getElementById('cancel-student-name').textContent = studentName;
+  document.getElementById('cancel-book-code').textContent = bookCode;
+  form.action = '/teacher/requests/' + requestId + '/cancel-reservation';
+  document.getElementById('cancel-reason-input').value = '';
+  modal.classList.add('show');
+}
+
+function closeCancelModal() {
+  document.getElementById('cancel-modal').classList.remove('show');
+}
+
+function setCancelPreset(val) {
+  if (val) {
+    document.getElementById('cancel-reason-input').value = val;
   }
 }
 </script>

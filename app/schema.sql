@@ -100,21 +100,29 @@ CREATE INDEX IF NOT EXISTS idx_requests_book ON requests(book_id);
 -- 5. Physical Handovers Table
 CREATE TABLE IF NOT EXISTS handovers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    handover_code TEXT UNIQUE NOT NULL, -- Format: KB-HO-000001
     request_id INTEGER NOT NULL UNIQUE, -- Crucial: Prevents double-handover of same request
+    tracking_code TEXT NOT NULL,
     book_id INTEGER NOT NULL,
+    book_code TEXT NOT NULL,
     recipient_name TEXT NOT NULL,
     recipient_class TEXT NOT NULL,
     recipient_roll_no TEXT NOT NULL,
+    recipient_contact TEXT,
     handed_over_by INTEGER NOT NULL,
+    teacher_name TEXT NOT NULL,
     handover_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     remarks TEXT,
+    status TEXT NOT NULL DEFAULT 'completed',
     FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE RESTRICT,
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE RESTRICT,
     FOREIGN KEY (handed_over_by) REFERENCES teachers(id) ON DELETE RESTRICT
 );
 
+CREATE INDEX IF NOT EXISTS idx_handovers_code ON handovers(handover_code);
 CREATE INDEX IF NOT EXISTS idx_handovers_date ON handovers(handover_date);
 CREATE INDEX IF NOT EXISTS idx_handovers_book ON handovers(book_id);
+CREATE INDEX IF NOT EXISTS idx_handovers_request ON handovers(request_id);
 
 -- 6. Activity Logs Table
 CREATE TABLE IF NOT EXISTS activity_logs (

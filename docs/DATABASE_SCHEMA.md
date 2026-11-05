@@ -249,25 +249,33 @@ CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status);
 CREATE INDEX IF NOT EXISTS idx_requests_book ON requests(book_id);
 ```
 
-### 2.6 `handovers` Table
+### 2.6 `handovers` Table (Physical Handover Ledger)
 ```sql
 CREATE TABLE IF NOT EXISTS handovers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    handover_code TEXT UNIQUE NOT NULL, -- Sequential permanent reference: KB-HO-000001
     request_id INTEGER NOT NULL UNIQUE, -- Crucial: Prevents double-handover of same request
+    tracking_code TEXT NOT NULL,        -- Request tracking snapshot at handover
     book_id INTEGER NOT NULL,
-    recipient_name TEXT NOT NULL,
+    book_code TEXT NOT NULL,            -- Book code snapshot (e.g. KB-BK-000001)
+    recipient_name TEXT NOT NULL,       -- Student recipient snapshot
     recipient_class TEXT NOT NULL,
     recipient_roll_no TEXT NOT NULL,
-    handed_over_by INTEGER NOT NULL,
+    recipient_contact TEXT,
+    handed_over_by INTEGER NOT NULL,    -- Teacher foreign key
+    teacher_name TEXT NOT NULL,         -- Teacher display name snapshot
     handover_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     remarks TEXT,
+    status TEXT NOT NULL DEFAULT 'completed', -- 'completed'
     FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE RESTRICT,
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE RESTRICT,
     FOREIGN KEY (handed_over_by) REFERENCES teachers(id) ON DELETE RESTRICT
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_handovers_code ON handovers(handover_code);
 CREATE INDEX IF NOT EXISTS idx_handovers_date ON handovers(handover_date);
 CREATE INDEX IF NOT EXISTS idx_handovers_book ON handovers(book_id);
+CREATE INDEX IF NOT EXISTS idx_handovers_request ON handovers(request_id);
 ```
 
 ### 2.7 `activity_logs` Table

@@ -1,7 +1,7 @@
-from flask import render_template, session, redirect, url_for, flash, request, abort
+from flask import render_template, session, redirect, url_for, flash, request, abort, current_app
 from . import teacher_bp
 from app.database import get_db
-from app.services import donation_service, request_service
+from app.services import donation_service, request_service, handover_service
 
 @teacher_bp.context_processor
 def inject_teacher_globals():
@@ -31,20 +31,29 @@ def dashboard():
     db = get_db()
     cur = db.cursor()
 
-    cur.execute("SELECT COUNT(*) FROM books WHERE status = 'available' AND is_approved = 1")
+    cur.execute("SELECT COUNT(*) FROM books WHERE status = 'available' AND is_approved = 1;")
     available_books = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM books WHERE status = 'handed_over';")
+    reused_books = cur.fetchone()[0]
 
     pending_donations = donation_service.get_pending_donations_count()
     pending_requests = request_service.get_pending_requests_count()
 
-    cur.execute("SELECT COUNT(*) FROM handovers")
-    total_reused = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM requests WHERE status = 'approved';")
+    approved_requests = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM handovers;")
+    completed_handovers = cur.fetchone()[0]
 
     stats = {
         'available_books': available_books,
         'pending_donations': pending_donations,
         'pending_requests': pending_requests,
-        'total_reused': total_reused
+        'approved_requests': approved_requests,
+        'completed_handovers': completed_handovers,
+        'reused_books': reused_books,
+        'total_reused': completed_handovers
     }
     return render_template('teacher/dashboard.html', stats=stats)
 
@@ -196,14 +205,124 @@ def reject_request(request_id):
 
     return redirect(url_for('teacher.requests', status=request.args.get('status', 'pending')))
 
+@teacher_bp.route('/requests/<int:request_id>/handover', methods=['GET'])
+def handover_form(request_id):
+    """Physical handover confirmation form."""
+    req = request_service.get_request_by_id(request_id)
+    if not req:
+        abort(404)
+    if req['status'] != 'approved':
+        flash(f"Cannot perform handover: Request is '{req['status']}' (must be 'approved').", "warning")
+        return redirect(url_for('teacher.requests', status=req['status']))
+
+    return render_template('teacher/handover_confirm.html', req=req)
+
+@teacher_bp.route('/requests/<int:request_id>/confirm-handover', methods=['POST'])
+def confirm_handover(request_id):
+    """Process physical handover confirmation with identity check and book handover."""
+    teacher_id = session.get('teacher_id')
+    teacher_name = session.get('teacher_name') or 'Teacher'
+
+    id_verified = request.form.get('confirm_id') == '1'
+    book_handed_over = request.form.get('confirm_physical') == '1'
+    remarks = request.form.get('remarks', '').strip()
+
+    success, handover_code, err = handover_service.confirm_physical_handover(
+        request_id=request_id,
+        teacher_id=teacher_id,
+        teacher_name=teacher_name,
+        id_verified=id_verified,
+        book_handed_over=book_handed_over,
+        remarks=remarks
+    )
+
+    if success:
+        flash(f"Physical handover successfully recorded! Handover Reference: {handover_code}", "success")
+        handover = handover_service.get_handover_by_code(handover_code)
+        if handover:
+            return redirect(url_for('teacher.handover_detail', handover_id=handover['id']))
+        return redirect(url_for('teacher.handovers'))
+    else:
+        flash(f"Handover failed: {err}", "danger")
+        req = request_service.get_request_by_id(request_id)
+        if req and req['status'] == 'approved':
+            return render_template('teacher/handover_confirm.html', req=req, form_data=request.form), 400
+        return redirect(url_for('teacher.requests'))
+
+@teacher_bp.route('/requests/<int:request_id>/cancel-reservation', methods=['POST'])
+def cancel_reservation(request_id):
+    """Teacher action to release an uncollected reservation back to the catalogue."""
+    teacher_id = session.get('teacher_id')
+    teacher_name = session.get('teacher_name') or 'Teacher'
+    reason = request.form.get('reason', '').strip()
+
+    if not reason:
+        flash("Please provide a reason for cancelling this reservation.", "danger")
+        return redirect(url_for('teacher.requests', status='approved'))
+
+    success, book_code, err = handover_service.cancel_approved_reservation(
+        request_id=request_id,
+        teacher_id=teacher_id,
+        teacher_name=teacher_name,
+        reason=reason
+    )
+
+    if success:
+        flash(f"Reservation cancelled. Book '{book_code}' has been restored to the catalogue as Available.", "warning")
+    else:
+        flash(f"Cancellation failed: {err}", "danger")
+
+    return redirect(url_for('teacher.requests', status='approved'))
+
 @teacher_bp.route('/handovers')
 def handovers():
-    return render_template(
-        'student/placeholder.html',
-        title="Book Handover Desk",
-        icon="🤝",
-        description="The physical distribution verification and exchange history ledger will be implemented in Phase 5."
+    """Dedicated Teacher Handover Ledger with search, class and date filtering."""
+    search_query = request.args.get('q', '').strip()
+    class_filter = request.args.get('class_grade', '').strip()
+    date_from = request.args.get('date_from', '').strip()
+    date_to = request.args.get('date_to', '').strip()
+
+    handovers_list, total_count = handover_service.get_handovers_for_teacher(
+        search_query=search_query,
+        class_grade=class_filter,
+        date_from=date_from,
+        date_to=date_to
     )
+    metrics = handover_service.get_handover_metrics()
+
+    return render_template(
+        'teacher/handovers.html',
+        handovers=handovers_list,
+        total_count=total_count,
+        search_query=search_query,
+        class_filter=class_filter,
+        date_from=date_from,
+        date_to=date_to,
+        metrics=metrics
+    )
+
+@teacher_bp.route('/handovers/<int:handover_id>')
+def handover_detail(handover_id):
+    """Detailed inspection view for a completed physical handover."""
+    handover = handover_service.get_handover_by_id(handover_id)
+    if not handover:
+        abort(404)
+    return render_template('teacher/handover_detail.html', handover=handover)
+
+@teacher_bp.route('/handovers/<int:handover_id>/receipt')
+def handover_receipt(handover_id):
+    """Printable physical handover receipt for official records."""
+    handover = handover_service.get_handover_by_id(handover_id)
+    if not handover:
+        abort(404)
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT value FROM system_settings WHERE key = 'school_name' LIMIT 1;")
+    setting_row = cur.fetchone()
+    school_name = setting_row['value'] if setting_row else current_app.config.get('SCHOOL_NAME', 'Government High School')
+
+    return render_template('teacher/handover_receipt.html', handover=handover, school_name=school_name)
 
 @teacher_bp.route('/inventory')
 def inventory():

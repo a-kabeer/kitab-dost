@@ -41,12 +41,22 @@ def init_db(app):
 
     with app.app_context():
         db = get_db()
+        cur = db.cursor()
+
+        # Check existing handovers table before schema execution to prevent index error on older schema
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='handovers';")
+        if cur.fetchone():
+            cur.execute("PRAGMA table_info(handovers);")
+            handover_cols = [r[1] for r in cur.fetchall()]
+            if 'handover_code' not in handover_cols:
+                cur.execute("DROP TABLE IF EXISTS handovers;")
+                db.commit()
+
         with current_app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
 
         # Ensure author column exists in donations table (schema migration)
-        cur = db.cursor()
         cur.execute("PRAGMA table_info(donations);")
         donation_cols = [r[1] for r in cur.fetchall()]
         if 'author' not in donation_cols:

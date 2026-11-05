@@ -115,7 +115,27 @@ Uploaded book photographs represent a common attack vector if left unconstrained
 
 ---
 
-## 6. SQLite Concurrency, Lock Mitigation & Hot Backups
+## 7. Physical Handover Security & Circulation Defense
+
+### 7.1 Student Identity Verification (Anti-Impersonation)
+- **Tracking Code Insufficiency Policy:** The presentation of a tracking code (`KB-REQ-XXXX-XXXX`) is treated solely as an indexing reference, **never** as proof of identity or entitlement.
+- **Physical Verification Mandate:** Teachers must cross-check the student's name, class, section, and roll number against official school attendance or identity cards before handing over any textbook.
+- **Mandatory Dual Checkboxes:** The handover confirmation route strictly enforces both `confirm_id` and `confirm_physical` checkboxes. Submitting the form with either checkbox unchecked results in an explicit rejection.
+
+### 7.2 Immutable Handover Ledger
+- Every completed handover generates an immutable snapshot record in `handovers` with a sequential code (`KB-HO-000001`).
+- The ledger snapshot preserves the student name, class, roll number, teacher name, book code, and tracking code as they existed at the exact moment of physical custody transfer.
+- Once a handover is completed, it cannot be modified, deleted, or cancelled via the web interface.
+
+### 7.3 Anti-Double-Distribution & Atomic Lock
+- The database enforces `request_id INTEGER NOT NULL UNIQUE` on the `handovers` table.
+- A physical book can only be handed over if its current status is `reserved` and the request is `approved`.
+- All status transitions (`requests.status = 'completed'`, `books.status = 'handed_over'`) occur within a single atomic `BEGIN IMMEDIATE` transaction, eliminating race conditions or double handovers.
+
+### 7.4 Handover Receipt Confidentiality
+- Handover receipts (`/teacher/handovers/<id>/receipt`) contain unmasked student roll numbers and phone numbers for official school records.
+- These receipt routes are strictly restricted to authenticated teachers (`@teacher_bp.before_request`). Unauthenticated visitors or students cannot access receipt URLs.
+- The public student tracking desk (`/track`) remains 100% redacted: showing only the handover reference code (`KB-HO-XXXXXX`), completion status, and masked student name (`Saad R***`). Student roll numbers and phone numbers are completely stripped.
 
 ### 6.1 Lock Starvation & Deadlock Defense
 - SQLite WAL mode permits concurrent readers alongside **at most one active writer**.

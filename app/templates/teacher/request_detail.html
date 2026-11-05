@@ -182,15 +182,76 @@
         </div>
       </div>
       {% elif request_item.status == 'approved' %}
-      <div style="background-color: var(--success-bg); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 1.25rem; color: var(--success-text);">
-        <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">
-          🔒 Book Reserved for Student Pickup
+      <div style="background-color: var(--success-bg); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 1.5rem; color: var(--success-text);">
+        <div style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.35rem;">
+          🔒 Book Reserved &amp; Awaiting Student Handover
         </div>
-        <div style="font-size: 0.85rem;">
+        <div style="font-size: 0.9rem; margin-bottom: 0.75rem;">
           Approved by <strong>{{ request_item.reviewer_name or 'Teacher' }}</strong> on {{ request_item.reviewed_at }}.
         </div>
-        <div style="font-size: 0.85rem; margin-top: 0.5rem;">
-          Student must present Roll Number <strong>{{ request_item.requester_roll_no }}</strong> at the desk during collection.
+        <div style="font-size: 0.85rem; margin-bottom: 1.5rem;">
+          Recipient Student: <strong>{{ request_item.requester_name }}</strong> (Class: {{ request_item.requester_class }}, Roll No: {{ request_item.requester_roll_no }}).
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <a 
+            href="{{ url_for('teacher.handover_form', request_id=request_item.id) }}" 
+            class="btn btn-primary" 
+            style="background-color: var(--success); border-color: var(--success); font-weight: 700; padding: 0.65rem 1.5rem;"
+          >
+            <span>🤝</span>
+            <span>Confirm Physical Handover</span>
+          </a>
+
+          <button 
+            type="button" 
+            class="btn btn-outline" 
+            style="color: var(--warning-text); border-color: var(--warning);"
+            onclick="document.getElementById('cancel-req-section').style.display='block'"
+          >
+            <span>✕</span>
+            <span>Release / Cancel Reservation</span>
+          </button>
+        </div>
+
+        <!-- Inline Cancellation Form -->
+        <div id="cancel-req-section" style="display: none; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
+          <h4 style="font-size: 0.95rem; color: var(--warning-text); font-weight: 700; margin-bottom: 0.75rem;">
+            State Reason for Releasing Reservation Back to Catalogue
+          </h4>
+          <form action="{{ url_for('teacher.cancel_reservation', request_id=request_item.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+              <label for="cancel-reason" class="form-label">Cancellation Reason <span class="required-star">*</span></label>
+              <textarea 
+                id="cancel-reason" 
+                name="reason" 
+                class="form-control" 
+                placeholder="e.g. Student did not collect within 5 days, textbook released to catalogue..." 
+                required
+              ></textarea>
+            </div>
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('cancel-req-section').style.display='none'">
+                Keep Reserved
+              </button>
+              <button type="submit" class="btn btn-sm" style="background-color: var(--warning); color: #ffffff;">
+                Confirm Release
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% elif request_item.status == 'cancelled' %}
+      <div style="background-color: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: 1.25rem; color: var(--warning-text);">
+        <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem;">
+          ✕ Reservation Released
+        </div>
+        <div style="font-size: 0.85rem; margin-top: 0.35rem;">
+          Reason: <strong>{{ request_item.rejection_reason }}</strong>
+        </div>
+        <div style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--text-muted);">
+          Released by {{ request_item.reviewer_name or 'Teacher' }} on {{ request_item.reviewed_at }}
         </div>
       </div>
       {% elif request_item.status == 'rejected' %}
@@ -206,13 +267,26 @@
         </div>
       </div>
       {% elif request_item.status == 'completed' %}
-      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1.25rem; color: var(--primary-text);">
-        <div style="font-weight: 700; font-size: 1.05rem;">
+      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1.5rem; color: var(--primary-text);">
+        <div style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.35rem;">
           🤝 Physical Handover Completed
         </div>
-        <div style="font-size: 0.85rem; margin-top: 0.25rem;">
-          This book has been issued to the student.
+        <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+          This book was officially issued to <strong>{{ request_item.requester_name }}</strong>.
         </div>
+        {% if request_item.handover_code %}
+        <div style="font-size: 0.85rem; margin-bottom: 1rem;">
+          Handover Reference: <code style="font-weight: 700; color: var(--primary);">{{ request_item.handover_code }}</code>
+        </div>
+        {% endif %}
+
+        {% if request_item.handover_id %}
+        <div>
+          <a href="{{ url_for('teacher.handover_receipt', handover_id=request_item.handover_id) }}" class="btn btn-sm btn-primary" target="_blank">
+            🖨️ View &amp; Print Receipt
+          </a>
+        </div>
+        {% endif %}
       </div>
       {% endif %}
     </div>

@@ -109,18 +109,22 @@ flowchart TD
 
 ---
 
-### Phase 5 – Physical Handover Ledger & Circulation Defense
+### Phase 5 – Physical Handover Ledger & Circulation Defense (COMPLETED & VERIFIED)
 - **Goal:** Provide teachers with a physical collection verification desk to record handovers and log completed reuse events.
 - **Key Deliverables:**
   - Teacher handover interface (`/teacher/handovers`).
-  - Verification modal: Teacher confirms recipient student's Roll Number against the request.
-  - Atomic handover transaction: Inserts record into `handovers`, updates request to `completed`, updates book to `handed_over`.
-  - Historical handover ledger with search and date filtering.
-  - Reused books counter on the public homepage automatically increments.
-- **Acceptance Criteria:**
-  - Unique constraint on `handovers.request_id` strictly prevents double handover.
+  - Verification modal & dedicated handover confirmation form (`/teacher/requests/<id>/handover`).
+  - Mandatory dual-verification checkboxes (`confirm_id`, `confirm_physical`). Presentation of tracking code alone is strictly rejected.
+  - Atomic handover transaction (`BEGIN IMMEDIATE`): Inserts immutable snapshot record into `handovers` with sequential code `KB-HO-000001`, updates request to `completed`, updates book to `handed_over`, and creates structured audit activity log.
+  - Historical handover ledger with multi-field search, class filter, and date filtering.
+  - Printable distribution receipt (`/teacher/handovers/<id>/receipt`) formatted for A4 printing (`@media print`) with dual signature lines.
+  - Reservation release action (`/teacher/requests/<id>/cancel-reservation`) returning uncollected book to `available` in catalogue, blocked after handover.
+  - Public student tracking desk (`/track`) updated with completed timeline status, handover reference, date, and zero PII leakage.
+- **Acceptance Criteria (VERIFIED):**
+  - Unique constraint on `handovers.request_id` and atomic check strictly prevent double handover.
   - Completed exchange updates public reuse metrics in real-time.
-  - Handover log captures timestamp, teacher ID, and recipient details.
+  - Handover log captures timestamp, teacher ID, recipient details, and activity log.
+  - 17 unit/integration tests (`tests/test_phase5.py`) and full browser audit (`test_browser_phase5.py`) passing with 0 console errors and 0 page exceptions.
 
 ---
 

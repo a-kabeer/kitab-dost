@@ -158,7 +158,7 @@ def create_book_request(form_data):
 def get_request_by_tracking_code(tracking_code: str):
     """
     Retrieve request details by its unique tracking code.
-    Joins book details and reviewer name.
+    Joins book details, reviewer name, and handover details if completed.
     """
     db = get_db()
     cur = db.cursor()
@@ -171,10 +171,15 @@ def get_request_by_tracking_code(tracking_code: str):
                b.class_grade AS book_class, b.subject AS book_subject,
                b.language AS book_language, b.condition_state AS book_condition,
                b.image_path AS book_image, b.status AS book_status,
-               t.full_name AS reviewer_name
+               t.full_name AS reviewer_name,
+               h.id AS handover_id,
+               h.handover_code,
+               h.handover_date,
+               h.teacher_name AS handover_teacher_name
         FROM requests r
         JOIN books b ON r.book_id = b.id
         LEFT JOIN teachers t ON r.reviewed_by = t.id
+        LEFT JOIN handovers h ON r.id = h.request_id
         WHERE r.tracking_code = ?
         LIMIT 1;
         """,
@@ -194,10 +199,15 @@ def get_request_by_id(request_id: int):
                b.class_grade AS book_class, b.subject AS book_subject,
                b.language AS book_language, b.condition_state AS book_condition,
                b.image_path AS book_image, b.status AS book_status,
-               t.full_name AS reviewer_name
+               t.full_name AS reviewer_name,
+               h.id AS handover_id,
+               h.handover_code,
+               h.handover_date,
+               h.teacher_name AS handover_teacher_name
         FROM requests r
         JOIN books b ON r.book_id = b.id
         LEFT JOIN teachers t ON r.reviewed_by = t.id
+        LEFT JOIN handovers h ON r.id = h.request_id
         WHERE r.id = ?
         LIMIT 1;
         """,
@@ -254,13 +264,17 @@ def get_requests_for_teacher(status=None, search_query=None, class_grade=None, l
                b.class_grade AS book_class, b.subject AS book_subject,
                b.condition_state AS book_condition, b.image_path AS book_image,
                b.status AS book_status,
-               t.full_name AS reviewer_name
+               t.full_name AS reviewer_name,
+               h.id AS handover_id,
+               h.handover_code,
+               h.handover_date
         FROM requests r
         JOIN books b ON r.book_id = b.id
         LEFT JOIN teachers t ON r.reviewed_by = t.id
+        LEFT JOIN handovers h ON r.id = h.request_id
         {where_sql}
         ORDER BY 
-            CASE WHEN r.status = 'pending' THEN 0 ELSE 1 END,
+            CASE WHEN r.status = 'pending' THEN 0 WHEN r.status = 'approved' THEN 1 ELSE 2 END,
             r.id DESC
     """
     query_params = list(params)

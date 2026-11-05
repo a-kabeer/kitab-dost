@@ -365,3 +365,30 @@ To eliminate any flash of unstyled or incorrectly themed content upon page load,
 
 ### 10.3 Navbar Theme Selector
 Both student and teacher headers include an intuitive 3-state theme selector (☀️ Light, 🌙 Dark, 💻 System) that immediately updates the DOM and synchronizes with `localStorage`.
+
+---
+
+## 11. Physical Handover Ledger & Circulation Defense Architecture
+
+### 11.1 Physical Verification Workflow & Security Checklists
+The physical book handover completes the lifecycle from request to custody transfer:
+1. **Student In-Person Desk Check-in:** Student visits the school library/teacher desk presenting their tracking code (`KB-REQ-XXXX-XXXX`).
+2. **Teacher Identity Verification Requirement:** Presentation of the tracking code alone is **never** accepted as proof of identity. The teacher must verify the student against school records (Student Name, Class, Section, and Roll Number).
+3. **Mandatory Dual Verification Checkboxes:** The handover confirmation form (`/teacher/requests/<id>/handover`) enforces two explicit, mandatory checkboxes:
+   - `confirm_id`: Teacher formally certifies verification of the student's identity against the class register/ID card.
+   - `confirm_physical`: Teacher certifies physical inspection of the textbook and actual custody handover.
+4. **Atomic Handover Confirmation (`BEGIN IMMEDIATE`):**
+   - Validates that request is currently `approved` and book is currently `reserved`.
+   - Transitions request `status = 'completed'`.
+   - Transitions book `status = 'handed_over'`.
+   - Generates sequential permanent ledger code: `KB-HO-000001`.
+   - Inserts immutable snapshot in `handovers` table (`recipient_name`, `recipient_class`, `recipient_roll_no`, `book_code`, `tracking_code`, `teacher_name`, `handover_date`).
+   - Writes structured audit trail entry in `activity_logs`.
+5. **Printable Distribution Receipt:**
+   - Teacher route: `/teacher/handovers/<id>/receipt`.
+   - Standard A4 layout styled with clean `@media print` CSS.
+   - Contains complete transaction details, textbook description, formal handover statement, and dual signature lines (Authorized Teacher & Student Recipient).
+6. **Reservation Cancellation / Release Control:**
+   - If an approved student fails to collect their reserved book or relocates, teachers can release the reservation via `/teacher/requests/<id>/cancel-reservation`.
+   - Restores book `status = 'available'` in catalogue and sets request `status = 'cancelled'` with recorded reason.
+   - Cancellation is strictly forbidden and blocked after a physical handover is completed.

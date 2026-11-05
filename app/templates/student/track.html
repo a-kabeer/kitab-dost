@@ -75,8 +75,10 @@
           <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">🎉 Approved &amp; Reserved</span>
           {% elif req.status == 'rejected' %}
           <span class="badge badge-danger" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">✕ Not Approved</span>
+          {% elif req.status == 'cancelled' %}
+          <span class="badge badge-danger" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">✕ Reservation Released</span>
           {% elif req.status == 'completed' %}
-          <span class="badge badge-primary" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">🤝 Handed Over</span>
+          <span class="badge badge-primary" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">🤝 Book Handed Over</span>
           {% endif %}
         </div>
       </div>
@@ -113,12 +115,44 @@
           You can browse the school catalogue for other available copies.
         </p>
       </div>
-      {% elif req.status == 'completed' %}
-      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; color: var(--primary-text); margin-bottom: 1.5rem; font-size: 0.95rem;">
-        <strong>🤝 Handover Completed</strong>
+      {% elif req.status == 'cancelled' %}
+      <div style="background-color: var(--danger-bg); border: 1px solid var(--danger); border-radius: var(--radius-md); padding: 1.25rem; color: var(--danger-text); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        <strong>✕ Reservation Released / Cancelled</strong>
         <p style="margin: 0.35rem 0 0; line-height: 1.5;">
-          This book was successfully handed over to you. Best wishes for your studies!
+          Reason: <em>{{ req.rejection_reason or 'The reserved book was not collected within the required timeframe and was released back to the catalogue.' }}</em>
         </p>
+        <p style="margin: 0.5rem 0 0; font-size: 0.85rem;">
+          You can browse the school catalogue for other available copies.
+        </p>
+      </div>
+      {% elif req.status == 'completed' %}
+      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1.5rem; color: var(--primary-text); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        <strong style="font-size: 1.15rem; display: block; margin-bottom: 0.35rem;">
+          🤝 Book Successfully Handed Over!
+        </strong>
+        <p style="margin: 0; line-height: 1.5;">
+          This educational textbook has been officially handed over to you for your academic studies.
+        </p>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed var(--primary-border); font-size: 0.85rem;">
+          {% if req.handover_code %}
+          <div>
+            <span style="color: var(--text-muted); display: block; font-size: 0.75rem; font-weight: 600;">HANDOVER REFERENCE</span>
+            <code style="font-family: monospace; font-weight: 800; font-size: 0.95rem; color: var(--primary);">{{ req.handover_code }}</code>
+          </div>
+          {% endif %}
+          {% if req.handover_date %}
+          <div>
+            <span style="color: var(--text-muted); display: block; font-size: 0.75rem; font-weight: 600;">HANDOVER DATE</span>
+            <strong>{{ req.handover_date[:10] }}</strong>
+          </div>
+          {% endif %}
+          {% if req.handover_teacher_name %}
+          <div>
+            <span style="color: var(--text-muted); display: block; font-size: 0.75rem; font-weight: 600;">VERIFYING TEACHER</span>
+            <strong>{{ req.handover_teacher_name }}</strong>
+          </div>
+          {% endif %}
+        </div>
       </div>
       {% endif %}
 

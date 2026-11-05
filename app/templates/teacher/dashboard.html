@@ -14,14 +14,50 @@
 </div>
 
 <!-- Metric Cards Grid -->
-<div class="dashboard-metrics">
+<div class="dashboard-metrics" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+  <a href="{{ url_for('teacher.requests', status='pending') }}" class="metric-card" style="text-decoration: none; color: inherit;">
+    <div class="metric-header">
+      <span class="metric-title">Pending Requests</span>
+      <div class="metric-icon">📋</div>
+    </div>
+    <div class="metric-value">{{ stats.pending_requests }}</div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Review Queue →</div>
+  </a>
+
+  <a href="{{ url_for('teacher.requests', status='approved') }}" class="metric-card" style="text-decoration: none; color: inherit;">
+    <div class="metric-header">
+      <span class="metric-title">Awaiting Handover</span>
+      <div class="metric-icon">🔒</div>
+    </div>
+    <div class="metric-value">{{ stats.approved_requests }}</div>
+    <div class="metric-footer" style="color: var(--success); font-weight: 600;">Approved / Collection →</div>
+  </a>
+
+  <a href="{{ url_for('teacher.handovers') }}" class="metric-card" style="text-decoration: none; color: inherit;">
+    <div class="metric-header">
+      <span class="metric-title">Completed Handovers</span>
+      <div class="metric-icon">🤝</div>
+    </div>
+    <div class="metric-value">{{ stats.completed_handovers }}</div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Handover Ledger →</div>
+  </a>
+
   <div class="metric-card">
     <div class="metric-header">
-      <span class="metric-title">Available Books</span>
+      <span class="metric-title">Books Reused</span>
+      <div class="metric-icon">🎓</div>
+    </div>
+    <div class="metric-value">{{ stats.reused_books }}</div>
+    <div class="metric-footer">Total textbooks circulated</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-header">
+      <span class="metric-title">Available in Catalogue</span>
       <div class="metric-icon">📚</div>
     </div>
     <div class="metric-value">{{ stats.available_books }}</div>
-    <div class="metric-footer">Approved books in public catalogue</div>
+    <div class="metric-footer">Ready for student requests</div>
   </div>
 
   <a href="{{ url_for('teacher.donations') }}" class="metric-card" style="text-decoration: none; color: inherit;">
@@ -30,26 +66,8 @@
       <div class="metric-icon">📥</div>
     </div>
     <div class="metric-value">{{ stats.pending_donations }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Review Queue →</div>
+    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Donation Queue →</div>
   </a>
-
-  <a href="{{ url_for('teacher.requests') }}" class="metric-card" style="text-decoration: none; color: inherit;">
-    <div class="metric-header">
-      <span class="metric-title">Pending Requests</span>
-      <div class="metric-icon">📋</div>
-    </div>
-    <div class="metric-value">{{ stats.pending_requests }}</div>
-    <div class="metric-footer" style="color: var(--primary); font-weight: 600;">Request Queue →</div>
-  </a>
-
-  <div class="metric-card">
-    <div class="metric-header">
-      <span class="metric-title">Completed Exchanges</span>
-      <div class="metric-icon">🤝</div>
-    </div>
-    <div class="metric-value">{{ stats.total_reused }}</div>
-    <div class="metric-footer">Books handed over to students</div>
-  </div>
 </div>
 
 <!-- Status Card -->

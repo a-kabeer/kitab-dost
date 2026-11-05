@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receipt {{ handover.handover_code }} - {{ school_name }}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+  <style>
+    /* Clean, Professional Printable Receipt Styles */
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 2rem 1rem;
+    }
+
+    .receipt-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .receipt-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .receipt-card {
+      background-color: #ffffff;
+      color: #111827;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px solid #111827;
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .receipt-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin: 0.5rem 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .receipt-school {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #374151;
+      margin: 0 0 0.25rem;
+    }
+
+    .receipt-badge {
+      display: inline-block;
+      background-color: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.5rem;
+    }
+
+    .receipt-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .receipt-section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #4b5563;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .receipt-data-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .receipt-data-label {
+      color: #6b7280;
+    }
+
+    .receipt-data-val {
+      font-weight: 700;
+      color: #111827;
+      text-align: right;
+    }
+
+    .confirmation-statement {
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2.5rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #374151;
+    }
+
+    .signature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3rem;
+      margin-top: 3rem;
+      padding-top: 1rem;
+    }
+
+    .signature-box {
+      text-align: center;
+      border-top: 1px solid #111827;
+      padding-top: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .signature-title {
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    /* Print Specific Rules (Standard A4 Page) */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .receipt-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+      }
+
+      .receipt-card {
+        border: 2px solid #000000 !important;
+        box-shadow: none !important;
+        padding: 2rem !important;
+        border-radius: 0 !important;
+      }
+
+      .receipt-header {
+        border-bottom: 2px solid #000000 !important;
+      }
+
+      .signature-box {
+        border-top: 1px solid #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="receipt-container">
+    <!-- Top Action Bar (Hidden on Print) -->
+    <div class="receipt-actions no-print">
+      <a href="{{ url_for('teacher.handover_detail', handover_id=handover.id) }}" class="btn btn-outline" style="background-color: var(--bg-surface);">
+        ← Back to Handover Detail
+      </a>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" onclick="window.print()" class="btn btn-primary" style="padding: 0.6rem 1.5rem; font-weight: 700;">
+          <span>🖨️</span>
+          <span>Print Receipt (A4)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Official Printable Receipt Card -->
+    <div class="receipt-card">
+      <div class="receipt-header">
+        <div style="font-size: 2rem; margin-bottom: 0.25rem;">📚</div>
+        <div class="receipt-school">{{ school_name }}</div>
+        <h1 class="receipt-title">Kitaab Bank – Book Distribution Receipt</h1>
+        <div class="receipt-badge">Official Handover Completed</div>
+      </div>
+
+      <div class="receipt-grid">
+        <!-- Transaction Identifiers -->
+        <div>
+          <div class="receipt-section-title">Transaction Information</div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Handover Reference:</span>
+            <span class="receipt-data-val" style="font-family: monospace; font-size: 1.05rem;">{{ handover.handover_code }}</span>
+          </div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Request Tracking Code:</span>
+            <span class="receipt-data-val" style="font-family: monospace;">{{ handover.tracking_code }}</span>
+          </div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Handover Date &amp; Time:</span>
+            <span class="receipt-data-val">{{ handover.handover_date }}</span>
+          </div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Verifying Teacher:</span>
+            <span class="receipt-data-val">{{ handover.teacher_name or handover.confirming_teacher_name }}</span>
+          </div>
+        </div>
+
+        <!-- Student Recipient -->
+        <div>
+          <div class="receipt-section-title">Student Recipient Details</div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Student Name:</span>
+            <span class="receipt-data-val">{{ handover.recipient_name }}</span>
+          </div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Class &amp; Section:</span>
+            <span class="receipt-data-val">{{ handover.recipient_class }}</span>
+          </div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">School Roll Number:</span>
+            <span class="receipt-data-val">{{ handover.recipient_roll_no }}</span>
+          </div>
+          {% if handover.recipient_contact %}
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Contact / Parent Phone:</span>
+            <span class="receipt-data-val">{{ handover.recipient_contact }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Book Details -->
+      <div style="margin-bottom: 2rem;">
+        <div class="receipt-section-title">Textbook Description</div>
+        <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem;">
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Book Title:</span>
+            <span class="receipt-data-val" style="font-size: 1.05rem;">{{ handover.book_title }}</span>
+          </div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Official Book Code:</span>
+            <span class="receipt-data-val" style="font-family: monospace; color: #1e40af;">{{ handover.book_code }}</span>
+          </div>
+          <div class="receipt-data-row">
+            <span class="receipt-data-label">Curriculum / Class:</span>
+            <span class="receipt-data-val">{{ handover.book_class }} – {{ handover.book_subject }}</span>
+          </div>
+          <div class="receipt-data-row" style="margin-bottom: 0;">
+            <span class="receipt-data-label">Physical Condition:</span>
+            <span class="receipt-data-val">{{ handover.book_condition }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formal Confirmation Statement -->
+      <div class="confirmation-statement">
+        <strong>Formal Handover Acknowledgment:</strong><br>
+        This textbook has been physically inspected and officially handed over to the student named above for the academic school session. The student agrees to handle the textbook with care and return or pass it forward through Kitaab Bank at the end of the academic year.
+        {% if handover.remarks %}
+        <div style="margin-top: 0.5rem; font-style: italic; color: #4b5563;">
+          Note: {{ handover.remarks }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Dual Signature Lines -->
+      <div class="signature-grid">
+        <div class="signature-box">
+          {{ handover.teacher_name or handover.confirming_teacher_name }}
+          <div class="signature-title">Authorized Teacher / Library Incharge Signature</div>
+        </div>
+
+        <div class="signature-box">
+          {{ handover.recipient_name }}
+          <div class="signature-title">Student / Parent Recipient Signature</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2.5rem; font-size: 0.75rem; color: #9ca3af; border-top: 1px dashed #e5e7eb; padding-top: 0.75rem;">
+        Generated by Kitaab Bank • Smart School Book Exchange • Offline System Verification
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

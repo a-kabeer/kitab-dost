@@ -57,17 +57,12 @@ def run_visual_audit():
         book_count = 0
         approved_count = 0
         handover_count = 0
+    con.close()
 
     if book_count < 18 or approved_count == 0 or handover_count == 0:
         print("\n--- 0. SEEDING CLEAN DEMO DATABASE WITH RELATIONAL INTEGRITY ---")
-        from app import create_app
-        from app.database import init_db
         from scripts.seed_demo import reset_and_seed_demo_data
-
-        flask_app = create_app('production')
-        with flask_app.app_context():
-            init_db(flask_app)
-            reset_and_seed_demo_data(create_safety_backup=False)
+        reset_and_seed_demo_data(create_safety_backup=False)
         print("  ✓ Demo database initialized and seeded successfully.")
     else:
         print(f"\n--- 0. DEMO DATABASE READY ({book_count} books, {approved_count} approved reqs, {handover_count} handovers) ---")

@@ -18,6 +18,14 @@
   border-color: var(--bs-border-color-subtle, var(--bs-border-color)) !important;
 }
 
+.border,
+.border-top,
+.border-bottom,
+.border-start,
+.border-end {
+  border-color: var(--bs-border-color) !important;
+}
+
 /* 2. Brand Identity Tokens & Elements */
 .brand-link {
   display: inline-flex;
@@ -91,6 +99,25 @@
 }
 
 /* 4. Enhanced Interactive Cards */
+.card {
+  --bs-card-bg: var(--kb-bg-surface);
+  background-color: var(--kb-bg-surface);
+  border-color: var(--bs-card-border-color, var(--bs-border-color));
+  color: var(--bs-body-color);
+}
+
+.card.bg-body {
+  background-color: var(--kb-bg-surface) !important;
+}
+
+.card-header {
+  border-bottom-color: var(--bs-border-color);
+}
+
+.card-footer {
+  border-top-color: var(--bs-border-color);
+}
+
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -102,11 +129,36 @@
 }
 
 .table-card {
-  background-color: var(--bs-body-bg);
+  background-color: var(--bs-card-bg);
   border: 1px solid var(--bs-border-color);
   border-radius: var(--bs-border-radius-lg);
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: var(--kb-shadow-sm);
+}
+
+.table-card .table {
+  margin-bottom: 0;
+  --bs-table-bg: var(--bs-card-bg);
+  --bs-table-color: var(--bs-body-color);
+  --bs-table-border-color: var(--bs-border-color);
+}
+
+.table-card .table thead th {
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  border-bottom: 1px solid var(--bs-border-color);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.025em;
+}
+
+.table-card .table tbody tr {
+  background-color: var(--bs-card-bg);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.table-card .table tbody tr:hover {
+  background-color: var(--bs-tertiary-bg);
 }
 
 /* 5. Clean Buttons & Touch Target Standards */
@@ -140,13 +192,112 @@
   margin-bottom: 0.35rem;
 }
 
+.form-control,
+.form-select {
+  background-color: var(--bs-card-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-body-color);
+}
+
 .form-control:focus,
 .form-select:focus {
+  background-color: var(--bs-card-bg);
   border-color: var(--bs-primary);
+  color: var(--bs-body-color);
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
 }
 
-/* 7. Technical & Bidirectional Isolation Codes */
+.form-control::placeholder {
+  color: var(--bs-secondary-color);
+  opacity: 0.85;
+}
+
+.input-group-text {
+  background-color: var(--bs-tertiary-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-secondary-color);
+}
+
+/* 7. Dropdowns, Modals & Accordions */
+.dropdown-menu {
+  background-color: var(--bs-card-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-body-color);
+  box-shadow: var(--bs-box-shadow);
+}
+
+.dropdown-item {
+  color: var(--bs-body-color);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--bs-primary);
+  color: #ffffff;
+}
+
+.modal-content {
+  background-color: var(--bs-card-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-body-color);
+  box-shadow: var(--bs-box-shadow-lg);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--bs-border-color);
+}
+
+.accordion-item {
+  background-color: var(--bs-card-bg);
+  border-color: var(--bs-border-color);
+}
+
+.accordion-button {
+  background-color: var(--bs-card-bg);
+  color: var(--bs-body-color);
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-primary-text-emphasis);
+  box-shadow: inset 0 calc(-1 * var(--bs-accordion-border-width)) 0 var(--bs-border-color);
+}
+
+/* 8. Structural Layout Surfaces (Navbar, Sidebar, Main, Footer) */
+header.sticky-top,
+.navbar {
+  background-color: var(--kb-navbar-bg) !important;
+  border-color: var(--bs-border-color) !important;
+}
+
+.teacher-sidebar,
+.offcanvas,
+#teacherSidebarOffcanvas {
+  background-color: var(--kb-sidebar-bg) !important;
+  border-color: var(--bs-border-color) !important;
+}
+
+.offcanvas-header {
+  border-bottom-color: var(--bs-border-color) !important;
+}
+
+.teacher-main {
+  background-color: var(--kb-bg-body) !important;
+}
+
+footer.bg-body {
+  background-color: var(--kb-navbar-bg) !important;
+  border-color: var(--bs-border-color) !important;
+}
+
+/* 9. Technical & Bidirectional Isolation Codes */
 .kb-code,
 .book-code,
 .tracking-code,

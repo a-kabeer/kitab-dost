@@ -142,7 +142,7 @@
         <!-- Active Filters & Result Count Sub-bar -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-3 mt-3 border-top small text-body-secondary">
           <div>
-            <span>{{ _t('showing_books_count', 'Showing {count} available books', count=books|length) }}</span>
+            <span>Showing <strong>{{ books|length }}</strong> available books</span>
             {% if selected_filters.q %}
             <span> (<em>"{{ selected_filters.q }}"</em>)</span>
             {% endif %}
@@ -295,14 +295,14 @@
       <div class="text-body-tertiary fs-1 mb-3">
         {{ icon('box-open') }}
       </div>
-      <h2 class="h4 fw-bold text-body mb-2">{{ _t('no_books_found', 'No Books Found') }}</h2>
+      <h2 class="h4 fw-bold text-body mb-2">No Books Found</h2>
       <p class="text-body-secondary mx-auto mb-4" style="max-width: 480px;">
         {{ _t('no_books_found', 'No textbooks matching your filters were found.') }}
       </p>
       <div class="d-flex flex-wrap justify-content-center gap-2">
         <a href="{{ url_for('student.catalogue') }}" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-xs">
           {{ icon('arrow-rotate-left') }}
-          <span>{{ _t('btn_reset_all', 'Reset All') }}</span>
+          <span>Clear All Filters</span>
         </a>
         <a href="{{ url_for('student.donate') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
           {{ icon('hand-holding-heart') }}

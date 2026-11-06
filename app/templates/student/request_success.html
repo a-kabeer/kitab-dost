@@ -105,10 +105,3 @@ function copyTrackCode() {
 }
 </script>
 {% endblock %}
-  const code = document.getElementById('track-code').textContent.trim();
-  navigator.clipboard.writeText(code).then(() => {
-    alert('Tracking Code copied to clipboard: ' + code);
-  });
-}
-</script>
-{% endblock %}

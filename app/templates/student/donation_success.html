@@ -14,7 +14,7 @@
 
       <div class="mb-3">
         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1">
-          {{ icon('clock') }} {{ _t('table_status', 'Status') }}: {{ _t('status_pending', 'Awaiting Teacher Approval') }}
+          {{ icon('clock') }} {{ _t('table_status', 'Status') }}: {{ _t('status_awaiting_approval', 'Awaiting Teacher Approval') }}
         </span>
       </div>
 
@@ -101,13 +101,6 @@ function copyRefCode() {
   const code = document.getElementById('ref-code').textContent.trim();
   navigator.clipboard.writeText(code).then(() => {
     alert('Donation Reference Code copied: ' + code);
-  });
-}
-</script>
-{% endblock %}
-  const code = document.getElementById('ref-code').textContent.trim();
-  navigator.clipboard.writeText(code).then(() => {
-    alert('Donation Reference Code copied to clipboard: ' + code);
   });
 }
 </script>

@@ -186,7 +186,7 @@
   "scan_sub": "ڪيمرا يا ڪوڊ ذريعي ڪتاب جا تفصيل فوري حاصل ڪريو۔",
   "scan_camera_heading": "ڪيمرا ڪيو آر اسڪينر",
   "scan_camera_desc": "ڪتاب جي اسٽيڪر تي موجود ڪيو آر ڪوڊ اڳيان ڪيمرا رکو۔",
-  "scan_manual_heading": "ڪوڊ داخل ڪري ڳوليو",
+  "scan_manual_heading": "دستي 6 انگن وارو ڪتاب ڪوڊ داخل ڪريو",
   "scan_manual_placeholder": "ڪتابي ڪوڊ يا ٽريڪنگ ڪوڊ داخل ڪريو...",
   "login_title": "استاد لاگ ان",
   "login_sub": "اسڪول استادن ۽ منتظمن لاءِ خاص انتظامي پورٽل۔",
@@ -328,5 +328,10 @@
   "what_next_title": "اڳتي ڇا ٿيندو؟",
   "rejected_title": "درخواست مڪمل نه ٿي سگهي",
   "teacher_supervision_desc": "هر مليل ڪتاب جي اسڪول استاد تصديق ڪندا آهن. منظوري بعد ڪتاب ڪيٽلاگ ۾ شامل ٿيندو. اوهان جا تفصيل ڪڏهن شايع نه ٿيندا.",
-  "teacher_supervision_notice": "استادن جي نگراني ۽ معيار جي پڪ:"
+  "teacher_supervision_notice": "استادن جي نگراني ۽ معيار جي پڪ:",
+  "status_awaiting_approval": "استاد جي منظوري جو منتظر",
+  "donations_queue_title": "عطيو جائزو قطار",
+  "status_under_teacher_review": "حيثيت: استاد جي جائزي هيٺ",
+  "requests_queue_title": "شاگردن جي درخواستن جي قطار",
+  "teacher_account_security": "استاد اڪائونٽ جي حفاظت"
 }

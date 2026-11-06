@@ -186,7 +186,7 @@
   "scan_sub": "کیمرے یا مینوئل کوڈ کے ذریعے کتاب کی فوری معلومات حاصل کریں۔",
   "scan_camera_heading": "کیمرہ کیو آر اسکینر",
   "scan_camera_desc": "کتاب کے اسٹیکر پر موجود کیو آر کوڈ کے سامنے کیمرہ رکھیں۔",
-  "scan_manual_heading": "کوڈ درج کر کے تلاش کریں",
+  "scan_manual_heading": "دستی 6 ہندسوں کا کتاب کوڈ درج کریں",
   "scan_manual_placeholder": "کتابی کوڈ یا ٹریکنگ کوڈ درج کریں...",
   "login_title": "اساتذہ لاگ ان",
   "login_sub": "اسکول اساتذہ اور منتظمین کے لیے مخصوص انتظامی پورٹل۔",
@@ -328,5 +328,10 @@
   "what_next_title": "آگے کیا ہوگا؟",
   "rejected_title": "درخواست پوری نہیں کی جا سکی",
   "teacher_supervision_desc": "ہر عطیہ کردہ کتاب کی اسکول اساتذہ تصدیق کرتے ہیں۔ منظوری کے بعد کتاب کیٹلاگ میں درج کی جاتی ہے۔ آپ کے ذاتی کوائف کبھی شائع نہیں کیے جاتے۔",
-  "teacher_supervision_notice": "اساتذہ کی نگرانی اور معیار کی ضمانت:"
+  "teacher_supervision_notice": "اساتذہ کی نگرانی اور معیار کی ضمانت:",
+  "status_awaiting_approval": "استاد کی منظوری کا منتظر",
+  "donations_queue_title": "عطیہ جائزہ قطار",
+  "status_under_teacher_review": "حیثیت: استاد کے جائزے کے تحت",
+  "requests_queue_title": "طلباء کی درخواستوں کی قطار",
+  "teacher_account_security": "استاد اکاؤنٹ کی حفاظت"
 }

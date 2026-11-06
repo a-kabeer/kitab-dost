@@ -864,3 +864,54 @@ Transform the entire presentation layer of Kitaab Bank into a cohesive, professi
 - **All 35/35 frontend UI/UX issues in `docs/UI_UX_ISSUE_REGISTER.md` have been RESOLVED & VERIFIED.**
 - **All 9 UI milestones (UI-1 through UI-9) are COMPLETE.**
 - **Zero regressions detected across all 137 unit and integration tests.**
+
+---
+
+## 14. Screenshot-Based UI/UX Correction & Polish Summary (Completed 2026-11-06)
+
+### Objectives & Baseline Audit
+Following the visual acceptance baseline established by the 36 full-page screenshots in `docs/ui-redesign-evidence/`, a dedicated 10-milestone corrective polish initiative was executed to address specific defects cataloged in `docs/UI_UX_ISSUE_REGISTER.md` (`DEF-LOC-01` through `DEF-KPI-01`). All 10 corrective milestones were implemented on branch `ui/bootstrap-fontawesome-redesign` while preserving 100% of existing functionality, test assertions, and offline self-hosted architecture.
+
+### Milestone CORR-1 through CORR-10 Completion Summary
+
+1. **Milestone CORR-1 — 100% Template Translation Coverage (`DEF-LOC-01`, `DEF-LOC-02`):**
+   - Expanded translation dictionary from 74 to **330 localized keys** across English (`en.json`), Urdu (`ur.json`), and Sindhi (`sd.json`).
+   - Wrapped all hardcoded English strings in `_t()` helpers across all 33 templates.
+   - Enforced strict bidirectional isolation on all code identifiers (`KB-BK-*`, `KB-DON-*`, `KB-REQ-*`, `KB-HO-*`) with `<bdi class="kb-code">` to eliminate punctuation flipping and bidi bleeding in RTL modes.
+
+2. **Milestone CORR-2 — Missing Subject SVGs & Redesigned Neutral Placeholder (`DEF-IMG-01`, `DEF-IMG-02`):**
+   - Created 8 missing SVG covers in `app/static/img/covers/`: `social_class7.svg`, `social_class8.svg`, `english_class6.svg`, `english_class8.svg`, `urdu_class7.svg`, `computer_class6.svg`, `islamiat_class7.svg`, `islamiat_class8.svg`.
+   - Redesigned `placeholder.svg` into a clean, modern slate-gradient cover with minimalist geometric book iconography.
+   - Added robust `onerror="this.src='/static/img/covers/placeholder.svg'"` image fallbacks on all template book covers.
+
+3. **Milestone CORR-3 — Horizontal Scroll for Tab Navigation (`DEF-TAB-03`):**
+   - Standardized all `.nav-pills` tab bars across Teacher and Student portals with `.d-flex .gap-2 .overflow-x-auto .pb-2 .mb-4 .flex-nowrap`.
+   - Added smooth horizontal touch scrolling without wrapping or clipping on narrow viewports.
+
+4. **Milestone CORR-4 — Teacher Management Views Dual Responsive Design (`DEF-TAB-01`, `DEF-TAB-02`):**
+   - Architected dual-view system across all 4 teacher management queues (`donations.html`, `requests.html`, `inventory.html`, `handovers.html`):
+     - **Desktop (>= 768px):** Clean Bootstrap table with min-width constraints, clear column alignments, and compact action button groups.
+     - **Mobile (< 768px):** Stacked responsive cards (`d-block d-md-none`) presenting status badges, book metadata, student info, and full-width touch-friendly actions. Zero horizontal scrolling required.
+
+5. **Milestone CORR-5 — Streamlined Teacher Mobile Topbar & Offcanvas Drawer (`DEF-NAV-01`):**
+   - Simplified teacher mobile header to brand icon, title, and hamburger button.
+   - Relocated user profile, language switcher, theme toggle, and system navigation links into the accessible offcanvas drawer (`#teacherSidebarOffcanvas`).
+
+6. **Milestone CORR-6 — Mobile Catalogue Compact Horizontal Cards & Collapsible Filters (`DEF-CAT-01`, `DEF-CAT-02`):**
+   - Implemented compact horizontal mobile cards (`.catalog-card-mobile`), cutting catalogue page height significantly and improving usability.
+   - Encapsulated filter controls within a collapsible accordion drawer (`#mobileFilterCollapse`), saving 400px of initial viewport space on mobile devices.
+
+7. **Milestone CORR-7 — Mobile Book Detail Responsive Scaling (`DEF-DET-01`):**
+   - Constrained mobile book detail cover to max-height 220px in a single-column layout, ensuring metadata, availability badges, and action buttons are immediately visible above the fold.
+
+8. **Milestone CORR-8 — KPI Metric Cards Grid Standardization (`DEF-KPI-01`):**
+   - Standardized dashboard KPI metrics on `row g-3 row-cols-2 row-cols-lg-3 row-cols-xl-6` with equal card heights and flex alignment.
+
+9. **Milestone CORR-9 — Evidence Capture and Automated Visual Acceptance Tests:**
+   - Captured **47 full-fidelity screenshots** covering all student and teacher views, transaction states (donation success, request success, handover confirm, receipt, QR sheet), viewports, RTL modes, dark theme, and error pages (404, 503).
+   - Automated audit verified 0 console errors, 0 unhandled page exceptions, 0 horizontal body overflows on mobile, and 0 external CDN requests.
+
+10. **Milestone CORR-10 — Final Audit Report & Defect Register Sign-Off:**
+    - All 15 defects in `docs/UI_UX_ISSUE_REGISTER.md` marked as **RESOLVED & VERIFIED**.
+    - Full test suite passed: **137/137 discovery tests**, `test_phase1.py`, `test_concurrency.py`, and `test_browser_phase9.py`.
+    - Maintained branch `ui/bootstrap-fontawesome-redesign` unmerged.

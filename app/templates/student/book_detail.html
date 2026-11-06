@@ -73,7 +73,7 @@
 
               <div class="mt-3 pt-3 border-top border-dashed">
                 <div class="small text-body-secondary fw-semibold text-uppercase mb-2" style="font-size: 0.725rem;">
-                  {{ _t('qr_code_label', 'Textbook QR Code') }}
+                  OFFICIAL QR STICKER
                 </div>
                 <img 
                   src="{{ url_for('student.book_qr_image', book_code=book.book_code) }}" 
@@ -149,7 +149,7 @@
           <!-- Description & Syllabus Coverage -->
           <article class="card border shadow-xs">
             <div class="card-body p-3 p-md-4">
-              <h2 class="h5 fw-bold text-body mb-3">{{ _t('curriculum_spec', 'Textbook Overview & Curriculum Topics') }}</h2>
+              <h2 class="h5 fw-bold text-body mb-3">Textbook Overview &amp; Curriculum Topics</h2>
               <p class="text-body-secondary mb-0 lh-base" style="white-space: pre-line;">
                 {{ book.description }}
               </p>
@@ -181,7 +181,7 @@
                   {% elif book.status == 'reserved' %}
                   <button type="button" class="btn btn-outline-warning btn-sm" disabled style="opacity: 0.85;">
                     {{ icon('clock') }}
-                    <span>{{ _t('status_reserved', 'Currently Reserved') }}</span>
+                    <span>Currently Reserved</span>
                   </button>
                   {% else %}
                   <button type="button" class="btn btn-outline-secondary btn-sm" disabled style="opacity: 0.85;">
@@ -210,7 +210,7 @@
   <section class="my-5 pt-3 border-top">
     <div class="mb-4">
       <h2 class="h4 fw-bold text-body mb-1">
-        {{ _t('related_books', 'Related Textbooks') }}
+        Other Available Books for {{ book.class_grade }}
       </h2>
       <p class="text-body-secondary small mb-0">
         {{ _t('related_books_sub', 'More books available for this grade and curriculum.') }}

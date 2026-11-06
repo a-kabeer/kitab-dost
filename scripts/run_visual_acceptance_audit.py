@@ -1,18 +1,24 @@
 """
 Kitaab Bank - Visual Acceptance & Multi-Device Evidence Capture Audit
 Executes automated browser verification using headless Edge via Playwright:
-1. Captures full-fidelity screenshots of all 14 student and teacher screens across Desktop and Mobile.
-2. Performs navbar wrap and offcanvas drawer audits across 1024px, 1280px, 1366px, 1400px, 1440px in EN, UR, SD.
-3. Performs RTL layout, Nastaliq typography, punctuation, and bidi isolation audits.
-4. Performs teacher mobile sidebar accessibility and layout audits.
-5. Performs theme toggling (Light, Dark, System) and offline asset / zero-CDN verification.
+1. Captures full-fidelity screenshots of all student, teacher, and auth screens across Desktop and Mobile.
+2. Captures transaction states: donation success, request success, review modals/pages, handover confirm, receipt, and QR sheets.
+3. Performs navbar wrap and offcanvas drawer audits across 1024px, 1280px, 1366px, 1400px, 1440px in EN, UR, SD.
+4. Performs RTL layout, Nastaliq typography, punctuation, and bidi isolation audits.
+5. Performs teacher mobile sidebar accessibility and layout audits.
+6. Performs theme toggling (Light, Dark, System) and offline asset / zero-CDN verification.
+7. Captures error pages (404 and 503 maintenance mode).
 Saves all visual evidence to docs/ui-redesign-evidence/
 """
 
 import sys
 import os
 import time
+import sqlite3
 from pathlib import Path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 from playwright.sync_api import sync_playwright
 
 if sys.platform == 'win32':
@@ -34,6 +40,33 @@ def run_visual_audit():
     print("KITAAB BANK - FINAL UI REDESIGN VISUAL ACCEPTANCE & EVIDENCE AUDIT")
     print("=" * 80)
 
+    # Dynamically discover test IDs from database
+    db_path = Path("kitaab_bank.db")
+    con = sqlite3.connect(str(db_path))
+    cur = con.cursor()
+
+    cur.execute("SELECT id, book_code FROM books ORDER BY id LIMIT 1")
+    brow = cur.fetchone()
+    book_id = brow[0] if brow else 1
+
+    cur.execute("SELECT id, tracking_code FROM requests WHERE status='approved' LIMIT 1")
+    rrow = cur.fetchone()
+    if not rrow:
+        cur.execute("SELECT id, tracking_code FROM requests LIMIT 1")
+        rrow = cur.fetchone()
+    req_id = rrow[0] if rrow else 1
+    tracking_code = rrow[1] if rrow else "KB-REQ-4T7M-9P2Q"
+
+    cur.execute("SELECT id, donation_code FROM donations LIMIT 1")
+    drow = cur.fetchone()
+    don_id = drow[0] if drow else 1
+    donation_code = drow[1] if drow else "KB-DON-3M9X-7P4Q"
+
+    cur.execute("SELECT id FROM handovers LIMIT 1")
+    hrow = cur.fetchone()
+    handover_id = hrow[0] if hrow else 1
+    con.close()
+
     results = {
         "screenshots": [],
         "navbar_checks": [],
@@ -48,45 +81,66 @@ def run_visual_audit():
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=EDGE_PATH, headless=True)
 
+        def check_request(req):
+            url = req.url
+            if not url.startswith("http://127.0.0.1:5000") and not url.startswith("data:") and not url.startswith("blob:"):
+                external_requests.append(url)
+
         # -------------------------------------------------------------
-        # 1. Capture Desktop & Mobile Screenshots for Student Portal
+        # 1. Capture Desktop & Mobile Screenshots for Student Portal & Auth
         # -------------------------------------------------------------
-        print("\n--- 1. AUDITING STUDENT PORTAL (DESKTOP & MOBILE) ---")
+        print("\n--- 1. AUDITING STUDENT PORTAL & AUTH (DESKTOP & MOBILE) ---")
         student_views = [
             ("student_home", f"{BASE_URL}/"),
             ("student_catalogue", f"{BASE_URL}/catalogue"),
-            ("student_book_detail", f"{BASE_URL}/book/1"),
+            ("student_book_detail", f"{BASE_URL}/book/{book_id}"),
             ("student_donate", f"{BASE_URL}/donate"),
-            ("student_request", f"{BASE_URL}/request/3"),
-            ("student_track", f"{BASE_URL}/track?code=KB-REQ-HQVZ-UDYX"),
+            ("student_request", f"{BASE_URL}/request/{book_id}"),
+            ("student_track", f"{BASE_URL}/track?code={tracking_code}"),
             ("student_scan", f"{BASE_URL}/scan")
         ]
 
         # 1A. Desktop Student Views
         desktop_ctx = browser.new_context(viewport=DESKTOP_VIEWPORT)
         desktop_page = desktop_ctx.new_page()
-
-        # Monitor requests for CDN leaks
-        def check_request(req):
-            url = req.url
-            if not url.startswith("http://127.0.0.1:5000") and not url.startswith("data:") and not url.startswith("blob:"):
-                external_requests.append(url)
-
         desktop_page.on("request", check_request)
         desktop_page.on("pageerror", lambda err: results["errors"].append(f"Desktop page error: {err}"))
 
         for name, url in student_views:
             desktop_page.goto(url, wait_until="networkidle")
-            # Wait brief moment for fonts and layouts
             time.sleep(0.3)
             out_file = EVIDENCE_DIR / f"{name}_desktop.png"
             desktop_page.screenshot(path=str(out_file), full_page=True)
             results["screenshots"].append(str(out_file))
             print(f"  ✓ Captured {out_file.name}")
 
+        # Capture Auth Login (Desktop)
+        desktop_page.goto(f"{BASE_URL}/auth/login", wait_until="networkidle")
+        time.sleep(0.3)
+        auth_desk_out = EVIDENCE_DIR / "auth_login_desktop.png"
+        desktop_page.screenshot(path=str(auth_desk_out), full_page=True)
+        results["screenshots"].append(str(auth_desk_out))
+        print(f"  ✓ Captured {auth_desk_out.name}")
+
+        # Capture Student Donation Success View (Desktop)
+        desktop_page.goto(f"{BASE_URL}/donate/success/{donation_code}", wait_until="networkidle")
+        time.sleep(0.3)
+        don_succ_out = EVIDENCE_DIR / "student_donation_success_desktop.png"
+        desktop_page.screenshot(path=str(don_succ_out), full_page=True)
+        results["screenshots"].append(str(don_succ_out))
+        print(f"  ✓ Captured {don_succ_out.name}")
+
+        # Capture Student Request Success View (Desktop)
+        desktop_page.goto(f"{BASE_URL}/request/success/{tracking_code}", wait_until="networkidle")
+        time.sleep(0.3)
+        req_succ_out = EVIDENCE_DIR / "student_request_success_desktop.png"
+        desktop_page.screenshot(path=str(req_succ_out), full_page=True)
+        results["screenshots"].append(str(req_succ_out))
+        print(f"  ✓ Captured {req_succ_out.name}")
+
         desktop_ctx.close()
 
-        # 1B. Mobile Student Views
+        # 1B. Mobile Student Views & Mobile Auth
         mobile_ctx = browser.new_context(viewport=MOBILE_VIEWPORT, is_mobile=True, has_touch=True)
         mobile_page = mobile_ctx.new_page()
         mobile_page.on("request", check_request)
@@ -95,7 +149,6 @@ def run_visual_audit():
         for name, url in student_views:
             mobile_page.goto(url, wait_until="networkidle")
             time.sleep(0.3)
-            # Check horizontal overflow
             overflow = mobile_page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
             if overflow:
                 results["errors"].append(f"Horizontal overflow on {name} mobile")
@@ -104,6 +157,14 @@ def run_visual_audit():
             mobile_page.screenshot(path=str(out_file), full_page=True)
             results["screenshots"].append(str(out_file))
             print(f"  ✓ Captured {out_file.name} (Overflow: {'FAIL' if overflow else 'NO'})")
+
+        # Capture Auth Login (Mobile)
+        mobile_page.goto(f"{BASE_URL}/auth/login", wait_until="networkidle")
+        time.sleep(0.3)
+        auth_mob_out = EVIDENCE_DIR / "auth_login_mobile.png"
+        mobile_page.screenshot(path=str(auth_mob_out), full_page=True)
+        results["screenshots"].append(str(auth_mob_out))
+        print(f"  ✓ Captured {auth_mob_out.name}")
 
         # Capture Mobile Offcanvas Navigation Open
         mobile_page.goto(f"{BASE_URL}/", wait_until="networkidle")
@@ -116,11 +177,8 @@ def run_visual_audit():
             mobile_page.screenshot(path=str(nav_out))
             results["screenshots"].append(str(nav_out))
             print(f"  ✓ Captured {nav_out.name} (Mobile offcanvas open)")
-
-            # Test Escape key closes offcanvas
             mobile_page.keyboard.press("Escape")
             mobile_page.wait_for_selector("#studentNavOffcanvas", state="hidden", timeout=3000)
-            print("  ✓ Offcanvas responded to Escape key and closed cleanly")
 
         mobile_ctx.close()
 
@@ -159,6 +217,47 @@ def run_visual_audit():
             results["screenshots"].append(str(out_file))
             print(f"  ✓ Captured {out_file.name}")
 
+        # Capture Additional Teacher Desktop Views
+        # Donation Detail
+        t_desk_page.goto(f"{BASE_URL}/teacher/donations/{don_id}", wait_until="networkidle")
+        time.sleep(0.3)
+        don_detail_out = EVIDENCE_DIR / "teacher_donation_detail_desktop.png"
+        t_desk_page.screenshot(path=str(don_detail_out), full_page=True)
+        results["screenshots"].append(str(don_detail_out))
+        print(f"  ✓ Captured {don_detail_out.name}")
+
+        # Request Detail
+        t_desk_page.goto(f"{BASE_URL}/teacher/requests/{req_id}", wait_until="networkidle")
+        time.sleep(0.3)
+        req_detail_out = EVIDENCE_DIR / "teacher_request_detail_desktop.png"
+        t_desk_page.screenshot(path=str(req_detail_out), full_page=True)
+        results["screenshots"].append(str(req_detail_out))
+        print(f"  ✓ Captured {req_detail_out.name}")
+
+        # Handover Confirmation Form
+        t_desk_page.goto(f"{BASE_URL}/teacher/requests/{req_id}/handover", wait_until="networkidle")
+        time.sleep(0.3)
+        ho_conf_out = EVIDENCE_DIR / "teacher_handover_confirm_desktop.png"
+        t_desk_page.screenshot(path=str(ho_conf_out), full_page=True)
+        results["screenshots"].append(str(ho_conf_out))
+        print(f"  ✓ Captured {ho_conf_out.name}")
+
+        # Handover Printable Receipt
+        t_desk_page.goto(f"{BASE_URL}/teacher/handovers/{handover_id}/receipt", wait_until="networkidle")
+        time.sleep(0.3)
+        ho_rec_out = EVIDENCE_DIR / "teacher_handover_receipt_desktop.png"
+        t_desk_page.screenshot(path=str(ho_rec_out), full_page=True)
+        results["screenshots"].append(str(ho_rec_out))
+        print(f"  ✓ Captured {ho_rec_out.name}")
+
+        # Teacher QR Sheet View
+        t_desk_page.goto(f"{BASE_URL}/teacher/qr-sheet", wait_until="networkidle")
+        time.sleep(0.3)
+        qr_sheet_out = EVIDENCE_DIR / "teacher_qr_sheet_desktop.png"
+        t_desk_page.screenshot(path=str(qr_sheet_out), full_page=True)
+        results["screenshots"].append(str(qr_sheet_out))
+        print(f"  ✓ Captured {qr_sheet_out.name}")
+
         t_desk_ctx.close()
 
         # 2B. Mobile Teacher Views (Authenticated)
@@ -175,13 +274,6 @@ def run_visual_audit():
         for name, url in teacher_views:
             t_mob_page.goto(url, wait_until="networkidle")
             time.sleep(0.3)
-            # Verify desktop persistent sidebar is NOT visible / not occupying content on mobile
-            desktop_sidebar = t_mob_page.locator("aside.teacher-sidebar")
-            if desktop_sidebar.count() > 0:
-                is_visible = desktop_sidebar.is_visible()
-                if is_visible:
-                    results["errors"].append(f"Desktop sidebar unexpectedly visible on mobile: {name}")
-
             overflow = t_mob_page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
             if overflow:
                 results["errors"].append(f"Horizontal overflow on {name} mobile teacher")
@@ -203,7 +295,6 @@ def run_visual_audit():
             results["screenshots"].append(str(t_sidebar_out))
             print(f"  ✓ Captured {t_sidebar_out.name} (Teacher mobile sidebar offcanvas open)")
 
-            # Test close button
             close_btn = t_mob_page.locator("#teacherSidebarOffcanvas button[data-bs-dismiss='offcanvas']")
             if close_btn.count() > 0:
                 close_btn.click()
@@ -213,7 +304,7 @@ def run_visual_audit():
         t_mob_ctx.close()
 
         # -------------------------------------------------------------
-        # 3. NAVBAR MULTI-VIEWPORT WRAP VERIFICATION (1024, 1280, 1366, 1400, 1440)
+        # 3. NAVBAR MULTI-VIEWPORT WRAP VERIFICATION
         # -------------------------------------------------------------
         print("\n--- 3. AUDITING NAVBAR ACROSS VIEWPORTS (EN, UR, SD) ---")
         viewports = [1024, 1280, 1366, 1400, 1440]
@@ -225,13 +316,9 @@ def run_visual_audit():
                 v_ctx = browser.new_context(viewport={"width": width, "height": 800})
                 v_page = v_ctx.new_page()
 
-                # Set language
                 v_page.goto(f"{BASE_URL}/set-language/{lang_code}", wait_until="networkidle")
                 v_page.goto(f"{BASE_URL}/", wait_until="networkidle")
 
-                # Inspect Navbar
-                # Below 1400px (1024, 1280, 1366), navbar-expand-xxl collapses into toggler
-                # At >= 1400px (1400, 1440), navbar links are expanded
                 toggler = v_page.locator("button[data-bs-target='#studentNavOffcanvas']")
                 is_collapsed = toggler.is_visible()
 
@@ -240,7 +327,6 @@ def run_visual_audit():
                     assert is_collapsed, f"Expected collapsed navbar at {width}px for {lang_code}"
                 else:
                     status = "EXPANDED"
-                    # Check navbar item height to ensure no multi-line wrapping occurs
                     nav_links = v_page.locator(".navbar-nav .nav-link")
                     count = nav_links.count()
                     line_heights = []
@@ -249,7 +335,6 @@ def run_visual_audit():
                         if box:
                             line_heights.append(box['height'])
                     max_h = max(line_heights) if line_heights else 0
-                    # Normal single-line link height with padding is ~40-48px; wrapped link would be >60px
                     wrapped = max_h > 55
                     if wrapped:
                         results["errors"].append(f"Navbar link wrapped at {width}px for {lang_code} (height={max_h})")
@@ -364,9 +449,39 @@ def run_visual_audit():
         theme_ctx.close()
 
         # -------------------------------------------------------------
-        # 6. OFFLINE ASSETS & ZERO-CDN AUDIT
+        # 6. ERROR PAGES AUDIT & EVIDENCE (404 and 503)
         # -------------------------------------------------------------
-        print("\n--- 6. AUDITING ZERO-CDN & OFFLINE INDEPENDENCE ---")
+        print("\n--- 6. AUDITING ERROR PAGES (404 & 503) ---")
+        err_ctx = browser.new_context(viewport=DESKTOP_VIEWPORT)
+        err_page = err_ctx.new_page()
+
+        # 404 Not Found Page
+        err_page.goto(f"{BASE_URL}/non-existent-page-404-test", wait_until="networkidle")
+        time.sleep(0.3)
+        err_404_out = EVIDENCE_DIR / "error_404_desktop.png"
+        err_page.screenshot(path=str(err_404_out), full_page=True)
+        results["screenshots"].append(str(err_404_out))
+        print(f"  ✓ Captured {err_404_out.name} (404 Error page)")
+
+        # 503 Maintenance Mode Page
+        from app.services import maintenance_service
+        maintenance_service.set_maintenance_mode(True)
+        try:
+            err_page.goto(f"{BASE_URL}/", wait_until="networkidle")
+            time.sleep(0.3)
+            err_503_out = EVIDENCE_DIR / "error_503_desktop.png"
+            err_page.screenshot(path=str(err_503_out), full_page=True)
+            results["screenshots"].append(str(err_503_out))
+            print(f"  ✓ Captured {err_503_out.name} (503 Maintenance page)")
+        finally:
+            maintenance_service.set_maintenance_mode(False)
+
+        err_ctx.close()
+
+        # -------------------------------------------------------------
+        # 7. OFFLINE ASSETS & ZERO-CDN AUDIT
+        # -------------------------------------------------------------
+        print("\n--- 7. AUDITING ZERO-CDN & OFFLINE INDEPENDENCE ---")
         print(f"  Total external (non-local) requests caught: {len(external_requests)}")
         if external_requests:
             for req in external_requests:

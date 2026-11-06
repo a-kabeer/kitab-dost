@@ -16,7 +16,29 @@
 </div>
 
 <!-- Settings Navigation Tabs -->
-<div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap">
+<!-- Mobile Tab Selector (< md) -->
+<div class="d-block d-md-none mb-3">
+  <label for="mobileSettingsTabSelect" class="form-label small fw-semibold text-body-secondary mb-1 visually-hidden">
+    {{ _t('settings_section', 'Settings Section') }}
+  </label>
+  <select id="mobileSettingsTabSelect" class="form-select shadow-xs" onchange="window.location.href=this.value;" aria-label="{{ _t('settings_section', 'Settings Section') }}">
+    <option value="{{ url_for('teacher.settings', tab='profile') }}" {% if active_tab == 'profile' %}selected{% endif %}>
+      {{ _t('tab_profile', 'School Profile') }}
+    </option>
+    <option value="{{ url_for('teacher.settings', tab='security') }}" {% if active_tab == 'security' %}selected{% endif %}>
+      {{ _t('tab_security', 'Account Security') }}
+    </option>
+    <option value="{{ url_for('teacher.settings', tab='backup') }}" {% if active_tab == 'backup' %}selected{% endif %}>
+      {{ _t('tab_backup', 'Live Backups') }} ({{ backups|length }})
+    </option>
+    <option value="{{ url_for('teacher.settings', tab='demo') }}" {% if active_tab == 'demo' %}selected{% endif %}>
+      {{ _t('tab_demo', 'Exhibition Showcase Mode') }}
+    </option>
+  </select>
+</div>
+
+<!-- Desktop Settings Navigation Tabs (>= md) -->
+<div class="d-none d-md-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap" role="tablist">
   <a href="{{ url_for('teacher.settings', tab='profile') }}" class="btn btn-sm text-nowrap {% if active_tab == 'profile' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
     {{ icon('school') }}
     <span>{{ _t('tab_profile', 'School Profile') }}</span>

@@ -196,3 +196,13 @@ body {
   font-weight: 500;
   color: var(--kb-text-muted);
 }
+
+/* Accessible keyboard focus indicator */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}

@@ -42,16 +42,29 @@ def run_visual_audit():
     print("=" * 80)
 
     # 0. Ensure fresh demo dataset with valid relational foreign keys
-    print("\n--- 0. SEEDING CLEAN DEMO DATABASE WITH RELATIONAL INTEGRITY ---")
-    from app import create_app
-    from app.database import init_db
-    from scripts.seed_demo import reset_and_seed_demo_data
+    db_path = Path("kitaab_bank.db")
+    con = sqlite3.connect(str(db_path), timeout=5.0)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    try:
+        cur.execute("SELECT COUNT(*) FROM books")
+        book_count = cur.fetchone()[0]
+    except Exception:
+        book_count = 0
 
-    flask_app = create_app('production')
-    with flask_app.app_context():
-        init_db(flask_app)
-        reset_and_seed_demo_data()
-    print("  ✓ Demo database initialized and seeded successfully.")
+    if book_count < 18:
+        print("\n--- 0. SEEDING CLEAN DEMO DATABASE WITH RELATIONAL INTEGRITY ---")
+        from app import create_app
+        from app.database import init_db
+        from scripts.seed_demo import reset_and_seed_demo_data
+
+        flask_app = create_app('production')
+        with flask_app.app_context():
+            init_db(flask_app)
+            reset_and_seed_demo_data(create_safety_backup=False)
+        print("  ✓ Demo database initialized and seeded successfully.")
+    else:
+        print(f"\n--- 0. DEMO DATABASE READY ({book_count} books in inventory) ---")
 
     # Dynamically discover test IDs from database
     db_path = Path("kitaab_bank.db")

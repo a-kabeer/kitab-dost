@@ -264,7 +264,7 @@
             {% set alert_icon = 'circle-xmark' if alert_type == 'danger' else ('triangle-exclamation' if alert_type == 'warning' else ('circle-check' if alert_type == 'success' else 'circle-info')) %}
             <div class="alert alert-{{ alert_type }} alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm mb-3" role="alert">
               <span class="fs-5 flex-shrink-0">{{ icon(alert_icon) }}</span>
-              <div class="flex-grow-1">{{ message }}</div>
+              <div class="flex-grow-1">{{ _t(message, message) }}</div>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           {% endfor %}

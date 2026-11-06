@@ -186,10 +186,10 @@
     {% for cls in report.class_distribution %}
     <div class="card border bg-body-tertiary shadow-xs p-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <h3 class="h6 fw-bold text-body mb-0">{{ cls.class_grade }}</h3>
+        <h3 class="h6 fw-bold text-body mb-0">{{ _t(cls.class_grade, cls.class_grade) }}</h3>
         <span class="badge bg-primary text-white">{{ cls.percentage }}% {{ _t('table_share', 'Share') }}</span>
       </div>
-      <div class="row text-center g-2 mb-2 py-2 border-top border-bottom border-dashed small">
+      <div class="row text-center g-2 mb-2 py-2 border-top border-bottom border-secondary-subtle small">
         <div class="col-3">
           <div class="text-body-secondary fs-8">{{ _t('table_total_books', 'Total') }}</div>
           <div class="fw-bold text-body">{{ cls.total }}</div>

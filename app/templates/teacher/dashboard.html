@@ -171,12 +171,12 @@
   <div class="col">
     <a href="{{ url_for('teacher.donations') }}" class="card h-100 border shadow-xs card-hover text-decoration-none p-3">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('kpi_pending_donations', 'Donations') }}</span>
+        <span class="small text-body-secondary fw-semibold text-uppercase" style="font-size: 0.7rem;">{{ _t('kpi_total_donations', 'Total Donations') }}</span>
         <div class="text-primary fs-5">{{ icon('inbox') }}</div>
       </div>
       <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.total_donations }}</div>
       <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
-        <span>{{ _t('action_queue', 'Queue') }}</span> {{ icon('arrow-right') }}
+        <span>{{ _t('action_queue', 'Queue') }}</span> ({{ analytics.summary.pending_donations }} {{ _t('status_pending', 'pending') }}) {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -199,7 +199,7 @@
         {% for cls in analytics.class_distribution %}
         <div>
           <div class="d-flex justify-content-between align-items-center small mb-1">
-            <span class="fw-semibold text-body">{{ cls.class_grade }}</span>
+            <span class="fw-semibold text-body">{{ _t(cls.class_grade, cls.class_grade) }}</span>
             <span class="text-body-secondary">
               <strong>{{ cls.total }}</strong> {{ _t('kpi_total_books', 'books') }} ({{ cls.percentage }}%)
               &bull; <span class="text-success">{{ cls.available }} {{ _t('stat_avail_short', 'Avail') }}</span>
@@ -240,7 +240,7 @@
         <div>
           <div class="d-flex justify-content-between align-items-center small mb-1">
             <span class="badge bg-{{ 'primary' if st.color == 'primary' else ('success' if st.color == 'success' else ('warning' if st.color == 'warning' else ('danger' if st.color == 'danger' else 'secondary'))) }}-subtle text-{{ 'primary' if st.color == 'primary' else ('success' if st.color == 'success' else ('warning' if st.color == 'warning' else ('danger' if st.color == 'danger' else 'secondary'))) }} border">
-              {{ st.label }}
+              {{ _t('status_label_' + st.code, st.label) }}
             </span>
             <span class="text-body-secondary">
               <strong>{{ st.count }}</strong> {{ _t('kpi_total_books', 'books') }} ({{ st.percentage }}%)
@@ -294,7 +294,7 @@
         {% for sb in analytics.subject_distribution[:6] %}
         <div>
           <div class="d-flex justify-content-between align-items-center small mb-1">
-            <span class="fw-semibold text-body">{{ sb.subject }}</span>
+            <span class="fw-semibold text-body">{{ _t(sb.subject, sb.subject) }}</span>
             <span class="text-body-secondary">
               <strong>{{ sb.total }}</strong> {{ _t('kpi_total_books', 'books') }} ({{ sb.percentage }}%)
               &bull; {{ sb.available }} {{ _t('stat_avail_short', 'avail') }}
@@ -332,12 +332,12 @@
               {% elif 'handover' in act.action %}bg-success-subtle text-success border border-success-subtle
               {% elif 'book' in act.action %}bg-info-subtle text-info-emphasis border border-info-subtle
               {% else %}bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle{% endif %}">
-              {{ act.action.replace('_', ' ') }}
+              {{ _t('action_' + act.action, act.action.replace('_', ' ')) }}
             </span>
             <div class="flex-grow-1 overflow-hidden">
               <div class="small text-body text-truncate">{{ act.details }}</div>
               <div class="text-body-secondary" style="font-size: 0.725rem;">
-                By <strong>{{ act.actor_name }}</strong> ({{ act.actor_type }}) &bull; <bdi class="kb-code">{{ act.created_at }}</bdi>
+                {{ _t('by_prefix', 'By') }} <strong>{{ act.actor_name }}</strong> ({{ _t('actor_' + act.actor_type, act.actor_type) }}) &bull; <bdi class="kb-code">{{ act.created_at }}</bdi>
               </div>
             </div>
           </div>

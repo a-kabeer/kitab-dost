@@ -305,10 +305,10 @@
             <div class="mb-2">
               <h3 class="h6 fw-bold text-body mb-1 text-truncate" title="{{ r.book_title }}">{{ r.book_title }}</h3>
               <div class="small text-body-secondary">
-                Code: <bdi class="kb-code text-primary">{{ r.book_code }}</bdi> &bull; {{ r.book_class }}
+                Code: <bdi class="kb-code text-primary">{{ r.book_code }}</bdi> &bull; {{ _t(r.book_class, r.book_class) }}
               </div>
             </div>
-            <div class="small text-body-secondary border-top border-dashed pt-2 mt-2">
+            <div class="small text-body-secondary border-top border-secondary-subtle pt-2 mt-2">
               <div><strong>{{ _t('table_requester', 'Student') }}:</strong> {{ r.requester_name }} ({{ r.requester_class }}, Roll: {{ r.requester_roll_no }})</div>
               {% if r.requester_contact %}
               <div><strong>{{ _t('contact_number', 'Contact') }}:</strong> <bdi class="kb-code">{{ r.requester_contact }}</bdi></div>

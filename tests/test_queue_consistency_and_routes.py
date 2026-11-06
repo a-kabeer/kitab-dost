@@ -296,5 +296,39 @@ class TestQueueConsistencyAndRoutes(unittest.TestCase):
             self.assertEqual(res.status_code, 200)
             self.assertIn(b'QR', res.data)
 
+    def test_teacher_dashboard_donation_metric_and_rtl_localization(self):
+        """Assert Teacher Dashboard displays Total Donations matching analytics.summary.total_donations and RTL localization works."""
+        from app.services import analytics_service
+        self._login_teacher()
+
+        with self.app.app_context():
+            analytics = analytics_service.get_dashboard_analytics()
+            self.assertEqual(analytics['summary']['total_donations'], 3)
+            self.assertEqual(analytics['summary']['pending_donations'], 1)
+
+            # English Dashboard
+            res = self.client.get('/teacher/dashboard')
+            self.assertEqual(res.status_code, 200)
+            # Must show Total Donations KPI
+            self.assertIn(b'Total Donations', res.data)
+            self.assertIn(b'3', res.data)
+            self.assertIn(b'Queue', res.data)
+
+            # Switch to Urdu
+            self.client.get('/set-language/ur')
+            res_ur = self.client.get('/teacher/dashboard')
+            self.assertEqual(res_ur.status_code, 200)
+            # Must show Urdu Total Donations label: کل عطیات
+            self.assertIn('کل عطیات'.encode('utf-8'), res_ur.data)
+            # Must show Urdu status label: کیٹلاگ میں دستیاب
+            self.assertIn('کیٹلاگ میں دستیاب'.encode('utf-8'), res_ur.data)
+
+            # Switch to Sindhi
+            self.client.get('/set-language/sd')
+            res_sd = self.client.get('/catalogue')
+            self.assertEqual(res_sd.status_code, 200)
+            # Must show Sindhi Available status label
+            self.assertIn('دستياب'.encode('utf-8'), res_sd.data)
+
 if __name__ == '__main__':
     unittest.main()

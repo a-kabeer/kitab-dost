@@ -184,7 +184,7 @@
               {% if book.image_path %}
                 <img src="{{ url_for('static', filename=book.image_path) }}" alt="{{ book.title }}" class="rounded border object-fit-cover" style="width: 44px; height: 58px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';">
               {% else %}
-                <div class="rounded border border-dashed bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary" style="width: 44px; height: 58px;">
+                <div class="rounded border border-secondary-subtle bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary" style="width: 44px; height: 58px;">
                   {{ icon('book', extra_class='fs-5') }}
                 </div>
               {% endif %}
@@ -306,21 +306,21 @@
             {% if book.image_path %}
             <img src="{{ url_for('static', filename=book.image_path) }}" alt="{{ book.title }}" class="rounded border object-fit-cover flex-shrink-0" style="width: 44px; height: 58px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';">
             {% else %}
-            <div class="rounded border border-dashed bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary flex-shrink-0" style="width: 44px; height: 58px;">
+            <div class="rounded border border-secondary-subtle bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary flex-shrink-0" style="width: 44px; height: 58px;">
               {{ icon('book', extra_class='fs-5') }}
             </div>
             {% endif %}
             <div class="flex-grow-1 overflow-hidden">
               <h3 class="h6 fw-bold text-body mb-0 text-truncate" title="{{ book.title }}">{{ book.title }}</h3>
-              <div class="small text-body-secondary text-truncate mb-1" style="font-size: 0.775rem;">{{ book.author or 'Unknown' }} &bull; {{ book.language }}</div>
+              <div class="small text-body-secondary text-truncate mb-1" style="font-size: 0.775rem;">{{ book.author or 'Unknown' }} &bull; {{ _t(book.language, book.language) }}</div>
               <div class="d-flex flex-wrap gap-1">
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">{{ book.class_grade }}</span>
-                <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" style="font-size: 0.7rem;">{{ book.subject }}</span>
-                <span class="badge {% if book.condition_state == 'Like New' %}bg-success-subtle text-success{% elif book.condition_state == 'Good' %}bg-info-subtle text-info-emphasis{% else %}bg-warning-subtle text-warning-emphasis{% endif %} border" style="font-size: 0.7rem;">{{ book.condition_state }}</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">{{ _t(book.class_grade, book.class_grade) }}</span>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" style="font-size: 0.7rem;">{{ _t(book.subject, book.subject) }}</span>
+                <span class="badge {% if book.condition_state == 'Like New' %}bg-success-subtle text-success{% elif book.condition_state == 'Good' %}bg-info-subtle text-info-emphasis{% else %}bg-warning-subtle text-warning-emphasis{% endif %} border" style="font-size: 0.7rem;">{{ _t(book.condition_state, book.condition_state) }}</span>
               </div>
             </div>
           </div>
-          <div class="small text-body-secondary border-top border-dashed pt-1 mt-1 d-flex justify-content-between" style="font-size: 0.725rem;">
+          <div class="small text-body-secondary border-top border-secondary-subtle pt-1 mt-1 d-flex justify-content-between" style="font-size: 0.725rem;">
             <span>{{ book.publisher or 'Official' }}</span>
             <span>Added: <bdi class="kb-code">{{ book.created_at[:10] if book.created_at else '—' }}</bdi></span>
           </div>

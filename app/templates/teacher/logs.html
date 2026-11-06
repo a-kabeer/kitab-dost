@@ -39,7 +39,7 @@
           <option value="">{{ _t('filter_all_actions', 'All Actions') }}</option>
           {% for act in distinct_actions %}
             <option value="{{ act }}" {% if action_filter == act %}selected{% endif %}>
-              {{ act.replace('_', ' ').capitalize() }}
+              {{ _t('action_' + act, act.replace('_', ' ').capitalize()) }}
             </option>
           {% endfor %}
         </select>
@@ -50,7 +50,7 @@
           <option value="">{{ _t('filter_all_actors', 'All Actors') }}</option>
           {% for at in distinct_actors %}
             <option value="{{ at }}" {% if actor_filter == at %}selected{% endif %}>
-              {{ at.capitalize() }}
+              {{ _t('actor_' + at, at.capitalize()) }}
             </option>
           {% endfor %}
         </select>
@@ -107,7 +107,7 @@
               {% elif 'book' in log.action %}bg-primary-subtle text-primary border border-primary-subtle
               {% elif 'login' in log.action or 'logout' in log.action %}bg-secondary-subtle text-secondary border border-secondary-subtle
               {% else %}bg-light text-dark border{% endif %}">
-              {{ log.action.replace('_', ' ') }}
+              {{ _t('action_' + log.action, log.action.replace('_', ' ')) }}
             </span>
           </td>
           <td>
@@ -120,7 +120,7 @@
               {{ log.actor_name or 'System' }}
             </div>
             <div class="small text-body-tertiary">
-              {{ log.actor_type.capitalize() }}
+              {{ _t('actor_' + log.actor_type, log.actor_type.capitalize()) }}
             </div>
           </td>
           <td class="small text-body leading-normal">

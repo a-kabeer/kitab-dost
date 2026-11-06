@@ -251,10 +251,10 @@
             <div class="mb-2">
               <h3 class="h6 fw-bold text-body mb-1 text-truncate" title="{{ h.book_title }}">{{ h.book_title }}</h3>
               <div class="small text-body-secondary">
-                <bdi class="kb-code text-primary">{{ h.book_code }}</bdi> &bull; {{ h.book_class }} &bull; {{ h.book_subject }}
+                <bdi class="kb-code text-primary">{{ h.book_code }}</bdi> &bull; {{ _t(h.book_class, h.book_class) }} &bull; {{ _t(h.book_subject, h.book_subject) }}
               </div>
             </div>
-            <div class="small text-body-secondary border-top border-dashed pt-2 mt-2">
+            <div class="small text-body-secondary border-top border-secondary-subtle pt-2 mt-2">
               <div><strong>{{ _t('table_requester', 'Recipient') }}:</strong> {{ h.recipient_name }} ({{ h.recipient_class }}, Roll: {{ h.recipient_roll_no }})</div>
               <div><strong>{{ _t('tracking_code', 'Request') }}:</strong> <bdi class="kb-code">{{ h.tracking_code }}</bdi></div>
               <div><strong>{{ _t('table_handed_by', 'Confirmed By') }}:</strong> {{ h.confirming_teacher_name or h.teacher_name }}</div>

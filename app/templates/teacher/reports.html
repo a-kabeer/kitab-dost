@@ -153,7 +153,7 @@
         {% for cls in report.class_distribution %}
         <tr>
           <td class="fw-bold text-body">
-            {{ cls.class_grade }}
+            {{ _t(cls.class_grade, cls.class_grade) }}
           </td>
           <td class="text-center fw-semibold">
             {{ cls.total }}
@@ -241,7 +241,7 @@
           <tbody>
             {% for sb in report.subject_distribution %}
             <tr>
-              <td class="fw-semibold text-body">{{ sb.subject }}</td>
+              <td class="fw-semibold text-body">{{ _t(sb.subject, sb.subject) }}</td>
               <td class="text-center">{{ sb.total }}</td>
               <td class="text-center"><span class="badge bg-success-subtle text-success border border-success-subtle">{{ sb.available }}</span></td>
               <td class="text-center"><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ sb.handed_over }}</span></td>
@@ -264,7 +264,7 @@
         {% for sb in report.subject_distribution %}
         <div class="border rounded p-2 bg-body-tertiary">
           <div class="d-flex justify-content-between align-items-center mb-1 small">
-            <span class="fw-bold text-body">{{ sb.subject }}</span>
+            <span class="fw-bold text-body">{{ _t(sb.subject, sb.subject) }}</span>
             <span class="text-body-secondary">{{ sb.percentage }}%</span>
           </div>
           <div class="d-flex justify-content-between align-items-center gap-2 mb-1 fs-8 text-body-secondary">
@@ -294,7 +294,7 @@
           {% for lang in report.languages %}
           <div>
             <div class="d-flex justify-content-between align-items-center mb-1 small">
-              <span class="fw-semibold text-body">{{ lang.language }}</span>
+              <span class="fw-semibold text-body">{{ _t(lang.language, lang.language) }}</span>
               <span class="text-body-secondary"><strong>{{ lang.count }}</strong> {{ _t('kpi_total_books', 'books') }} ({{ lang.percentage }}%)</span>
             </div>
             <div class="progress" style="height: 8px;" role="progressbar" aria-valuenow="{{ lang.percentage }}" aria-valuemin="0" aria-valuemax="100">

@@ -1,6 +1,6 @@
 {
   "app_name": "کتاب بینک",
-  "app_tagline": "اسمارٹ اسکول کتب تبادلہ",
+  "app_tagline": "اسمارٹ اسکول کتابوں کا تبادلہ (کتاب بینک)",
   "app_full_name": "کتاب بینک – اسمارٹ اسکول کتب تبادلہ",
   "nav_home": "صفحہ اول",
   "nav_catalogue": "کتب دیکھیں",
@@ -334,7 +334,7 @@
   "status_under_teacher_review": "حیثیت: استاد کے جائزے کے تحت",
   "requests_queue_title": "طلباء کی درخواستوں کی قطار",
   "teacher_account_security": "استاد اکاؤنٹ کی حفاظت",
-  "wal_concurrency_active": "وال (WAL) متوازی عمل فعال ہے",
+  "wal_concurrency_active": "محفوظ متوازی نظام فعال ہے",
   "badge_reuse_rate": "دوبارہ استعمال کی شرح: {rate}٪",
   "pending_actions_required": "اساتذہ کی زیر التواء کارروائی درکار ہے:",
   "pending_actions_desc": "{donations} عطیات جائزے کے منتظر ہیں اور {requests} طلبہ کی درخواستیں کتابوں کی فراہمی کی منتظر ہیں۔",
@@ -505,5 +505,18 @@
   "Request rejected and archived with recorded reason.": "درخواست مسترد کر کے محفوظ کر لی گئی۔",
   "Backup deleted successfully.": "بیک اپ کامیابی سے حذف ہو گیا۔",
   "btn_clear_all_filters": "تمام فلٹرز ختم کریں",
-  "showing_available_books_count": "دکھائے جا رہے ہیں <strong>{count}</strong> دستیاب کتب"
+  "showing_available_books_count": "دکھائے جا رہے ہیں <strong>{count}</strong> دستیاب کتب",
+  "School Teacher / Incharge": "اسکول استاد / انچارج",
+  "Teacher": "استاد",
+  "action_request_submitted": "درخواست جمع کی گئی",
+  "edition_official": "سرکاری نصاب",
+  "page_n_of_m": "(صفحہ {current} از {total})",
+  "unknown_author": "نامعلوم مصنف",
+  "isbn_na": "دستیاب نہیں (سرکاری نصاب)",
+  "Available in Catalogue": "کیٹلاگ میں دستیاب",
+  "Reserved (Pending Pickup)": "محفوظ شدہ (حصول باقی)",
+  "Handed Over (Reused)": "جاری شدہ (دوبارہ زیرِ استعمال)",
+  "WAL Concurrency Active": "محفوظ متوازی نظام فعال ہے",
+  "Reuse Rate": "دوبارہ استعمال کی شرح",
+  "Showing available books count": "دستیاب کتب کی نمائش"
 }

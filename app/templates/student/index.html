@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Kitaab Bank - Smart School Book Exchange (کتاب بینک){% endblock %}
+{% block title %}{{ _t('app_name', 'Kitaab Bank') }} - {{ _t('app_tagline', 'Smart School Book Exchange (کتاب بینک)') }}{% endblock %}
 
 {% block content %}
 <div class="container-xxl py-4">
@@ -129,7 +129,7 @@
                 onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
               >
               <div class="position-absolute top-0 start-0 m-2 z-1">
-                <span class="badge bg-primary text-white shadow-xs">{{ book.class_grade }}</span>
+                <span class="badge bg-primary text-white shadow-xs">{{ _t(book.class_grade, book.class_grade) }}</span>
               </div>
               <div class="position-absolute top-0 end-0 m-2 z-1">
                 {% if book.condition_state == 'Like New' %}
@@ -160,7 +160,7 @@
 
               <div class="d-flex align-items-center justify-content-between gap-2 pt-2 mt-auto border-top border-secondary-subtle small">
                 <bdi class="kb-code bg-body-tertiary px-2 py-1 rounded text-body-secondary">{{ book.book_code }}</bdi>
-                <span class="text-body-secondary">{{ book.edition_year or 'Official' }}</span>
+                <span class="text-body-secondary">{{ book.edition_year or _t('edition_official', 'Official') }}</span>
               </div>
             </div>
 
@@ -195,7 +195,7 @@
                   onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
                 >
               </div>
-              <span class="badge bg-primary text-white position-absolute top-0 start-0 m-1 shadow-xs" style="font-size: 0.65rem;">{{ book.class_grade }}</span>
+              <span class="badge bg-primary text-white position-absolute top-0 start-0 m-1 shadow-xs" style="font-size: 0.65rem;">{{ _t(book.class_grade, book.class_grade) }}</span>
             </div>
             <div class="col-8 col-fill p-2 p-sm-3 d-flex flex-column justify-content-between" style="min-width: 0;">
               <div>

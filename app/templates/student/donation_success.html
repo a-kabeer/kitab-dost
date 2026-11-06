@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _t('donation_submitted_title', 'Donation Submitted') }} - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('donation_submitted_title', 'Donation Submitted') }} - {{ _t('app_name', 'Kitaab Bank') }}{% endblock %}
 
 {% block content %}
 <div class="container-xxl py-4">
@@ -55,11 +55,11 @@
           </div>
           <div class="col-6 col-sm-6">
             <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('class_grade', 'Class') }} &amp; {{ _t('subject', 'Subject') }}</span>
-            <strong class="text-body">{{ donation.class_grade }} – {{ donation.subject }}</strong>
+            <strong class="text-body">{{ _t(donation.class_grade, donation.class_grade) }} – {{ _t(donation.subject, donation.subject) }}</strong>
           </div>
           <div class="col-6 col-sm-6">
             <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('language', 'Language') }} &amp; {{ _t('condition', 'Condition') }}</span>
-            <strong class="text-body">{{ donation.language }} ({{ donation.condition_state }})</strong>
+            <strong class="text-body">{{ _t(donation.language, donation.language) }} ({{ _t(donation.condition_state, donation.condition_state) }})</strong>
           </div>
           <div class="col-6 col-sm-6">
             <span class="text-body-secondary d-block text-uppercase" style="font-size: 0.725rem;">{{ _t('donor_info_heading', 'Donor Info') }}</span>

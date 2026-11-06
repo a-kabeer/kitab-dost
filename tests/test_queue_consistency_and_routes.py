@@ -330,5 +330,78 @@ class TestQueueConsistencyAndRoutes(unittest.TestCase):
             # Must show Sindhi Available status label
             self.assertIn('دستياب'.encode('utf-8'), res_sd.data)
 
+    def test_urdu_teacher_dashboard_complete_rendered_strings(self):
+        """Assert Urdu Teacher Dashboard completely localizes greetings, names, actions, and status badges."""
+        self._login_teacher()
+        self.client.get('/set-language/ur')
+        res = self.client.get('/teacher/dashboard')
+        self.assertEqual(res.status_code, 200)
+        html = res.data.decode('utf-8')
+
+        # Welcome message in Urdu with teacher name
+        self.assertIn('خوش آمدید', html)
+        self.assertIn('Sir Tariq Mahmood', html)
+        # Localized status breakdown
+        self.assertIn('کیٹلاگ میں دستیاب', html)
+        self.assertIn('محفوظ شدہ (حصول باقی)', html)
+        self.assertIn('جاری شدہ (دوبارہ زیرِ استعمال)', html)
+
+        # Now test when logged in with default 'School Teacher / Incharge'
+        with self.client.session_transaction() as sess:
+            sess['teacher_name'] = 'School Teacher / Incharge'
+        res_default = self.client.get('/teacher/dashboard')
+        html_default = res_default.data.decode('utf-8')
+        self.assertIn('اسکول استاد / انچارج', html_default)
+        self.assertNotIn('School Teacher / Incharge', html_default)
+
+    def test_sindhi_homepage_complete_rendered_strings(self):
+        """Assert Sindhi Homepage renders localized class grade badges and metrics."""
+        self.client.get('/set-language/sd')
+        res = self.client.get('/')
+        self.assertEqual(res.status_code, 200)
+        html = res.data.decode('utf-8')
+
+        # Class badges localized to Sindhi
+        self.assertTrue('ڪلاس اٺين' in html or 'ڪلاس ستين' in html or 'ڪلاس ڇهين' in html)
+        # Metrics strip localized
+        self.assertIn('ڪل عطيو ڪيل ڪتاب', html)
+        self.assertIn('هن وقت دستياب', html)
+        self.assertIn('ٻيهر واپرائل ڪتاب', html)
+
+    def test_settings_mobile_selector_and_desktop_tabs_guard(self):
+        """Assert Settings template includes mobile tab selector and hides desktop tablist on mobile."""
+        self._login_teacher()
+        res = self.client.get('/teacher/settings')
+        self.assertEqual(res.status_code, 200)
+        html = res.data.decode('utf-8')
+
+        # Mobile tab selector exists
+        self.assertIn('id="mobileSettingsTabSelect"', html)
+        self.assertIn('tab=profile', html)
+        self.assertIn('tab=security', html)
+        self.assertIn('tab=backup', html)
+        self.assertIn('tab=demo', html)
+
+        # Desktop tabs have d-none d-md-flex
+        self.assertIn('class="d-none d-md-flex gap-2', html)
+
+    def test_student_book_detail_compact_related_books(self):
+        """Assert Student Book Detail related books uses compact horizontal card style on mobile."""
+        res = self.client.get('/book/KB-BK-000001')
+        self.assertEqual(res.status_code, 200)
+        html = res.data.decode('utf-8')
+
+        # Compact mobile container exists with constrained height
+        self.assertIn('max-height: 120px;', html)
+        self.assertIn('d-md-none', html)
+
+    def test_zero_dashed_information_borders(self):
+        """Assert no info container or code row has dashed border style."""
+        res = self.client.get('/scan')
+        self.assertEqual(res.status_code, 200)
+        html = res.data.decode('utf-8')
+        self.assertNotIn('border: 2px dashed', html)
+        self.assertIn('border: 2px solid', html)
+
 if __name__ == '__main__':
     unittest.main()

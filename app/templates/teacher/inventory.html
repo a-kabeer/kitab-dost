@@ -188,15 +188,15 @@
                 {{ book.title }}
               </div>
               <div class="small text-body-secondary">
-                {{ book.author or 'Unknown' }} &bull; {{ book.language }}
+                {{ book.author or _t('unknown_author', 'Unknown') }} &bull; {{ _t(book.language, book.language) }}
               </div>
             </td>
             <td>
               <div class="mb-1">
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ book.class_grade }}</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ _t(book.class_grade, book.class_grade) }}</span>
               </div>
               <div class="small text-body-secondary">
-                {{ book.subject }}
+                {{ _t(book.subject, book.subject) }}
               </div>
             </td>
             <td>
@@ -261,7 +261,7 @@
     <!-- Pagination & Record count Footer -->
     <div class="card-footer bg-body-tertiary py-2 px-3 small text-body-secondary d-flex flex-wrap justify-content-between align-items-center gap-2">
       <div>
-        <span>{{ _t('showing_records_count', 'Showing {count} records', count=books|length) }} (Page {{ current_page }} of {{ total_pages }})</span>
+        <span>{{ _t('showing_records_count', 'Showing {count} records', count=books|length) }} {{ _t('page_n_of_m', '(Page {current} of {total})', current=current_page, total=total_pages) }}</span>
       </div>
       {% if total_pages > 1 %}
       <nav aria-label="Page navigation">
@@ -338,7 +338,7 @@
       {% endfor %}
     </div>
     <div class="text-center small text-body-secondary mt-2">
-      {{ _t('showing_records_count', 'Showing {count} records', count=books|length) }} (Page {{ current_page }} of {{ total_pages }})
+      {{ _t('showing_records_count', 'Showing {count} records', count=books|length) }} {{ _t('page_n_of_m', '(Page {current} of {total})', current=current_page, total=total_pages) }}
     </div>
   </div>
 {% else %}

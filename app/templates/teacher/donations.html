@@ -173,17 +173,17 @@
                   {{ _t('by_author', 'By {author}', author=d.author or 'Unknown') }}
                 </div>
                 <div class="small text-body-tertiary">
-                  <span class="fw-semibold text-body-secondary">{{ d.subject }}</span> &bull; <span class="fw-semibold text-body-secondary">{{ d.language }}</span>
+                  <span class="fw-semibold text-body-secondary">{{ _t(d.subject, d.subject) }}</span> &bull; <span class="fw-semibold text-body-secondary">{{ _t(d.language, d.language) }}</span>
                 </div>
               </td>
 
               <!-- Class & Condition -->
               <td>
                 <div class="mb-1">
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ d.class_grade }}</span>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ _t(d.class_grade, d.class_grade) }}</span>
                 </div>
                 <span class="badge {% if d.condition_state == 'Like New' %}bg-success-subtle text-success border border-success-subtle{% elif d.condition_state == 'Good' %}bg-info-subtle text-info-emphasis border border-info-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}">
-                  {{ d.condition_state }}
+                  {{ _t(d.condition_state, d.condition_state) }}
                 </span>
               </td>
 

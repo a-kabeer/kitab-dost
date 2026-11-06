@@ -1,7 +1,7 @@
 {% extends "teacher/base_teacher.html" %}
 {% from "macros/icons.html" import icon %}
 
-{% block title %}{{ _t('btn_view', 'Inspect') }} {{ donation.donation_code }} - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('btn_view', 'Inspect') }} {{ donation.donation_code }} - {{ _t('app_name', 'Kitaab Bank') }}{% endblock %}
 
 {% block teacher_content %}
   <!-- Breadcrumb -->
@@ -85,7 +85,7 @@
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-body-secondary fw-semibold">{{ _t('table_condition', 'CONDITION') }}</span>
               <span class="badge {% if donation.condition_state == 'Like New' %}bg-success-subtle text-success border border-success-subtle{% elif donation.condition_state == 'Good' %}bg-info-subtle text-info-emphasis border border-info-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %}">
-                {{ donation.condition_state }}
+                {{ _t(donation.condition_state, donation.condition_state) }}
               </span>
             </div>
 
@@ -109,9 +109,9 @@
         <div class="card border shadow-sm">
           <div class="card-body p-4">
             <div class="d-flex gap-2 mb-3 flex-wrap">
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-7">{{ donation.class_grade }}</span>
-              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ donation.subject }}</span>
-              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ donation.language }}</span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-7">{{ _t(donation.class_grade, donation.class_grade) }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ _t(donation.subject, donation.subject) }}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-7">{{ _t(donation.language, donation.language) }}</span>
             </div>
 
             <h2 class="h3 fw-bold text-body mb-2">

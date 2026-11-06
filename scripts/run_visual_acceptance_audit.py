@@ -210,6 +210,14 @@ def run_visual_audit():
             if overflow:
                 results["errors"].append(f"Horizontal overflow on {name} mobile")
                 print(f"  ⚠️ Warning: Horizontal overflow on {name} mobile")
+
+            if name == "student_book_detail":
+                card_box = mobile_page.locator(".d-md-none article.card").first.bounding_box()
+                if card_box:
+                    card_h = card_box['height']
+                    print(f"  ✓ Verified related book mobile card height: {card_h:.1f}px (Target: ~100-120px)")
+                    assert 90 <= card_h <= 125, f"Related book mobile card height {card_h}px outside ~100-120px range!"
+
             out_file = EVIDENCE_DIR / f"{name}_mobile.png"
             mobile_page.screenshot(path=str(out_file), full_page=True)
             results["screenshots"].append(str(out_file))
@@ -344,6 +352,14 @@ def run_visual_audit():
             time.sleep(0.3)
             if name == "teacher_settings":
                 assert t_mob_page.locator("#mobileSettingsTabSelect").is_visible(), "Expected mobile settings tab select dropdown to be visible!"
+                assert not t_mob_page.locator("div[role='tablist']").is_visible(), "Expected desktop tablist to be hidden on mobile!"
+                options = t_mob_page.locator("#mobileSettingsTabSelect option").all_inner_texts()
+                assert len(options) >= 4, f"Expected 4 settings options, got {options}"
+                for sec in ['security', 'backup', 'demo', 'profile']:
+                    resp_tab = t_mob_page.goto(f"{BASE_URL}/teacher/settings?tab={sec}", wait_until="networkidle")
+                    assert resp_tab.status == 200
+                    assert t_mob_page.locator("#mobileSettingsTabSelect").is_visible()
+                    assert not t_mob_page.locator("div[role='tablist']").is_visible()
             overflow = t_mob_page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
             if overflow:
                 results["errors"].append(f"Horizontal overflow on {name} mobile teacher")
@@ -456,6 +472,9 @@ def run_visual_audit():
         time.sleep(0.4)
         dir_attr = rtl_page.locator("html").get_attribute("dir")
         assert dir_attr == "rtl", f"Expected dir='rtl' for Urdu dashboard, got {dir_attr}"
+        dash_text = rtl_page.locator("body").inner_text()
+        assert "School Teacher / Incharge" not in dash_text, "Found unlocalized 'School Teacher / Incharge' on Urdu Dashboard!"
+        assert "خوش آمدید" in dash_text, "Expected Urdu welcome greeting!"
         urdu_dash_out = EVIDENCE_DIR / "rtl_urdu_dashboard_desktop.png"
         rtl_page.screenshot(path=str(urdu_dash_out), full_page=True)
         results["screenshots"].append(str(urdu_dash_out))
@@ -467,6 +486,8 @@ def run_visual_audit():
         time.sleep(0.4)
         dir_attr = rtl_page.locator("html").get_attribute("dir")
         assert dir_attr == "rtl", f"Expected dir='rtl' for Sindhi Home, got {dir_attr}"
+        sd_home_text = rtl_page.locator("body").inner_text()
+        assert "ڪلاس" in sd_home_text, "Expected localized Sindhi class badge on Sindhi Home!"
         sindhi_home_out = EVIDENCE_DIR / "rtl_sindhi_home_desktop.png"
         rtl_page.screenshot(path=str(sindhi_home_out), full_page=True)
         results["screenshots"].append(str(sindhi_home_out))
@@ -480,6 +501,41 @@ def run_visual_audit():
         rtl_page.screenshot(path=str(sindhi_cat_out), full_page=True)
         results["screenshots"].append(str(sindhi_cat_out))
         print(f"  ✓ Captured {sindhi_cat_out.name} (Sindhi catalogue with bidi codes, dir=rtl)")
+
+        # 4D. Mobile RTL Views (Urdu Dashboard & Sindhi Home/Catalogue)
+        rtl_mob_ctx = browser.new_context(viewport=MOBILE_VIEWPORT, is_mobile=True, has_touch=True)
+        rtl_mob_page = rtl_mob_ctx.new_page()
+        # Urdu Dashboard Mobile (auth)
+        rtl_mob_page.goto(f"{BASE_URL}/auth/login", wait_until="networkidle")
+        rtl_mob_page.fill("#username", "teacher")
+        rtl_mob_page.fill("#password", "Teacher@123")
+        rtl_mob_page.click("button[type='submit']")
+        rtl_mob_page.wait_for_url("**/teacher/dashboard", timeout=5000)
+        rtl_mob_page.goto(f"{BASE_URL}/set-language/ur", wait_until="networkidle")
+        rtl_mob_page.goto(f"{BASE_URL}/teacher/dashboard", wait_until="networkidle")
+        time.sleep(0.3)
+        urdu_dash_mob = EVIDENCE_DIR / "rtl_urdu_dashboard_mobile.png"
+        rtl_mob_page.screenshot(path=str(urdu_dash_mob), full_page=True)
+        results["screenshots"].append(str(urdu_dash_mob))
+        print(f"  ✓ Captured {urdu_dash_mob.name} (Urdu Teacher Dashboard mobile)")
+
+        # Sindhi Home Mobile
+        rtl_mob_page.goto(f"{BASE_URL}/set-language/sd", wait_until="networkidle")
+        rtl_mob_page.goto(f"{BASE_URL}/", wait_until="networkidle")
+        time.sleep(0.3)
+        sindhi_home_mob = EVIDENCE_DIR / "rtl_sindhi_home_mobile.png"
+        rtl_mob_page.screenshot(path=str(sindhi_home_mob), full_page=True)
+        results["screenshots"].append(str(sindhi_home_mob))
+        print(f"  ✓ Captured {sindhi_home_mob.name} (Sindhi Home mobile)")
+
+        # Sindhi Catalogue Mobile
+        rtl_mob_page.goto(f"{BASE_URL}/catalogue", wait_until="networkidle")
+        time.sleep(0.3)
+        sindhi_cat_mob = EVIDENCE_DIR / "rtl_sindhi_catalogue_mobile.png"
+        rtl_mob_page.screenshot(path=str(sindhi_cat_mob), full_page=True)
+        results["screenshots"].append(str(sindhi_cat_mob))
+        print(f"  ✓ Captured {sindhi_cat_mob.name} (Sindhi Catalogue mobile)")
+        rtl_mob_ctx.close()
 
         # Reset language to English
         rtl_page.goto(f"{BASE_URL}/set-language/en", wait_until="networkidle")

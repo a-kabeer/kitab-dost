@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _t('request_title', 'Request Book') }} - {{ book.title }} - Kitaab Bank{% endblock %}
+{% block title %}{{ _t('request_title', 'Request Book') }} - {{ book.title }} - {{ _t('app_name', 'Kitaab Bank') }}{% endblock %}
 
 {% block content %}
 <div class="container-xxl py-4">
@@ -45,8 +45,8 @@
           </div>
           <div class="flex-grow-1">
             <div class="d-flex flex-wrap gap-1 mb-1">
-              <span class="badge bg-primary text-white">{{ book.class_grade }}</span>
-              <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ book.subject }}</span>
+              <span class="badge bg-primary text-white">{{ _t(book.class_grade, book.class_grade) }}</span>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ _t(book.subject, book.subject) }}</span>
               {% if book.condition_state == 'Like New' %}
                 <span class="badge bg-success-subtle text-success border border-success-subtle">{{ _t('condition_like_new', 'Like New') }}</span>
               {% elif book.condition_state == 'Good' %}

@@ -1,6 +1,6 @@
 {
   "app_name": "ڪتاب بئنڪ",
-  "app_tagline": "اسمارٽ اسڪول ڪتاب مٽاسٽا",
+  "app_tagline": "سمارٽ اسڪول درسي ڪتاب مٽاسٽا (ڪتاب بئنڪ)",
   "app_full_name": "ڪتاب بئنڪ – اسمارٽ اسڪول ڪتاب مٽاسٽا",
   "nav_home": "پھريون صفحو",
   "nav_catalogue": "ڪتاب ڏسو",
@@ -334,7 +334,7 @@
   "status_under_teacher_review": "حيثيت: استاد جي جائزي هيٺ",
   "requests_queue_title": "شاگردن جي درخواستن جي قطار",
   "teacher_account_security": "استاد اڪائونٽ جي حفاظت",
-  "wal_concurrency_active": "وال (WAL) ڪنڪرنسي فعال آهي",
+  "wal_concurrency_active": "محفوظ متوازي نظام فعال آهي",
   "badge_reuse_rate": "ٻيهر استعمال جي شرح: {rate}٪",
   "pending_actions_required": "استادن جون التوا ۾ پيل ڪارروايون گهربل آهن:",
   "pending_actions_desc": "{donations} عطيا جائزي جا منتظر آهن ۽ {requests} شاگردن جون درخواستون ڪتابن جي فراهمي جون منتظر آهن.",
@@ -505,5 +505,18 @@
   "Request rejected and archived with recorded reason.": "درخواست رد ڪري رڪارڊ ڪئي وئي.",
   "Backup deleted successfully.": "بيڪ اپ ڪاميابي سان ختم ڪيو ويو.",
   "btn_clear_all_filters": "سمورا فلٽر ختم ڪريو",
-  "showing_available_books_count": "ڏيکاريل آهن <strong>{count}</strong> دستياب ڪتاب"
+  "showing_available_books_count": "ڏيکاريل آهن <strong>{count}</strong> دستياب ڪتاب",
+  "School Teacher / Incharge": "اسڪول استاد / انچارج",
+  "Teacher": "استاد",
+  "action_request_submitted": "درخواست جمع ڪئي وئي",
+  "edition_official": "سرڪاري نصاب",
+  "page_n_of_m": "(صفحو {current} مان {total})",
+  "unknown_author": "نامعلوم ليکڪ",
+  "isbn_na": "دستياب ناهي (سرڪاري نصاب)",
+  "Available in Catalogue": "ڪيٽلاگ ۾ دستياب",
+  "Reserved (Pending Pickup)": "محفوظ ڪيل (وصولي باقي)",
+  "Handed Over (Reused)": "جاري ڪيل (ٻيهر زيرِ استعمال)",
+  "WAL Concurrency Active": "محفوظ متوازي نظام فعال آهي",
+  "Reuse Rate": "ٻيهر استعمال جي شرح",
+  "Showing available books count": "دستياب ڪتابن جي نمائش"
 }

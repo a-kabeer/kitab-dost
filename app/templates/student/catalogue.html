@@ -75,7 +75,7 @@
               <select id="filter-class" name="class_grade" class="form-select form-select-sm">
                 <option value="">{{ _t('filter_all_classes', 'All Classes') }}</option>
                 {% for c in ['Class 6', 'Class 7', 'Class 8'] %}
-                <option value="{{ c }}" {% if selected_filters.class_grade == c %}selected{% endif %}>{{ c }}</option>
+                <option value="{{ c }}" {% if selected_filters.class_grade == c %}selected{% endif %}>{{ _t(c, c) }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -86,7 +86,7 @@
               <select id="filter-subject" name="subject" class="form-select form-select-sm">
                 <option value="">{{ _t('filter_all_subjects', 'All Subjects') }}</option>
                 {% for s in filter_options.subjects %}
-                <option value="{{ s }}" {% if selected_filters.subject == s %}selected{% endif %}>{{ s }}</option>
+                <option value="{{ s }}" {% if selected_filters.subject == s %}selected{% endif %}>{{ _t(s, s) }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -97,7 +97,7 @@
               <select id="filter-language" name="language" class="form-select form-select-sm">
                 <option value="">{{ _t('filter_all_languages', 'All Languages') }}</option>
                 {% for lang in filter_options.languages %}
-                <option value="{{ lang }}" {% if selected_filters.language == lang %}selected{% endif %}>{{ lang }}</option>
+                <option value="{{ lang }}" {% if selected_filters.language == lang %}selected{% endif %}>{{ _t(lang, lang) }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -108,7 +108,7 @@
               <select id="filter-condition" name="condition" class="form-select form-select-sm">
                 <option value="">{{ _t('filter_all_conditions', 'All Conditions') }}</option>
                 {% for cond in filter_options.conditions %}
-                <option value="{{ cond }}" {% if selected_filters.condition == cond %}selected{% endif %}>{{ cond }}</option>
+                <option value="{{ cond }}" {% if selected_filters.condition == cond %}selected{% endif %}>{{ _t(cond, cond) }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -155,16 +155,16 @@
             <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ selected_filters.q }}</span>
             {% endif %}
             {% if selected_filters.class_grade %}
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ selected_filters.class_grade }}</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ _t(selected_filters.class_grade, selected_filters.class_grade) }}</span>
             {% endif %}
             {% if selected_filters.subject %}
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ selected_filters.subject }}</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ _t(selected_filters.subject, selected_filters.subject) }}</span>
             {% endif %}
             {% if selected_filters.language %}
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ selected_filters.language }}</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ _t(selected_filters.language, selected_filters.language) }}</span>
             {% endif %}
             {% if selected_filters.condition %}
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ selected_filters.condition }}</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle active-filter-pill">{{ _t(selected_filters.condition, selected_filters.condition) }}</span>
             {% endif %}
             <a href="{{ url_for('student.catalogue') }}" class="text-danger small fw-semibold text-decoration-none d-inline-flex align-items-center gap-1 ms-1">
               {{ icon('arrow-rotate-left') }} {{ _t('btn_reset_all', 'Reset All') }}
@@ -193,7 +193,7 @@
                 onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
               >
               <div class="position-absolute top-0 start-0 m-2 z-1">
-                <span class="badge bg-primary text-white shadow-xs">{{ book.class_grade }}</span>
+                <span class="badge bg-primary text-white shadow-xs">{{ _t(book.class_grade, book.class_grade) }}</span>
               </div>
               <div class="position-absolute top-0 end-0 m-2 z-1">
                 {% if book.condition_state == 'Like New' %}
@@ -224,7 +224,7 @@
 
               <div class="d-flex align-items-center justify-content-between gap-2 pt-2 mt-auto border-top border-secondary-subtle small">
                 <bdi class="kb-code bg-body-tertiary px-2 py-1 rounded text-body-secondary">{{ book.book_code }}</bdi>
-                <span class="text-body-secondary">{{ book.edition_year or 'Official' }}</span>
+                <span class="text-body-secondary">{{ book.edition_year or _t('edition_official', 'Official') }}</span>
               </div>
             </div>
 

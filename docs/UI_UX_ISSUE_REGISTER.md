@@ -343,5 +343,18 @@ All 47 required visual acceptance screenshots have been captured, asserted at HT
 | **ISSUE-IMG-01** | Book Cover Fallback Graphics | **Minor (P3)** | Replaced blank grey `<div>` containers in `inventory.html` (table and mobile card views) and `donations.html` with subject-specific SVG fallback (`img/covers/placeholder.svg`) with `onerror` protection so no book ever displays an empty grey box. | `inventory.html`, `donations.html`, `placeholder.svg`. | **RESOLVED & VERIFIED** |
 | **ISSUE-REL-01** | Related Books Mobile Density | **Moderate (P2)** | Structured compact horizontal related book cards (`<div class="d-md-none">`) with 3:4 thumbnail, category badge, and concise metadata below 768px, reducing excessive vertical scrolling while keeping desktop 4-column grid (`d-none d-md-block`). | `book_detail.html`, `student_book_detail_mobile.png`. | **RESOLVED & VERIFIED** |
 
+---
+
+## 9. Final Visual Acceptance Patch (Stage 5)
+
+| Issue ID | Component | Severity | Resolution Summary | Validation Evidence | Status |
+|---|---|---|---|---|---|
+| **ISSUE-RTL-04** | Complete Rendered Urdu & Sindhi Localization | **Major (P1)** | Localized greeting with teacher identity (`School Teacher / Incharge` -> `اسکول استاد / انچارج`), `WAL Concurrency Active` -> `محفوظ متوازی نظام فعال ہے`, activity log events (`action_request_submitted`), class taxonomy in activity details (`جماعت 7-B`), filter dropdown options in catalogue (`ڪلاس ڇهين`, `ڪلاس ستين`, `ڪلاس اٺين`), and subjects. Expanded dictionary to 520 keys with 100% 1:1 match across English, Urdu, and Sindhi. Zero raw English UI labels remaining. User-entered book titles, student names, and author names preserved. | `translation_service.py`, `dashboard.html`, `catalogue.html`, `index.html`, `ur.json`, `sd.json`, `rtl_urdu_dashboard_desktop.png`, `rtl_sindhi_home_desktop.png`. | **RESOLVED & VERIFIED** |
+| **ISSUE-BRD-02** | Complete Dashed Information Border Elimination | **Major (P1)** | Converted camera reticle in `scan.html` from `2px dashed` to `2px solid rgba(255, 255, 255, 0.85)`. Verified all information containers, code rows, card footers, and table rows have 0 computed dashed borders across DOM. Official QR print cut lines in `book_qr_label.html` and `qr_sheet.html` intentionally retained. | `scan.html`, `verify_visual_evidence.py` (0 dashed elements). | **RESOLVED & VERIFIED** |
+| **ISSUE-MOB-04** | Settings Mobile Navigation Verification | **Moderate (P2)** | Verified that `#mobileSettingsTabSelect` is strictly visible at 390px and 360px (`d-block d-md-none`), desktop tablist is strictly hidden (`d-none d-md-flex`), all four settings sections (Profile, Security, Backup, Exhibition) are selectable, and changing value navigates cleanly without overflow. | `settings.html`, `teacher_settings_mobile.png`, Playwright mobile test. | **RESOLVED & VERIFIED** |
+| **ISSUE-REL-02** | Related Books Mobile Card Height Optimization | **Moderate (P2)** | Constrained mobile related book cards on `/book/<code_or_id>` to compact horizontal component (`style="max-height: 120px;"`) with 80px thumbnail (3:4 ratio), single-line typography, and tight padding, achieving exactly 108.7px rendered height (target: 100–120px). Desktop grid remains unchanged. | `book_detail.html`, `student_book_detail_mobile.png`, Playwright bounding box check (108.7px). | **RESOLVED & VERIFIED** |
+| **ISSUE-KPI-01** | Dashboard Shared KPI Definitions | **Minor (P3)** | Verified consistent KPI display across desktop and mobile: `Total Donations` displays all donations (3 in demo dataset) and subtext indicates pending review count (`1 pending`). No view displays 3 under a "Pending Donations" label. | `dashboard.html`, `test_queue_consistency_and_routes.py`. | **RESOLVED & VERIFIED** |
+
+
 
 

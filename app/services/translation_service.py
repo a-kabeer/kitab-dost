@@ -168,7 +168,16 @@ def localize_activity_details(details, lang='en'):
         pat = item[0]
         replacement = item[idx]
         if re.search(pat, details):
-            return re.sub(pat, replacement, details)
+            details = re.sub(pat, replacement, details)
+            break
+
+    # Localize embedded class taxonomy and roll number labels
+    if lang == 'ur':
+        details = re.sub(r'\bClass (\d+)', r'جماعت \1', details)
+        details = re.sub(r'\bRoll (\d+)', r'رول \1', details)
+    elif lang == 'sd':
+        details = re.sub(r'\bClass (\d+)', r'ڪلاس \1', details)
+        details = re.sub(r'\bRoll (\d+)', r'رول \1', details)
 
     return details
 

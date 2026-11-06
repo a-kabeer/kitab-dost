@@ -29,7 +29,7 @@
               onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
             >
             <div class="position-absolute top-0 start-0 m-2 z-1">
-              <span class="badge bg-primary text-white shadow-xs">{{ book.class_grade }}</span>
+              <span class="badge bg-primary text-white shadow-xs">{{ _t(book.class_grade, book.class_grade) }}</span>
             </div>
           </div>
 
@@ -101,9 +101,9 @@
           <!-- Book Header -->
           <div>
             <div class="d-flex flex-wrap gap-2 mb-2">
-              <span class="badge bg-primary text-white">{{ book.class_grade }}</span>
-              <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ book.subject }}</span>
-              <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ book.language }}</span>
+              <span class="badge bg-primary text-white">{{ _t(book.class_grade, book.class_grade) }}</span>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ _t(book.subject, book.subject) }}</span>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ _t(book.language, book.language) }}</span>
             </div>
 
             <h1 class="h2 fw-bold text-body mb-2">{{ book.title }}</h1>
@@ -118,15 +118,15 @@
               <div class="row g-3">
                 <div class="col-6 col-sm-4">
                   <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.725rem;">{{ _t('filter_class', 'Class Level') }}</div>
-                  <div class="fw-semibold text-body">{{ book.class_grade }}</div>
+                  <div class="fw-semibold text-body">{{ _t(book.class_grade, book.class_grade) }}</div>
                 </div>
                 <div class="col-6 col-sm-4">
                   <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.725rem;">{{ _t('filter_subject', 'Subject') }}</div>
-                  <div class="fw-semibold text-body">{{ book.subject }}</div>
+                  <div class="fw-semibold text-body">{{ _t(book.subject, book.subject) }}</div>
                 </div>
                 <div class="col-6 col-sm-4">
                   <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.725rem;">{{ _t('filter_language', 'Language') }}</div>
-                  <div class="fw-semibold text-body">{{ book.language }}</div>
+                  <div class="fw-semibold text-body">{{ _t(book.language, book.language) }}</div>
                 </div>
                 <div class="col-6 col-sm-4">
                   <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.725rem;">{{ _t('publisher', 'Publisher') }}</div>
@@ -134,7 +134,7 @@
                 </div>
                 <div class="col-6 col-sm-4">
                   <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.725rem;">{{ _t('edition_year', 'Edition Year') }}</div>
-                  <div class="fw-semibold text-body">{{ book.edition_year or 'Official Curriculum' }}</div>
+                  <div class="fw-semibold text-body">{{ book.edition_year or _t('edition_official', 'Official Curriculum') }}</div>
                 </div>
                 <div class="col-6 col-sm-4">
                   <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.725rem;">{{ _t('table_status', 'Status') }}</div>
@@ -281,13 +281,13 @@
       </div>
     </div>
 
-    <!-- Mobile Compact Horizontal Cards View (< md) -->
+    <!-- Mobile Compact Horizontal Cards View (< md, height ~100-120px) -->
     <div class="d-md-none">
       <div class="d-flex flex-column gap-2">
         {% for rel in related_books %}
-        <article class="card border shadow-xs overflow-hidden">
-          <div class="row g-0 align-items-stretch">
-            <div class="col-4 position-relative bg-body-secondary overflow-hidden" style="max-width: 105px; min-width: 90px;">
+        <article class="card border shadow-xs overflow-hidden" style="max-height: 120px;">
+          <div class="row g-0 align-items-stretch h-100">
+            <div class="position-relative bg-body-secondary overflow-hidden flex-shrink-0" style="width: 80px; height: 100%;">
               <div class="w-100 h-100 ratio ratio-3x4">
                 <img 
                   src="{{ url_for('static', filename=rel.image_path or 'img/covers/placeholder.svg') }}" 
@@ -299,26 +299,25 @@
               </div>
               <span class="badge bg-primary text-white position-absolute top-0 start-0 m-1 shadow-xs" style="font-size: 0.65rem;">{{ _t(rel.class_grade, rel.class_grade) }}</span>
             </div>
-            <div class="col-8 col-fill p-2 p-sm-3 d-flex flex-column justify-content-between" style="min-width: 0;">
+            <div class="col p-2 d-flex flex-column justify-content-between overflow-hidden" style="min-width: 0;">
               <div>
                 <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">{{ _t(rel.subject, rel.subject) }}</span>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.675rem;">{{ _t(rel.subject, rel.subject) }}</span>
                   <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">{{ _t('status_available', 'Available') }}</span>
                 </div>
-                <h3 class="h6 card-title fw-bold text-body mb-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.25; font-size: 0.9rem;">
+                <h3 class="h6 card-title fw-bold text-body mb-0 text-truncate" style="font-size: 0.85rem; line-height: 1.25;">
                   <a href="{{ url_for('student.book_detail', code_or_id=rel.book_code) }}" class="text-decoration-none text-body">
                     {{ rel.title }}
                   </a>
                 </h3>
-                <p class="small text-body-secondary mb-2 text-truncate" style="font-size: 0.75rem;">
+                <div class="text-body-secondary text-truncate" style="font-size: 0.725rem;">
                   {{ _t('by_author', 'By {author}', author=rel.author) }}
-                </p>
+                </div>
               </div>
-              <div class="d-flex align-items-center justify-content-between gap-2 pt-1 border-top border-secondary-subtle">
-                <bdi class="kb-code text-body-secondary" style="font-size: 0.725rem;">{{ rel.book_code }}</bdi>
-                <a href="{{ url_for('student.book_detail', code_or_id=rel.book_code) }}" class="btn btn-primary btn-sm py-1 px-2 d-inline-flex align-items-center gap-1 shadow-xs" style="font-size: 0.75rem;">
-                  {{ icon('circle-info') }}
-                  <span>{{ _t('btn_details', 'Details') }}</span>
+              <div class="d-flex align-items-center justify-content-between gap-1 pt-1 border-top border-secondary-subtle">
+                <bdi class="kb-code text-body-secondary" style="font-size: 0.7rem;">{{ rel.book_code }}</bdi>
+                <a href="{{ url_for('student.book_detail', code_or_id=rel.book_code) }}" class="btn btn-outline-primary btn-sm py-0 px-2 d-inline-flex align-items-center gap-1" style="font-size: 0.725rem; line-height: 1.5;">
+                  <span>{{ _t('btn_details', 'Details') }}</span> {{ icon('arrow-right', extra_class='small') }}
                 </a>
               </div>
             </div>

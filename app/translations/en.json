@@ -1,6 +1,6 @@
 {
   "app_name": "Kitaab Bank",
-  "app_tagline": "Smart School Book Exchange",
+  "app_tagline": "Smart School Book Exchange (کتاب بینک)",
   "app_full_name": "Kitaab Bank – Smart School Book Exchange",
   "nav_home": "Home",
   "nav_catalogue": "Browse Books",
@@ -505,5 +505,18 @@
   "Request rejected and archived with recorded reason.": "Request rejected and archived with recorded reason.",
   "Backup deleted successfully.": "Backup deleted successfully.",
   "btn_clear_all_filters": "Clear All Filters",
-  "showing_available_books_count": "Showing <strong>{count}</strong> available books"
+  "showing_available_books_count": "Showing <strong>{count}</strong> available books",
+  "School Teacher / Incharge": "School Teacher / Incharge",
+  "Teacher": "Teacher",
+  "action_request_submitted": "Request Submitted",
+  "edition_official": "Official",
+  "page_n_of_m": "(Page {current} of {total})",
+  "unknown_author": "Unknown",
+  "isbn_na": "N/A (Standard Curriculum)",
+  "Available in Catalogue": "Available in Catalogue",
+  "Reserved (Pending Pickup)": "Reserved (Pending Pickup)",
+  "Handed Over (Reused)": "Handed Over (Reused)",
+  "WAL Concurrency Active": "WAL Concurrency Active",
+  "Reuse Rate": "Reuse Rate",
+  "Showing available books count": "Showing available books"
 }

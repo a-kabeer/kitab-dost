@@ -43,8 +43,8 @@
     <div class="d-flex align-items-center gap-3">
       <span class="fs-4 text-primary">{{ icon('school') }}</span>
       <div>
-        <h2 class="h5 fw-bold text-body mb-0">School Profile & System Preferences</h2>
-        <p class="small text-body-secondary mb-0">Metadata displayed on student catalogue, printed QR labels, and circulation receipts.</p>
+        <h2 class="h5 fw-bold text-body mb-0">{{ _t('school_profile_title', 'School Profile & System Preferences') | safe }}</h2>
+        <p class="small text-body-secondary mb-0">{{ _t('school_profile_desc', 'Metadata displayed on student catalogue, printed QR labels, and circulation receipts.') }}</p>
       </div>
     </div>
   </div>
@@ -54,24 +54,24 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="mb-3">
-        <label for="school_name" class="form-label small fw-semibold text-body">Official School Name <span class="text-danger">*</span></label>
+        <label for="school_name" class="form-label small fw-semibold text-body">{{ _t('label_school_name', 'Official School Name') }} <span class="text-danger">*</span></label>
         <input type="text" id="school_name" name="school_name" class="form-control" value="{{ settings.get('school_name', 'Government Model High School') }}" required>
-        <div class="form-text small">Displayed in page headers, A4 handover receipts, and QR label sheets.</div>
+        <div class="form-text small">{{ _t('school_name_help', 'Displayed in page headers, A4 handover receipts, and QR label sheets.') }}</div>
       </div>
 
       <div class="mb-3">
-        <label for="academic_year" class="form-label small fw-semibold text-body">Active Academic Session <span class="text-danger">*</span></label>
+        <label for="academic_year" class="form-label small fw-semibold text-body">{{ _t('label_academic_session', 'Active Academic Session') }} <span class="text-danger">*</span></label>
         <input type="text" id="academic_year" name="academic_year" class="form-control" value="{{ settings.get('academic_year', '2026-2027') }}" required placeholder="e.g. 2026-2027">
       </div>
 
       <div class="mb-4">
-        <label for="default_language" class="form-label small fw-semibold text-body">Default Portal Language</label>
+        <label for="default_language" class="form-label small fw-semibold text-body">{{ _t('label_default_language', 'Default Portal Language') }}</label>
         <select id="default_language" name="default_language" class="form-select">
           <option value="en" {% if settings.get('default_language', 'en') == 'en' %}selected{% endif %}>English (Default)</option>
           <option value="ur" {% if settings.get('default_language') == 'ur' %}selected{% endif %}>اردو (Urdu - Right to Left)</option>
           <option value="sd" {% if settings.get('default_language') == 'sd' %}selected{% endif %}>سنڌي (Sindhi - Right to Left)</option>
         </select>
-        <div class="form-text small">Students and teachers can switch their active language at any time via the top header bar.</div>
+        <div class="form-text small">{{ _t('language_help', 'Students and teachers can switch their active language at any time via the top header bar.') }}</div>
       </div>
 
       <div class="d-flex justify-content-end pt-3 border-top">
@@ -93,7 +93,7 @@
       <span class="fs-4 text-primary">{{ icon('key') }}</span>
       <div>
         <h2 class="h5 fw-bold text-body mb-0">{{ _t('teacher_account_security', 'Teacher Account Security') }}</h2>
-        <p class="small text-body-secondary mb-0">Rotate teacher incharge password to safeguard school administrative operations.</p>
+        <p class="small text-body-secondary mb-0">{{ _t('password_security_desc', 'Rotate teacher incharge password to safeguard school administrative operations.') }}</p>
       </div>
     </div>
   </div>
@@ -108,18 +108,18 @@
       </div>
 
       <div class="mb-3">
-        <label for="current_password" class="form-label small fw-semibold text-body">Current Password <span class="text-danger">*</span></label>
+        <label for="current_password" class="form-label small fw-semibold text-body">{{ _t('label_current_password', 'Current Password') }} <span class="text-danger">*</span></label>
         <input type="password" id="current_password" name="current_password" class="form-control" required placeholder="Enter current password">
       </div>
 
       <div class="mb-3">
-        <label for="new_password" class="form-label small fw-semibold text-body">New Password <span class="text-danger">*</span></label>
+        <label for="new_password" class="form-label small fw-semibold text-body">{{ _t('label_new_password', 'New Password') }} <span class="text-danger">*</span></label>
         <input type="password" id="new_password" name="new_password" class="form-control" required placeholder="Minimum 8 characters">
-        <div class="form-text small">Must be at least 8 characters. For strong protection, mix letters, numbers, and symbols.</div>
+        <div class="form-text small">{{ _t('password_strength_help', 'Must be at least 8 characters. For strong protection, mix letters, numbers, and symbols.') }}</div>
       </div>
 
       <div class="mb-4">
-        <label for="confirm_password" class="form-label small fw-semibold text-body">Confirm New Password <span class="text-danger">*</span></label>
+        <label for="confirm_password" class="form-label small fw-semibold text-body">{{ _t('label_confirm_password', 'Confirm New Password') }} <span class="text-danger">*</span></label>
         <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Repeat new password">
       </div>
 
@@ -142,10 +142,10 @@
     <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
         <h2 class="h5 fw-bold text-body mb-1 d-flex align-items-center gap-2">
-          {{ icon('hard-drive', extra_class='text-primary') }}Consistent Live Database Backups
+          {{ icon('hard-drive', extra_class='text-primary') }}{{ _t('live_backups_title', 'Consistent Live Database Backups') }}
         </h2>
         <p class="small text-body-secondary mb-0">
-          Uses SQLite Online Hot Backup API (<code class="kb-code">sqlite3.Connection.backup()</code>). Zero downtime, automated SHA-256 checksums, and integrity validation.
+          {{ _t('live_backups_desc', 'Uses SQLite Online Hot Backup API (sqlite3.Connection.backup()). Zero downtime, automated SHA-256 checksums, and integrity validation.') }}
         </p>
       </div>
       <form action="{{ url_for('teacher.create_backup') }}" method="POST">
@@ -172,13 +172,13 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
-            <th scope="col" style="min-width: 220px;">Backup File</th>
-            <th scope="col" style="min-width: 100px;">File Size</th>
-            <th scope="col" style="min-width: 150px;">SHA-256 Checksum</th>
-            <th scope="col" style="min-width: 140px;">Integrity Status</th>
-            <th scope="col" style="min-width: 130px;">Created By</th>
-            <th scope="col" style="min-width: 160px;">Created At</th>
-            <th scope="col" class="text-end" style="min-width: 140px;">Actions</th>
+            <th scope="col" style="min-width: 220px;">{{ _t('table_backup_file', 'Backup File') }}</th>
+            <th scope="col" style="min-width: 100px;">{{ _t('table_file_size', 'File Size') }}</th>
+            <th scope="col" style="min-width: 150px;">{{ _t('table_checksum', 'SHA-256 Checksum') }}</th>
+            <th scope="col" style="min-width: 140px;">{{ _t('table_integrity', 'Integrity Status') }}</th>
+            <th scope="col" style="min-width: 130px;">{{ _t('table_created_by', 'Created By') }}</th>
+            <th scope="col" style="min-width: 160px;">{{ _t('table_created_at', 'Created At') }}</th>
+            <th scope="col" class="text-end" style="min-width: 140px;">{{ _t('table_actions', 'Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -205,7 +205,7 @@
               {% if bck.verification_status == 'VALID' %}
                 <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
                   {{ icon('circle-check', extra_class='small') }}
-                  <span>Verified Valid</span>
+                  <span>{{ _t('verified_valid', 'Verified Valid') }}</span>
                 </span>
               {% else %}
                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">
@@ -351,7 +351,7 @@
       </div>
 
       <div class="d-flex gap-2 align-items-center justify-content-end pt-3 border-top">
-        <a href="{{ url_for('teacher.settings', tab='backup') }}" class="btn btn-outline-secondary">Back Up First</a>
+        <a href="{{ url_for('teacher.settings', tab='backup') }}" class="btn btn-outline-secondary">{{ _t('btn_back_up_first', 'Back Up First') }}</a>
         <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2">
           {{ icon('rocket') }}
           <span>{{ _t('btn_enter_demo', 'Seed Exhibition Demo Data') }}</span>

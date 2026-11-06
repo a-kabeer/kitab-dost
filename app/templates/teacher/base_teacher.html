@@ -43,7 +43,7 @@
   {% macro teacher_nav_items() %}
     <div class="mb-4">
       <div class="text-uppercase small fw-bold text-body-secondary px-3 mb-2" style="font-size: 0.725rem; letter-spacing: 0.05em;">
-        {{ _t('nav_donations', 'Circulation & Review') }}
+        {{ _t('nav_section_circulation', 'Circulation & Review') }}
       </div>
       <div class="nav flex-column gap-1">
         <a href="{{ url_for('teacher.dashboard') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint == 'teacher.dashboard' %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
@@ -73,7 +73,7 @@
 
     <div class="mb-4">
       <div class="text-uppercase small fw-bold text-body-secondary px-3 mb-2" style="font-size: 0.725rem; letter-spacing: 0.05em;">
-        {{ _t('nav_inventory', 'Management & Tools') }}
+        {{ _t('nav_section_management', 'Management & Tools') }}
       </div>
       <div class="nav flex-column gap-1">
         <a href="{{ url_for('teacher.inventory') }}" class="nav-link px-3 py-2 rounded-3 d-flex align-items-center gap-3 fs-6 {% if request.endpoint in ('teacher.inventory', 'teacher.add_book', 'teacher.edit_book') %}active bg-primary text-white fw-semibold shadow-xs{% else %}text-body-secondary{% endif %}" style="min-height: 42px;">
@@ -106,7 +106,7 @@
         </div>
         <div class="overflow-hidden">
           <div class="fw-bold small text-truncate">{{ session.get('teacher_name', 'Teacher') }}</div>
-          <div class="text-body-secondary" style="font-size: 0.725rem;">Staff Access (Local)</div>
+          <div class="text-body-secondary" style="font-size: 0.725rem;">{{ _t('staff_access_local', 'Staff Access (Local)') }}</div>
         </div>
       </div>
     </div>

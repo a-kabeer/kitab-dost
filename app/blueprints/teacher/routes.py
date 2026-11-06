@@ -36,7 +36,7 @@ def donations():
     """Teacher review queue for student book donations with filters, search, and status tabs."""
     status_filter = request.args.get('status', 'pending').strip()
     search_query = request.args.get('q', '').strip()
-    class_filter = request.args.get('class_grade', '').strip()
+    class_filter = (request.args.get('class_grade') or request.args.get('class') or '').strip()
     subject_filter = request.args.get('subject', '').strip()
 
     status_arg = None if status_filter == 'all' else (status_filter or 'pending')
@@ -111,7 +111,7 @@ def requests():
     """Teacher review queue for student book requests with atomic reservation."""
     status_filter = request.args.get('status', 'pending').strip()
     search_query = request.args.get('q', '').strip()
-    class_filter = request.args.get('class_grade', '').strip()
+    class_filter = (request.args.get('class_grade') or request.args.get('class') or '').strip()
 
     status_arg = None if status_filter == 'all' else (status_filter or 'pending')
 
@@ -252,7 +252,7 @@ def cancel_reservation(request_id):
 def handovers():
     """Dedicated Teacher Handover Ledger with search, class and date filtering."""
     search_query = request.args.get('q', '').strip()
-    class_filter = request.args.get('class_grade', '').strip()
+    class_filter = (request.args.get('class_grade') or request.args.get('class') or '').strip()
     date_from = request.args.get('date_from', '').strip()
     date_to = request.args.get('date_to', '').strip()
 
@@ -372,7 +372,7 @@ def inventory():
     """Teacher inventory management with status filters, search, and pagination."""
     status_filter = request.args.get('status', 'all').strip()
     search_query = request.args.get('q', '').strip()
-    class_filter = request.args.get('class_grade', '').strip()
+    class_filter = (request.args.get('class_grade') or request.args.get('class') or '').strip()
     subject_filter = request.args.get('subject', '').strip()
     condition_filter = request.args.get('condition', '').strip()
     page = request.args.get('page', 1, type=int)

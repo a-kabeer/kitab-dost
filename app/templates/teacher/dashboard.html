@@ -13,10 +13,10 @@
   </div>
   <div class="d-flex flex-wrap gap-2 align-items-center">
     <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
-      {{ icon('circle-dot') }} WAL Concurrency Active
+      {{ icon('circle-dot') }} {{ _t('wal_concurrency_active', 'WAL Concurrency Active') }}
     </span>
     <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
-      Reuse Rate: {{ analytics.summary.reuse_rate }}%
+      {{ _t('badge_reuse_rate', 'Reuse Rate: {rate}%', rate=analytics.summary.reuse_rate) }}
     </span>
   </div>
 </div>
@@ -27,8 +27,8 @@
   <div class="d-flex align-items-center gap-2">
     <span class="fs-4 flex-shrink-0 text-warning">{{ icon('triangle-exclamation') }}</span>
     <div>
-      <strong class="text-warning-emphasis">Pending Teacher Actions Required:</strong>
-      <span class="text-body">{{ analytics.summary.pending_donations }} donation(s) awaiting review and {{ analytics.summary.pending_requests }} student request(s) awaiting allocation.</span>
+      <strong class="text-warning-emphasis">{{ _t('pending_actions_required', 'Pending Teacher Actions Required:') }}</strong>
+      <span class="text-body">{{ _t('pending_actions_desc', '{donations} donation(s) awaiting review and {requests} student request(s) awaiting allocation.', donations=analytics.summary.pending_donations, requests=analytics.summary.pending_requests) }}</span>
     </div>
   </div>
   <div class="d-flex flex-wrap gap-2 flex-shrink-0">
@@ -50,7 +50,7 @@
         {{ icon('plus') }}
       </div>
       <div class="fw-bold text-body small">{{ _t('btn_add_book', 'Add Textbook') }}</div>
-      <div class="text-body-secondary" style="font-size: 0.725rem;">Direct inventory entry</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ _t('qa_add_book_sub', 'Direct inventory entry') }}</div>
     </a>
   </div>
 
@@ -60,7 +60,7 @@
         {{ icon('inbox') }}
       </div>
       <div class="fw-bold text-body small">{{ _t('nav_donations', 'Donations Queue') }}</div>
-      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.pending_donations }} pending review</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ _t('qa_donations_sub', '{count} pending review', count=analytics.summary.pending_donations) }}</div>
     </a>
   </div>
 
@@ -70,7 +70,7 @@
         {{ icon('clipboard-list') }}
       </div>
       <div class="fw-bold text-body small">{{ _t('nav_requests', 'Student Requests') }}</div>
-      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.pending_requests }} pending allocation</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ _t('qa_requests_sub', '{count} pending allocation', count=analytics.summary.pending_requests) }}</div>
     </a>
   </div>
 
@@ -80,7 +80,7 @@
         {{ icon('handshake') }}
       </div>
       <div class="fw-bold text-body small">{{ _t('nav_handovers', 'Handover Ledger') }}</div>
-      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.completed_handovers }} fulfilled</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ _t('qa_handovers_sub', '{count} fulfilled', count=analytics.summary.completed_handovers) }}</div>
     </a>
   </div>
 
@@ -90,7 +90,7 @@
         {{ icon('book') }}
       </div>
       <div class="fw-bold text-body small">{{ _t('nav_inventory', 'Book Inventory') }}</div>
-      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ analytics.summary.total_inventory }} total books</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ _t('qa_inventory_sub', '{count} total books', count=analytics.summary.total_inventory) }}</div>
     </a>
   </div>
 
@@ -99,8 +99,8 @@
       <div class="rounded-circle bg-secondary-subtle text-secondary-emphasis d-inline-flex align-items-center justify-content-center mx-auto mb-2" style="width: 42px; height: 42px;">
         {{ icon('tag') }}
       </div>
-      <div class="fw-bold text-body small">Print QR Labels</div>
-      <div class="text-body-secondary" style="font-size: 0.725rem;">A4 sticker sheets</div>
+      <div class="fw-bold text-body small">{{ _t('btn_print_qr_labels', 'Print QR Labels') }}</div>
+      <div class="text-body-secondary" style="font-size: 0.725rem;">{{ _t('qa_qr_sub', 'A4 sticker sheets') }}</div>
     </a>
   </div>
 </div>
@@ -115,7 +115,7 @@
       </div>
       <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.total_inventory }}</div>
       <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
-        <span>Manage</span> {{ icon('arrow-right') }}
+        <span>{{ _t('action_manage', 'Manage') }}</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -127,7 +127,7 @@
         <div class="text-success fs-5">{{ icon('book-open-reader') }}</div>
       </div>
       <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.available_books }}</div>
-      <div class="small text-body-secondary mt-auto" style="font-size: 0.725rem;">Ready to borrow</div>
+      <div class="small text-body-secondary mt-auto" style="font-size: 0.725rem;">{{ _t('sub_ready_borrow', 'Ready to borrow') }}</div>
     </a>
   </div>
 
@@ -139,7 +139,7 @@
       </div>
       <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.reserved_books }}</div>
       <div class="small text-warning fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
-        <span>Handover</span> {{ icon('arrow-right') }}
+        <span>{{ _t('action_handover', 'Handover') }}</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -152,7 +152,7 @@
       </div>
       <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.handed_over_books }}</div>
       <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
-        <span>Ledger</span> {{ icon('arrow-right') }}
+        <span>{{ _t('nav_handovers', 'Ledger') }}</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -164,7 +164,7 @@
         <div class="text-warning fs-5">{{ icon('users') }}</div>
       </div>
       <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.unique_recipients }}</div>
-      <div class="small text-body-secondary mt-auto" style="font-size: 0.725rem;">Beneficiaries</div>
+      <div class="small text-body-secondary mt-auto" style="font-size: 0.725rem;">{{ _t('sub_beneficiaries', 'Beneficiaries') }}</div>
     </div>
   </div>
 
@@ -176,7 +176,7 @@
       </div>
       <div class="fs-3 fw-bold text-body mb-1">{{ analytics.summary.total_donations }}</div>
       <div class="small text-primary fw-semibold mt-auto d-inline-flex align-items-center gap-1" style="font-size: 0.725rem;">
-        <span>Queue</span> {{ icon('arrow-right') }}
+        <span>{{ _t('action_queue', 'Queue') }}</span> {{ icon('arrow-right') }}
       </div>
     </a>
   </div>
@@ -190,9 +190,9 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
           <span class="text-primary">{{ icon('school') }}</span>
-          <span>Class-wise Book Distribution</span>
+          <span>{{ _t('class_distribution_title', 'Class-wise Book Distribution') }}</span>
         </h2>
-        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">Grades 6–8</span>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ _t('sub_grades_6_8', 'Grades 6–8') }}</span>
       </div>
 
       <div class="d-flex flex-column gap-3">
@@ -201,9 +201,9 @@
           <div class="d-flex justify-content-between align-items-center small mb-1">
             <span class="fw-semibold text-body">{{ cls.class_grade }}</span>
             <span class="text-body-secondary">
-              <strong>{{ cls.total }}</strong> books ({{ cls.percentage }}%)
-              &bull; <span class="text-success">{{ cls.available }} Avail</span>
-              &bull; <span class="text-primary">{{ cls.handed_over }} Reused</span>
+              <strong>{{ cls.total }}</strong> {{ _t('kpi_total_books', 'books') }} ({{ cls.percentage }}%)
+              &bull; <span class="text-success">{{ cls.available }} {{ _t('stat_avail_short', 'Avail') }}</span>
+              &bull; <span class="text-primary">{{ cls.handed_over }} {{ _t('stat_reused_short', 'Reused') }}</span>
             </span>
           </div>
           <div class="progress" role="progressbar" aria-valuenow="{{ cls.percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
@@ -211,14 +211,14 @@
           </div>
         </div>
         {% else %}
-        <div class="text-body-secondary small py-3 text-center">No class distribution records available yet.</div>
+        <div class="text-body-secondary small py-3 text-center">{{ _t('no_class_records', 'No class distribution records available yet.') }}</div>
         {% endfor %}
       </div>
 
       <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center small text-body-secondary">
-        <span>Inventory Spread: Balanced across middle school grades</span>
+        <span>{{ _t('inventory_spread_balanced', 'Inventory Spread: Balanced across middle school grades') }}</span>
         <a href="{{ url_for('teacher.reports') }}" class="text-primary fw-semibold text-decoration-none d-inline-flex align-items-center gap-1">
-          <span>Full Report</span> {{ icon('arrow-right') }}
+          <span>{{ _t('btn_full_report', 'Full Report') }}</span> {{ icon('arrow-right') }}
         </a>
       </div>
     </div>
@@ -230,9 +230,9 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
           <span class="text-primary">{{ icon('chart-pie') }}</span>
-          <span>Circulation Status Breakdown</span>
+          <span>{{ _t('circulation_status_title', 'Circulation Status Breakdown') }}</span>
         </h2>
-        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">Real-Time</span>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ _t('badge_real_time', 'Real-Time') }}</span>
       </div>
 
       <div class="d-flex flex-column gap-3 mb-4">
@@ -243,7 +243,7 @@
               {{ st.label }}
             </span>
             <span class="text-body-secondary">
-              <strong>{{ st.count }}</strong> books ({{ st.percentage }}%)
+              <strong>{{ st.count }}</strong> {{ _t('kpi_total_books', 'books') }} ({{ st.percentage }}%)
             </span>
           </div>
           <div class="progress" role="progressbar" aria-valuenow="{{ st.percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
@@ -257,19 +257,19 @@
       <div class="card border bg-body-tertiary p-3 mt-auto">
         <div class="row text-center g-2">
           <div class="col-4 border-end">
-            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">Past 7 Days</div>
+            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">{{ _t('velocity_past_7_days', 'Past 7 Days') }}</div>
             <div class="fs-4 fw-bold text-body">{{ analytics.velocity.handovers_7d }}</div>
-            <div class="small text-body-secondary" style="font-size: 0.725rem;">Handovers</div>
+            <div class="small text-body-secondary" style="font-size: 0.725rem;">{{ _t('nav_handovers', 'Handovers') }}</div>
           </div>
           <div class="col-4 border-end">
-            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">Past 30 Days</div>
+            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">{{ _t('velocity_past_30_days', 'Past 30 Days') }}</div>
             <div class="fs-4 fw-bold text-body">{{ analytics.velocity.handovers_30d }}</div>
-            <div class="small text-body-secondary" style="font-size: 0.725rem;">Handovers</div>
+            <div class="small text-body-secondary" style="font-size: 0.725rem;">{{ _t('nav_handovers', 'Handovers') }}</div>
           </div>
           <div class="col-4">
-            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">All Time</div>
+            <div class="small text-body-secondary text-uppercase fw-semibold" style="font-size: 0.7rem;">{{ _t('velocity_all_time', 'All Time') }}</div>
             <div class="fs-4 fw-bold text-primary">{{ analytics.velocity.total_handovers }}</div>
-            <div class="small text-body-secondary" style="font-size: 0.725rem;">Reused</div>
+            <div class="small text-body-secondary" style="font-size: 0.725rem;">{{ _t('stat_reused_books', 'Reused') }}</div>
           </div>
         </div>
       </div>
@@ -285,9 +285,9 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
           <span class="text-primary">{{ icon('book-bookmark') }}</span>
-          <span>Subject Inventory Spread</span>
+          <span>{{ _t('subject_inventory_spread', 'Subject Inventory Spread') }}</span>
         </h2>
-        <a href="{{ url_for('teacher.reports') }}" class="btn btn-sm btn-outline-secondary">Detailed Breakdown</a>
+        <a href="{{ url_for('teacher.reports') }}" class="btn btn-sm btn-outline-secondary">{{ _t('btn_detailed_breakdown', 'Detailed Breakdown') }}</a>
       </div>
 
       <div class="d-flex flex-column gap-3">
@@ -296,8 +296,8 @@
           <div class="d-flex justify-content-between align-items-center small mb-1">
             <span class="fw-semibold text-body">{{ sb.subject }}</span>
             <span class="text-body-secondary">
-              <strong>{{ sb.total }}</strong> books ({{ sb.percentage }}%)
-              &bull; {{ sb.available }} avail
+              <strong>{{ sb.total }}</strong> {{ _t('kpi_total_books', 'books') }} ({{ sb.percentage }}%)
+              &bull; {{ sb.available }} {{ _t('stat_avail_short', 'avail') }}
             </span>
           </div>
           <div class="progress" role="progressbar" aria-valuenow="{{ sb.percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
@@ -305,7 +305,7 @@
           </div>
         </div>
         {% else %}
-        <div class="text-body-secondary small py-3 text-center">No subject records available.</div>
+        <div class="text-body-secondary small py-3 text-center">{{ _t('no_subject_records', 'No subject records available.') }}</div>
         {% endfor %}
       </div>
     </div>
@@ -317,9 +317,9 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h6 fw-bold text-body mb-0 d-flex align-items-center gap-2">
           <span class="text-primary">{{ icon('scroll') }}</span>
-          <span>Recent Activity Audit Stream</span>
+          <span>{{ _t('recent_activity_title', 'Recent Activity Audit Stream') }}</span>
         </h2>
-        <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-sm btn-outline-secondary">View All Logs</a>
+        <a href="{{ url_for('teacher.activity_logs') }}" class="btn btn-sm btn-outline-secondary">{{ _t('btn_view_all_logs', 'View All Logs') }}</a>
       </div>
 
       <div class="d-flex flex-column gap-2 overflow-y-auto" style="max-height: 380px;">
@@ -337,14 +337,14 @@
             <div class="flex-grow-1 overflow-hidden">
               <div class="small text-body text-truncate">{{ act.details }}</div>
               <div class="text-body-secondary" style="font-size: 0.725rem;">
-                By <strong>{{ act.actor_name }}</strong> ({{ act.actor_type }}) &bull; {{ act.created_at }}
+                By <strong>{{ act.actor_name }}</strong> ({{ act.actor_type }}) &bull; <bdi class="kb-code">{{ act.created_at }}</bdi>
               </div>
             </div>
           </div>
         </div>
         {% else %}
         <div class="text-body-secondary small py-4 text-center">
-          No activity logged yet.
+          {{ _t('no_activity_logged', 'No activity logged yet.') }}
         </div>
         {% endfor %}
       </div>

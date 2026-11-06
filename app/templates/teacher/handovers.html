@@ -11,14 +11,14 @@
         {{ icon('handshake', extra_class='text-primary me-2') }}{{ _t('nav_handovers', 'Physical Handover Ledger') }}
       </h1>
       <p class="text-body-secondary mb-0 small">
-        Official immutable distribution ledger recording physical book transfers to verified student recipients.
+        {{ _t('handover_ledger_desc', 'Official immutable distribution ledger recording physical book transfers to verified student recipients.') }}
       </p>
     </div>
 
     <div>
       <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
         {{ icon('clock-rotate-left') }}
-        <span>Awaiting Handover Queue</span>
+        <span>{{ _t('btn_awaiting_handover_queue', 'Awaiting Handover Queue') }}</span>
       </a>
     </div>
   </div>
@@ -210,7 +210,7 @@
                   {{ h.confirming_teacher_name or h.teacher_name }}
                 </div>
                 <small class="text-body-secondary">
-                  Verified Staff
+                  {{ _t('verified_staff', 'Verified Staff') }}
                 </small>
               </td>
 
@@ -283,13 +283,13 @@
         {{ icon('handshake', extra_class='text-body-tertiary') }}
       </div>
       <h3 class="h5 fw-bold text-body mb-2">
-        No Handover Records Found
+        {{ _t('no_handovers_found', 'No Handover Records Found') }}
       </h3>
       <p class="text-body-secondary small mb-4 mx-auto" style="max-width: 440px;">
         {% if search_query or class_filter or date_from or date_to %}
-        No completed distribution records match your filter criteria. Try clearing search filters.
+        {{ _t('no_handovers_match_filter', 'No completed distribution records match your filter criteria. Try clearing search filters.') }}
         {% else %}
-        No physical book handovers have been confirmed yet. When approved requests are physically collected by students, confirmed handovers will be recorded in this permanent ledger.
+        {{ _t('no_handovers_yet', 'No physical book handovers have been confirmed yet. When approved requests are physically collected by students, confirmed handovers will be recorded in this permanent ledger.') }}
         {% endif %}
       </p>
       {% if search_query or class_filter or date_from or date_to %}
@@ -300,7 +300,7 @@
       {% else %}
       <a href="{{ url_for('teacher.requests', status='approved') }}" class="btn btn-primary d-inline-flex align-items-center gap-2">
         {{ icon('clock-rotate-left') }}
-        <span>Inspect Awaiting Requests</span>
+        <span>{{ _t('btn_inspect_awaiting_requests', 'Inspect Awaiting Requests') }}</span>
       </a>
       {% endif %}
     </div>

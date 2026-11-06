@@ -16,6 +16,7 @@ import os
 import time
 import sqlite3
 from pathlib import Path
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -40,32 +41,53 @@ def run_visual_audit():
     print("KITAAB BANK - FINAL UI REDESIGN VISUAL ACCEPTANCE & EVIDENCE AUDIT")
     print("=" * 80)
 
+    # 0. Ensure fresh demo dataset with valid relational foreign keys
+    print("\n--- 0. SEEDING CLEAN DEMO DATABASE WITH RELATIONAL INTEGRITY ---")
+    from app import create_app
+    from app.database import init_db
+    from scripts.seed_demo import reset_and_seed_demo_data
+
+    flask_app = create_app('production')
+    with flask_app.app_context():
+        init_db(flask_app)
+        reset_and_seed_demo_data()
+    print("  ✓ Demo database initialized and seeded successfully.")
+
     # Dynamically discover test IDs from database
     db_path = Path("kitaab_bank.db")
     con = sqlite3.connect(str(db_path))
+    con.row_factory = sqlite3.Row
     cur = con.cursor()
 
-    cur.execute("SELECT id, book_code FROM books ORDER BY id LIMIT 1")
+    cur.execute("SELECT id, book_code FROM books WHERE status='available' ORDER BY id LIMIT 1")
     brow = cur.fetchone()
-    book_id = brow[0] if brow else 1
+    book_id = brow['id'] if brow else 1
+    book_code = brow['book_code'] if brow else "KB-BK-000001"
 
     cur.execute("SELECT id, tracking_code FROM requests WHERE status='approved' LIMIT 1")
     rrow = cur.fetchone()
     if not rrow:
         cur.execute("SELECT id, tracking_code FROM requests LIMIT 1")
         rrow = cur.fetchone()
-    req_id = rrow[0] if rrow else 1
-    tracking_code = rrow[1] if rrow else "KB-REQ-4T7M-9P2Q"
+    req_id = rrow['id'] if rrow else 1
+    approved_tracking = rrow['tracking_code'] if rrow else "KB-REQ-8L1N-3K5V"
+
+    cur.execute("SELECT tracking_code FROM requests WHERE status='pending' LIMIT 1")
+    prow = cur.fetchone()
+    pending_tracking = prow['tracking_code'] if prow else "KB-REQ-8L1N-3K5V"
 
     cur.execute("SELECT id, donation_code FROM donations LIMIT 1")
     drow = cur.fetchone()
-    don_id = drow[0] if drow else 1
-    donation_code = drow[1] if drow else "KB-DON-3M9X-7P4Q"
+    don_id = drow['id'] if drow else 1
+    donation_code = drow['donation_code'] if drow else "KB-DON-3M9X-7P4Q"
 
-    cur.execute("SELECT id FROM handovers LIMIT 1")
+    cur.execute("SELECT id, handover_code FROM handovers LIMIT 1")
     hrow = cur.fetchone()
-    handover_id = hrow[0] if hrow else 1
+    handover_id = hrow['id'] if hrow else 1
+    handover_code = hrow['handover_code'] if hrow else "KB-HO-000001"
     con.close()
+
+    print(f"  Target Identifiers: Book={book_code} (ID:{book_id}), ApprovedReq={approved_tracking} (ID:{req_id}), DonCode={donation_code}, HandoverID={handover_id}")
 
     results = {
         "screenshots": [],
@@ -93,10 +115,10 @@ def run_visual_audit():
         student_views = [
             ("student_home", f"{BASE_URL}/"),
             ("student_catalogue", f"{BASE_URL}/catalogue"),
-            ("student_book_detail", f"{BASE_URL}/book/{book_id}"),
+            ("student_book_detail", f"{BASE_URL}/book/{book_code}"),
             ("student_donate", f"{BASE_URL}/donate"),
             ("student_request", f"{BASE_URL}/request/{book_id}"),
-            ("student_track", f"{BASE_URL}/track?code={tracking_code}"),
+            ("student_track", f"{BASE_URL}/track?code={pending_tracking}"),
             ("student_scan", f"{BASE_URL}/scan")
         ]
 
@@ -107,7 +129,8 @@ def run_visual_audit():
         desktop_page.on("pageerror", lambda err: results["errors"].append(f"Desktop page error: {err}"))
 
         for name, url in student_views:
-            desktop_page.goto(url, wait_until="networkidle")
+            resp = desktop_page.goto(url, wait_until="networkidle")
+            assert resp.status == 200, f"Expected HTTP 200 on {name} ({url}), got {resp.status}"
             time.sleep(0.3)
             out_file = EVIDENCE_DIR / f"{name}_desktop.png"
             desktop_page.screenshot(path=str(out_file), full_page=True)
@@ -115,7 +138,8 @@ def run_visual_audit():
             print(f"  ✓ Captured {out_file.name}")
 
         # Capture Auth Login (Desktop)
-        desktop_page.goto(f"{BASE_URL}/auth/login", wait_until="networkidle")
+        resp = desktop_page.goto(f"{BASE_URL}/auth/login", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 on auth_login, got {resp.status}"
         time.sleep(0.3)
         auth_desk_out = EVIDENCE_DIR / "auth_login_desktop.png"
         desktop_page.screenshot(path=str(auth_desk_out), full_page=True)
@@ -123,7 +147,8 @@ def run_visual_audit():
         print(f"  ✓ Captured {auth_desk_out.name}")
 
         # Capture Student Donation Success View (Desktop)
-        desktop_page.goto(f"{BASE_URL}/donate/success/{donation_code}", wait_until="networkidle")
+        resp = desktop_page.goto(f"{BASE_URL}/donate/success/{donation_code}", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 on donate/success/{donation_code}, got {resp.status}"
         time.sleep(0.3)
         don_succ_out = EVIDENCE_DIR / "student_donation_success_desktop.png"
         desktop_page.screenshot(path=str(don_succ_out), full_page=True)
@@ -131,12 +156,23 @@ def run_visual_audit():
         print(f"  ✓ Captured {don_succ_out.name}")
 
         # Capture Student Request Success View (Desktop)
-        desktop_page.goto(f"{BASE_URL}/request/success/{tracking_code}", wait_until="networkidle")
+        # Priority 0 Verification: Submit actual valid book request to capture genuine success view
+        resp = desktop_page.goto(f"{BASE_URL}/request/{book_id}", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 on /request/{book_id}, got {resp.status}"
+        desktop_page.fill("#requester-name", "Zainab Bibi")
+        desktop_page.fill("#requester-class", "Class 8-B")
+        desktop_page.fill("#requester-roll", "8999")
+        desktop_page.fill("#requester-contact", "0301-9988776")
+        desktop_page.fill("#request-notes", "Needed for daily classwork and exam preparation.")
+        desktop_page.locator("button[type='submit']").click()
+        desktop_page.wait_for_url("**/request/success/*", timeout=5000)
+        assert "/request/success/" in desktop_page.url, f"Expected redirect to /request/success/*, got {desktop_page.url}"
         time.sleep(0.3)
+        assert "404" not in desktop_page.title(), "Captured 404 page for student_request_success!"
         req_succ_out = EVIDENCE_DIR / "student_request_success_desktop.png"
         desktop_page.screenshot(path=str(req_succ_out), full_page=True)
         results["screenshots"].append(str(req_succ_out))
-        print(f"  ✓ Captured {req_succ_out.name}")
+        print(f"  ✓ Captured {req_succ_out.name} (live form submit -> {desktop_page.url})")
 
         desktop_ctx.close()
 
@@ -147,7 +183,8 @@ def run_visual_audit():
         mobile_page.on("pageerror", lambda err: results["errors"].append(f"Mobile page error: {err}"))
 
         for name, url in student_views:
-            mobile_page.goto(url, wait_until="networkidle")
+            resp = mobile_page.goto(url, wait_until="networkidle")
+            assert resp.status == 200, f"Expected HTTP 200 for {name} on mobile, got {resp.status}"
             time.sleep(0.3)
             overflow = mobile_page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
             if overflow:
@@ -159,7 +196,8 @@ def run_visual_audit():
             print(f"  ✓ Captured {out_file.name} (Overflow: {'FAIL' if overflow else 'NO'})")
 
         # Capture Auth Login (Mobile)
-        mobile_page.goto(f"{BASE_URL}/auth/login", wait_until="networkidle")
+        resp = mobile_page.goto(f"{BASE_URL}/auth/login", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 on auth_login mobile, got {resp.status}"
         time.sleep(0.3)
         auth_mob_out = EVIDENCE_DIR / "auth_login_mobile.png"
         mobile_page.screenshot(path=str(auth_mob_out), full_page=True)
@@ -210,7 +248,8 @@ def run_visual_audit():
         print("  ✓ Teacher authentication successful")
 
         for name, url in teacher_views:
-            t_desk_page.goto(url, wait_until="networkidle")
+            resp = t_desk_page.goto(url, wait_until="networkidle")
+            assert resp.status == 200, f"Expected HTTP 200 for {name}, got {resp.status}"
             time.sleep(0.3)
             out_file = EVIDENCE_DIR / f"{name}_desktop.png"
             t_desk_page.screenshot(path=str(out_file), full_page=True)
@@ -219,39 +258,47 @@ def run_visual_audit():
 
         # Capture Additional Teacher Desktop Views
         # Donation Detail
-        t_desk_page.goto(f"{BASE_URL}/teacher/donations/{don_id}", wait_until="networkidle")
+        resp = t_desk_page.goto(f"{BASE_URL}/teacher/donations/{don_id}", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 for teacher_donation_detail, got {resp.status}"
         time.sleep(0.3)
         don_detail_out = EVIDENCE_DIR / "teacher_donation_detail_desktop.png"
         t_desk_page.screenshot(path=str(don_detail_out), full_page=True)
         results["screenshots"].append(str(don_detail_out))
         print(f"  ✓ Captured {don_detail_out.name}")
 
-        # Request Detail
-        t_desk_page.goto(f"{BASE_URL}/teacher/requests/{req_id}", wait_until="networkidle")
+        # Request Detail (Priority 0 Verification: MUST NOT BE 404!)
+        resp = t_desk_page.goto(f"{BASE_URL}/teacher/requests/{req_id}", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 for teacher_request_detail, got {resp.status}"
         time.sleep(0.3)
+        assert "404" not in t_desk_page.title(), "Captured 404 page for teacher_request_detail!"
         req_detail_out = EVIDENCE_DIR / "teacher_request_detail_desktop.png"
         t_desk_page.screenshot(path=str(req_detail_out), full_page=True)
         results["screenshots"].append(str(req_detail_out))
-        print(f"  ✓ Captured {req_detail_out.name}")
+        print(f"  ✓ Captured {req_detail_out.name} (HTTP 200: Valid approved request {req_id})")
 
-        # Handover Confirmation Form
-        t_desk_page.goto(f"{BASE_URL}/teacher/requests/{req_id}/handover", wait_until="networkidle")
+        # Handover Confirmation Form (Priority 0 Verification: MUST NOT BE 404!)
+        resp = t_desk_page.goto(f"{BASE_URL}/teacher/requests/{req_id}/handover", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 for teacher_handover_confirm, got {resp.status}"
         time.sleep(0.3)
+        assert "404" not in t_desk_page.title(), "Captured 404 page for teacher_handover_confirm!"
         ho_conf_out = EVIDENCE_DIR / "teacher_handover_confirm_desktop.png"
         t_desk_page.screenshot(path=str(ho_conf_out), full_page=True)
         results["screenshots"].append(str(ho_conf_out))
-        print(f"  ✓ Captured {ho_conf_out.name}")
+        print(f"  ✓ Captured {ho_conf_out.name} (HTTP 200: Valid handover confirm form for request {req_id})")
 
-        # Handover Printable Receipt
-        t_desk_page.goto(f"{BASE_URL}/teacher/handovers/{handover_id}/receipt", wait_until="networkidle")
+        # Handover Printable Receipt (Priority 0 Verification: MUST NOT BE 404!)
+        resp = t_desk_page.goto(f"{BASE_URL}/teacher/handovers/{handover_id}/receipt", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 for teacher_handover_receipt, got {resp.status}"
         time.sleep(0.3)
+        assert "404" not in t_desk_page.title(), "Captured 404 page for teacher_handover_receipt!"
         ho_rec_out = EVIDENCE_DIR / "teacher_handover_receipt_desktop.png"
         t_desk_page.screenshot(path=str(ho_rec_out), full_page=True)
         results["screenshots"].append(str(ho_rec_out))
-        print(f"  ✓ Captured {ho_rec_out.name}")
+        print(f"  ✓ Captured {ho_rec_out.name} (HTTP 200: Valid handover receipt {handover_id})")
 
         # Teacher QR Sheet View
-        t_desk_page.goto(f"{BASE_URL}/teacher/qr-sheet", wait_until="networkidle")
+        resp = t_desk_page.goto(f"{BASE_URL}/teacher/qr-sheet", wait_until="networkidle")
+        assert resp.status == 200, f"Expected HTTP 200 for teacher_qr_sheet, got {resp.status}"
         time.sleep(0.3)
         qr_sheet_out = EVIDENCE_DIR / "teacher_qr_sheet_desktop.png"
         t_desk_page.screenshot(path=str(qr_sheet_out), full_page=True)
@@ -272,7 +319,8 @@ def run_visual_audit():
         t_mob_page.wait_for_url("**/teacher/dashboard", timeout=5000)
 
         for name, url in teacher_views:
-            t_mob_page.goto(url, wait_until="networkidle")
+            resp = t_mob_page.goto(url, wait_until="networkidle")
+            assert resp.status == 200, f"Expected HTTP 200 for {name} on mobile, got {resp.status}"
             time.sleep(0.3)
             overflow = t_mob_page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
             if overflow:
@@ -455,24 +503,26 @@ def run_visual_audit():
         err_ctx = browser.new_context(viewport=DESKTOP_VIEWPORT)
         err_page = err_ctx.new_page()
 
-        # 404 Not Found Page
-        err_page.goto(f"{BASE_URL}/non-existent-page-404-test", wait_until="networkidle")
+        # 404 Not Found Page (Intentional Error Screenshot)
+        resp = err_page.goto(f"{BASE_URL}/non-existent-page-404-test", wait_until="networkidle")
+        assert resp.status == 404, f"Expected HTTP 404, got {resp.status}"
         time.sleep(0.3)
         err_404_out = EVIDENCE_DIR / "error_404_desktop.png"
         err_page.screenshot(path=str(err_404_out), full_page=True)
         results["screenshots"].append(str(err_404_out))
-        print(f"  ✓ Captured {err_404_out.name} (404 Error page)")
+        print(f"  ✓ Captured {err_404_out.name} (Intentional 404 Error page)")
 
-        # 503 Maintenance Mode Page
+        # 503 Maintenance Mode Page (Intentional Error Screenshot)
         from app.services import maintenance_service
         maintenance_service.set_maintenance_mode(True)
         try:
-            err_page.goto(f"{BASE_URL}/", wait_until="networkidle")
+            resp = err_page.goto(f"{BASE_URL}/", wait_until="networkidle")
+            assert resp.status == 503, f"Expected HTTP 503, got {resp.status}"
             time.sleep(0.3)
             err_503_out = EVIDENCE_DIR / "error_503_desktop.png"
             err_page.screenshot(path=str(err_503_out), full_page=True)
             results["screenshots"].append(str(err_503_out))
-            print(f"  ✓ Captured {err_503_out.name} (503 Maintenance page)")
+            print(f"  ✓ Captured {err_503_out.name} (Intentional 503 Maintenance page)")
         finally:
             maintenance_service.set_maintenance_mode(False)
 

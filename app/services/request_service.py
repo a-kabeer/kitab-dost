@@ -177,7 +177,7 @@ def get_request_by_tracking_code(tracking_code: str):
                h.handover_date,
                h.teacher_name AS handover_teacher_name
         FROM requests r
-        JOIN books b ON r.book_id = b.id
+        LEFT JOIN books b ON r.book_id = b.id
         LEFT JOIN teachers t ON r.reviewed_by = t.id
         LEFT JOIN handovers h ON r.id = h.request_id
         WHERE r.tracking_code = ?
@@ -205,7 +205,7 @@ def get_request_by_id(request_id: int):
                h.handover_date,
                h.teacher_name AS handover_teacher_name
         FROM requests r
-        JOIN books b ON r.book_id = b.id
+        LEFT JOIN books b ON r.book_id = b.id
         LEFT JOIN teachers t ON r.reviewed_by = t.id
         LEFT JOIN handovers h ON r.id = h.request_id
         WHERE r.id = ?
@@ -251,7 +251,7 @@ def get_requests_for_teacher(status=None, search_query=None, class_grade=None, l
     count_sql = f"""
         SELECT COUNT(*) 
         FROM requests r 
-        JOIN books b ON r.book_id = b.id 
+        LEFT JOIN books b ON r.book_id = b.id 
         {where_sql};
     """
     cur.execute(count_sql, params)
@@ -269,7 +269,7 @@ def get_requests_for_teacher(status=None, search_query=None, class_grade=None, l
                h.handover_code,
                h.handover_date
         FROM requests r
-        JOIN books b ON r.book_id = b.id
+        LEFT JOIN books b ON r.book_id = b.id
         LEFT JOIN teachers t ON r.reviewed_by = t.id
         LEFT JOIN handovers h ON r.id = h.request_id
         {where_sql}

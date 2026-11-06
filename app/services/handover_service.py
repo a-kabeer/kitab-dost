@@ -305,7 +305,7 @@ def get_handovers_for_teacher(
     count_sql = f"""
         SELECT COUNT(*) 
         FROM handovers h
-        JOIN books b ON h.book_id = b.id
+        LEFT JOIN books b ON h.book_id = b.id
         {where_sql};
     """
     cur.execute(count_sql, params)
@@ -322,7 +322,7 @@ def get_handovers_for_teacher(
                b.image_path AS book_image,
                t.full_name AS confirming_teacher_name
         FROM handovers h
-        JOIN books b ON h.book_id = b.id
+        LEFT JOIN books b ON h.book_id = b.id
         LEFT JOIN teachers t ON h.handed_over_by = t.id
         {where_sql}
         ORDER BY h.id DESC
@@ -355,7 +355,7 @@ def get_handover_by_id(handover_id: int):
                t.full_name AS confirming_teacher_name,
                r.notes AS request_notes
         FROM handovers h
-        JOIN books b ON h.book_id = b.id
+        LEFT JOIN books b ON h.book_id = b.id
         LEFT JOIN teachers t ON h.handed_over_by = t.id
         LEFT JOIN requests r ON h.request_id = r.id
         WHERE h.id = ?
@@ -381,7 +381,7 @@ def get_handover_by_code(handover_code: str):
                b.image_path AS book_image,
                t.full_name AS confirming_teacher_name
         FROM handovers h
-        JOIN books b ON h.book_id = b.id
+        LEFT JOIN books b ON h.book_id = b.id
         LEFT JOIN teachers t ON h.handed_over_by = t.id
         WHERE h.handover_code = ?
         LIMIT 1;
@@ -404,7 +404,7 @@ def get_handover_by_request_id(request_id: int):
                b.class_grade AS book_class,
                t.full_name AS confirming_teacher_name
         FROM handovers h
-        JOIN books b ON h.book_id = b.id
+        LEFT JOIN books b ON h.book_id = b.id
         LEFT JOIN teachers t ON h.handed_over_by = t.id
         WHERE h.request_id = ?
         LIMIT 1;

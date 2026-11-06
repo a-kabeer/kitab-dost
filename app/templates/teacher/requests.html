@@ -16,8 +16,30 @@
     </div>
   </div>
 
-  <!-- Status Tabs Bar (Scrollable on mobile) -->
-  <div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap">
+  <!-- Mobile Status Selector (< 768px, solves DEF-TAB-01) -->
+  <div class="d-md-none mb-3">
+    <label for="mobile-status-select" class="form-label small fw-semibold text-body-secondary visually-hidden">{{ _t('filter_status', 'Filter Queue Status') }}</label>
+    <select id="mobile-status-select" class="form-select" onchange="if(this.value) window.location.href=this.value;">
+      <option value="{{ url_for('teacher.requests', status='pending') }}" {% if current_status == 'pending' %}selected{% endif %}>
+        {{ _t('status_pending', 'Pending Review') }} ({{ counts.pending }})
+      </option>
+      <option value="{{ url_for('teacher.requests', status='approved') }}" {% if current_status == 'approved' %}selected{% endif %}>
+        {{ _t('status_reserved', 'Approved & Reserved') }} ({{ counts.approved }})
+      </option>
+      <option value="{{ url_for('teacher.requests', status='rejected') }}" {% if current_status == 'rejected' %}selected{% endif %}>
+        {{ _t('status_rejected', 'Rejected') }} ({{ counts.rejected }})
+      </option>
+      <option value="{{ url_for('teacher.requests', status='completed') }}" {% if current_status == 'completed' %}selected{% endif %}>
+        {{ _t('status_completed', 'Handed Over') }} ({{ counts.completed }})
+      </option>
+      <option value="{{ url_for('teacher.requests', status='all') }}" {% if current_status == 'all' %}selected{% endif %}>
+        {{ _t('filter_all_statuses', 'All Records') }} ({{ counts.all }})
+      </option>
+    </select>
+  </div>
+
+  <!-- Status Tabs Bar (>= 768px, Scrollable on tablets) -->
+  <div class="d-none d-md-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap">
     <a href="{{ url_for('teacher.requests', status='pending') }}" class="btn btn-sm text-nowrap {% if current_status == 'pending' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
       {{ icon('clock', extra_class='small') }}
       <span>{{ _t('status_pending', 'Pending Review') }}</span>
@@ -317,7 +339,7 @@
               {{ icon('handshake') }} <span>{{ _t('btn_handover', 'Handover') }}</span>
             </a>
             <button type="button" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1" onclick="openCancelModal({{ r.id }}, '{{ r.requester_name|replace('\'', '\\\'') }}', '{{ r.book_code }}')">
-              {{ icon('unlock') }} <span>Release</span>
+              {{ icon('unlock') }} <span>{{ _t('btn_release_reservation', 'Release') }}</span>
             </button>
 
             {% elif r.status == 'completed' and r.handover_id %}
@@ -340,13 +362,13 @@
         {{ icon('inbox', style='regular', extra_class='text-body-tertiary') }}
       </div>
       <h3 class="h5 fw-bold text-body mb-2">
-        No Requests in this Queue
+        {{ _t('no_requests_found', 'No Requests in this Queue') }}
       </h3>
       <p class="text-body-secondary small mb-0 mx-auto" style="max-width: 440px;">
         {% if current_status == 'pending' %}
-        There are currently no pending student book requests awaiting teacher review.
+        {{ _t('no_pending_requests', 'There are currently no pending student book requests awaiting teacher review.') }}
         {% else %}
-        No request records match the selected status or filter parameters.
+        {{ _t('no_requests_match_filter', 'No request records match the selected status or filter parameters.') }}
         {% endif %}
       </p>
     </div>

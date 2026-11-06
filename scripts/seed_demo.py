@@ -121,6 +121,14 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
     conn = sqlite3.connect(str(db_file))
     cur = conn.cursor()
 
+    # Ensure schema exists before clearing tables
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='books';")
+    if not cur.fetchone():
+        schema_path = PROJECT_ROOT / 'app' / 'schema.sql'
+        if schema_path.exists():
+            with open(schema_path, 'r', encoding='utf-8') as f:
+                cur.executescript(f.read())
+
     # 1. Clear dynamic tables in foreign key order (preserve backup_records!)
     cur.execute("PRAGMA foreign_keys = OFF;")
     cur.execute("DELETE FROM handovers;")
@@ -128,6 +136,10 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
     cur.execute("DELETE FROM donations;")
     cur.execute("DELETE FROM books;")
     cur.execute("DELETE FROM activity_logs;")
+    try:
+        cur.execute("DELETE FROM sqlite_sequence WHERE name IN ('books', 'donations', 'requests', 'handovers', 'activity_logs');")
+    except Exception:
+        pass
     # NOTE: backup_records is strictly preserved to protect historical backups!
     cur.execute("PRAGMA foreign_keys = ON;")
 
@@ -185,14 +197,19 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
             b
         )
 
+    # 3b. Fetch real mapped IDs for books to ensure complete relational integrity
+    cur.execute("SELECT book_code, id FROM books;")
+    b_map = dict(cur.fetchall())
+
     # 4. Seed Realistic Student Donations
     now = datetime.now()
     donations_data = [
-        ('KB-DON-7K9M-2X4P', 'Advanced Mathematics Class 8', 'STBB', 'Mathematics', 'Class 8', 'English', 'Good', 'Clean copy with slight margin notes.', 'Zainab Fatima', 'Class 8-A', '8012', '0300-1122334', 'approved', 13, (now - timedelta(days=12)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('KB-DON-7K9M-2X4P', 'Advanced Mathematics Class 8', 'STBB', 'Mathematics', 'Class 8', 'English', 'Good', 'Clean copy with slight margin notes.', 'Zainab Fatima', 'Class 8-A', '8012', '0300-1122334', 'approved', b_map['KB-BK-000013'], (now - timedelta(days=12)).strftime('%Y-%m-%d %H:%M:%S')),
         ('KB-DON-3M9X-7P4Q', 'Science Explorer Grade 7', 'Oxford Press', 'General Science', 'Class 7', 'English', 'Like New', 'Hardly used textbook from last term.', 'Hamza Ali', 'Class 7-B', '7025', '0321-9988776', 'pending', None, (now - timedelta(hours=4)).strftime('%Y-%m-%d %H:%M:%S')),
         ('KB-DON-8L2W-5V1N', 'Commercial Geography 8', 'Old Curriculum', 'Social Studies', 'Class 8', 'English', 'Fair', 'Outdated 2018 edition.', 'Bilal Ahmed', 'Class 8-C', '8045', '0345-5544332', 'rejected', None, (now - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S'))
     ]
 
+    don_ids = []
     for d in donations_data:
         cur.execute(
             """
@@ -204,29 +221,32 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
             """,
             d
         )
+        don_ids.append(cur.lastrowid)
 
     # 5. Seed Student Requests & Handovers
-    # Request 1: Pending for Available Book
+    # Request 1: Pending for Available Book (Mathematics Class 6)
     cur.execute(
         """
         INSERT INTO requests (
             tracking_code, book_id, requester_name, requester_class,
             requester_roll_no, requester_contact, notes, status, created_at
-        ) VALUES ('KB-REQ-4T7M-9P2Q', 1, 'Ayesha Siddiqua', 'Class 6-A', '6014', '0312-3344556', 'Need for upcoming term math homework.', 'pending', ?);
+        ) VALUES ('KB-REQ-4T7M-9P2Q', ?, 'Ayesha Siddiqua', 'Class 6-A', '6014', '0312-3344556', 'Need for upcoming term math homework.', 'pending', ?);
         """,
-        ((now - timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S'),)
+        (b_map['KB-BK-000001'], (now - timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S'))
     )
+    req1_id = cur.lastrowid
 
-    # Request 2: Approved / Reserved for Book 5 (Social Studies Class 6)
+    # Request 2: Approved / Reserved for Book 6 (Social Studies Class 6)
     cur.execute(
         """
         INSERT INTO requests (
             tracking_code, book_id, requester_name, requester_class,
             requester_roll_no, requester_contact, notes, status, reviewed_by, reviewed_at, created_at
-        ) VALUES ('KB-REQ-8L1N-3K5V', 5, 'Saad Rehman', 'Class 6-B', '6028', '0333-7788990', 'Reserved for pickup on Thursday.', 'approved', 1, ?, ?);
+        ) VALUES ('KB-REQ-8L1N-3K5V', ?, 'Saad Rehman', 'Class 6-B', '6028', '0333-7788990', 'Reserved for pickup on Thursday.', 'approved', ?, ?, ?);
         """,
-        (now.strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S'))
+        (b_map['KB-BK-000006'], teacher_id, now.strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S'))
     )
+    req2_id = cur.lastrowid
 
     # Request 3: Approved / Reserved for Book 11 (Computer Science Class 7)
     cur.execute(
@@ -234,20 +254,21 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
         INSERT INTO requests (
             tracking_code, book_id, requester_name, requester_class,
             requester_roll_no, requester_contact, notes, status, reviewed_by, reviewed_at, created_at
-        ) VALUES ('KB-REQ-2W9X-4M7L', 11, 'Maryam Noor', 'Class 7-A', '7009', '0301-4455667', 'Programming syllabus textbook needed.', 'approved', 1, ?, ?);
+        ) VALUES ('KB-REQ-2W9X-4M7L', ?, 'Maryam Noor', 'Class 7-A', '7009', '0301-4455667', 'Programming syllabus textbook needed.', 'approved', ?, ?, ?);
         """,
-        (now.strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S'))
+        (b_map['KB-BK-000011'], teacher_id, now.strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S'))
     )
+    req3_id = cur.lastrowid
 
-    # Request 4 & Handover 1: Book 6 (Islamiat Class 6) -> Handed Over
+    # Request 4 & Handover 1: Book 12 (Urdu Class 7) -> Handed Over
     cur.execute(
         """
         INSERT INTO requests (
             tracking_code, book_id, requester_name, requester_class,
             requester_roll_no, requester_contact, status, reviewed_by, reviewed_at, created_at
-        ) VALUES ('KB-REQ-9K3P-5T8M', 6, 'Farhan Ahmed', 'Class 6-C', '6035', '0322-1144778', 'completed', 1, ?, ?);
+        ) VALUES ('KB-REQ-9K3P-5T8M', ?, 'Farhan Ahmed', 'Class 6-C', '6035', '0322-1144778', 'completed', ?, ?, ?);
         """,
-        ((now - timedelta(days=10)).strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=11)).strftime('%Y-%m-%d %H:%M:%S'))
+        (b_map['KB-BK-000012'], teacher_id, (now - timedelta(days=10)).strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=11)).strftime('%Y-%m-%d %H:%M:%S'))
     )
     req4_id = cur.lastrowid
 
@@ -257,22 +278,23 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
             handover_code, request_id, book_id, tracking_code, book_code,
             recipient_name, recipient_class, recipient_roll_no, recipient_contact,
             handed_over_by, teacher_name, remarks, handover_date
-        ) VALUES ('KB-HO-000001', ?, 6, 'KB-REQ-9K3P-5T8M', 'KB-BK-000006',
+        ) VALUES ('KB-HO-000001', ?, ?, 'KB-REQ-9K3P-5T8M', 'KB-BK-000012',
                   'Farhan Ahmed', 'Class 6-C', '6035', '0322-1144778',
-                  1, 'Sir Tariq Mahmood', 'Verified student card. Textbook handed over in like new condition.', ?);
+                  ?, 'Sir Tariq Mahmood', 'Verified student card. Textbook handed over in like new condition.', ?);
         """,
-        (req4_id, (now - timedelta(days=9)).strftime('%Y-%m-%d %H:%M:%S'))
+        (req4_id, b_map['KB-BK-000012'], teacher_id, (now - timedelta(days=9)).strftime('%Y-%m-%d %H:%M:%S'))
     )
+    ho1_id = cur.lastrowid
 
-    # Request 5 & Handover 2: Book 12 (Urdu Class 7) -> Handed Over
+    # Request 5 & Handover 2: Book 18 (Social Studies Class 8) -> Handed Over
     cur.execute(
         """
         INSERT INTO requests (
             tracking_code, book_id, requester_name, requester_class,
             requester_roll_no, requester_contact, status, reviewed_by, reviewed_at, created_at
-        ) VALUES ('KB-REQ-7M2L-4P9K', 12, 'Zain Ul Abideen', 'Class 7-C', '7042', '0344-9988112', 'completed', 1, ?, ?);
+        ) VALUES ('KB-REQ-7M2L-4P9K', ?, 'Zain Ul Abideen', 'Class 7-C', '7042', '0344-9988112', 'completed', ?, ?, ?);
         """,
-        ((now - timedelta(days=18)).strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=19)).strftime('%Y-%m-%d %H:%M:%S'))
+        (b_map['KB-BK-000018'], teacher_id, (now - timedelta(days=18)).strftime('%Y-%m-%d %H:%M:%S'), (now - timedelta(days=19)).strftime('%Y-%m-%d %H:%M:%S'))
     )
     req5_id = cur.lastrowid
 
@@ -282,23 +304,24 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
             handover_code, request_id, book_id, tracking_code, book_code,
             recipient_name, recipient_class, recipient_roll_no, recipient_contact,
             handed_over_by, teacher_name, remarks, handover_date
-        ) VALUES ('KB-HO-000002', ?, 12, 'KB-REQ-7M2L-4P9K', 'KB-BK-000012',
+        ) VALUES ('KB-HO-000002', ?, ?, 'KB-REQ-7M2L-4P9K', 'KB-BK-000018',
                   'Zain Ul Abideen', 'Class 7-C', '7042', '0344-9988112',
-                  1, 'Sir Tariq Mahmood', 'Student collected textbook before mid-term exams.', ?);
+                  ?, 'Sir Tariq Mahmood', 'Student collected textbook before mid-term exams.', ?);
         """,
-        (req5_id, (now - timedelta(days=17)).strftime('%Y-%m-%d %H:%M:%S'))
+        (req5_id, b_map['KB-BK-000018'], teacher_id, (now - timedelta(days=17)).strftime('%Y-%m-%d %H:%M:%S'))
     )
+    ho2_id = cur.lastrowid
 
     # 6. Seed Realistic Historical Activity Logs
     activity_items = [
-        ('handover_completed', 'handover', 2, 'teacher', 'Sir Tariq Mahmood', "Handover 'KB-HO-000002' confirmed: 'اردو زبان و ادب جماعت ہفتم' issued to Zain Ul Abideen (Class 7-C)", (now - timedelta(days=17)).strftime('%Y-%m-%d %H:%M:%S')),
-        ('donation_approved', 'donation', 1, 'teacher', 'Sir Tariq Mahmood', "Donation 'KB-DON-7K9M-2X4P' approved into catalogue as 'KB-BK-000013'", (now - timedelta(days=12)).strftime('%Y-%m-%d %H:%M:%S')),
-        ('handover_completed', 'handover', 1, 'teacher', 'Sir Tariq Mahmood', "Handover 'KB-HO-000001' confirmed: 'اسلامیات برائے جماعت ششم' issued to Farhan Ahmed (Class 6-C)", (now - timedelta(days=9)).strftime('%Y-%m-%d %H:%M:%S')),
-        ('book_added', 'book', 7, 'teacher', 'Sir Tariq Mahmood', "New textbook 'Mathematics for Class 7' (KB-BK-000007) added to inventory", (now - timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')),
-        ('request_approved', 'request', 2, 'teacher', 'Sir Tariq Mahmood', "Request 'KB-REQ-8L1N-3K5V' approved: Book 'KB-BK-000005' reserved for Saad Rehman", (now - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')),
-        ('donation_submitted', 'donation', 2, 'student', 'Hamza Ali', "Donation 'KB-DON-3M9X-7P4Q' submitted by Hamza Ali (Class 7-B)", (now - timedelta(hours=4)).strftime('%Y-%m-%d %H:%M:%S')),
-        ('request_submitted', 'request', 1, 'student', 'Ayesha Siddiqua', "Book request 'KB-REQ-4T7M-9P2Q' submitted for 'Mathematics for Class 6'", (now - timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')),
-        ('teacher_login', 'teacher', 1, 'teacher', 'Sir Tariq Mahmood', "Teacher 'teacher' signed in from local workstation", now.strftime('%Y-%m-%d %H:%M:%S'))
+        ('handover_completed', 'handover', ho2_id, 'teacher', 'Sir Tariq Mahmood', "Handover 'KB-HO-000002' confirmed: 'سوشل اسٽڊيز برائے جماعت ہشتم' issued to Zain Ul Abideen (Class 7-C)", (now - timedelta(days=17)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('donation_approved', 'donation', don_ids[0], 'teacher', 'Sir Tariq Mahmood', f"Donation 'KB-DON-7K9M-2X4P' approved into catalogue as 'KB-BK-000013'", (now - timedelta(days=12)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('handover_completed', 'handover', ho1_id, 'teacher', 'Sir Tariq Mahmood', "Handover 'KB-HO-000001' confirmed: 'اردو زبان و ادب جماعت ہفتم' issued to Farhan Ahmed (Class 6-C)", (now - timedelta(days=9)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('book_added', 'book', b_map['KB-BK-000007'], 'teacher', 'Sir Tariq Mahmood', "New textbook 'Mathematics for Class 7' (KB-BK-000007) added to inventory", (now - timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('request_approved', 'request', req2_id, 'teacher', 'Sir Tariq Mahmood', "Request 'KB-REQ-8L1N-3K5V' approved: Book 'KB-BK-000006' reserved for Saad Rehman", (now - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('donation_submitted', 'donation', don_ids[1], 'student', 'Hamza Ali', "Donation 'KB-DON-3M9X-7P4Q' submitted by Hamza Ali (Class 7-B)", (now - timedelta(hours=4)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('request_submitted', 'request', req1_id, 'student', 'Ayesha Siddiqua', "Book request 'KB-REQ-4T7M-9P2Q' submitted for 'Mathematics for Class 6'", (now - timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')),
+        ('teacher_login', 'teacher', teacher_id, 'teacher', 'Sir Tariq Mahmood', "Teacher 'teacher' signed in from local workstation", now.strftime('%Y-%m-%d %H:%M:%S'))
     ]
 
     for act in activity_items:

@@ -10,13 +10,13 @@
       {{ icon('clock-rotate-left', extra_class='text-primary me-2') }}{{ _t('nav_logs', 'System Activity Logs & Audit Trail') }}
     </h1>
     <p class="text-body-secondary mb-0 small">
-      Immutable records of book circulation, staff actions, and student requests.
+      {{ _t('logs_audit_trail_sub', 'Immutable records of book circulation, staff actions, and student requests.') }}
     </p>
   </div>
   <div>
     <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1 py-2 px-3">
       {{ icon('shield-halved', extra_class='small') }}
-      <span>Audit Logging Active</span>
+      <span>{{ _t('badge_audit_active', 'Audit Logging Active') }}</span>
     </span>
   </div>
 </div>
@@ -30,13 +30,13 @@
           <span class="input-group-text bg-body-tertiary border-end-0">
             {{ icon('magnifying-glass', extra_class='text-body-secondary') }}
           </span>
-          <input type="search" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search by description or actor name...">
+          <input type="search" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="{{ _t('placeholder_search_logs', 'Search by description or actor name...') }}">
         </div>
       </div>
 
       <div class="col-6 col-md-2">
         <select name="action" class="form-select">
-          <option value="">All Actions</option>
+          <option value="">{{ _t('filter_all_actions', 'All Actions') }}</option>
           {% for act in distinct_actions %}
             <option value="{{ act }}" {% if action_filter == act %}selected{% endif %}>
               {{ act.replace('_', ' ').capitalize() }}
@@ -47,7 +47,7 @@
 
       <div class="col-6 col-md-2">
         <select name="actor_type" class="form-select">
-          <option value="">All Actors</option>
+          <option value="">{{ _t('filter_all_actors', 'All Actors') }}</option>
           {% for at in distinct_actors %}
             <option value="{{ at }}" {% if actor_filter == at %}selected{% endif %}>
               {{ at.capitalize() }}
@@ -86,11 +86,11 @@
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="min-width: 160px;">Timestamp</th>
-          <th scope="col" style="min-width: 160px;">Action</th>
-          <th scope="col" style="min-width: 120px;">Entity</th>
-          <th scope="col" style="min-width: 150px;">Actor</th>
-          <th scope="col" style="min-width: 250px;">Details</th>
+          <th scope="col" style="min-width: 160px;">{{ _t('table_timestamp', 'Timestamp') }}</th>
+          <th scope="col" style="min-width: 160px;">{{ _t('table_action', 'Action') }}</th>
+          <th scope="col" style="min-width: 120px;">{{ _t('table_entity', 'Entity') }}</th>
+          <th scope="col" style="min-width: 150px;">{{ _t('table_actor', 'Actor') }}</th>
+          <th scope="col" style="min-width: 250px;">{{ _t('table_details', 'Details') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -133,8 +133,8 @@
             <div class="display-6 mb-3 text-body-tertiary">
               {{ icon('scroll', extra_class='text-body-tertiary') }}
             </div>
-            <h4 class="h5 fw-bold text-body mb-2">No log entries found</h4>
-            <p class="small text-body-secondary mb-0">Try adjusting your search filters.</p>
+            <h4 class="h5 fw-bold text-body mb-2">{{ _t('no_logs_found', 'No log entries found') }}</h4>
+            <p class="small text-body-secondary mb-0">{{ _t('no_records_found_desc', 'Try adjusting your search filters.') }}</p>
           </td>
         </tr>
         {% endfor %}

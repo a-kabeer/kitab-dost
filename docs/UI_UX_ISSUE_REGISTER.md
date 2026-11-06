@@ -256,3 +256,73 @@ This section tracks visual, localization, and responsive defects identified duri
 | `DEF-HERO-01` | P2 | Visual / Polish | Student homepage hero vertical rhythm and CTA touch target spacing on mobile. | `app/templates/student/index.html` | Refined padding, responsive typography, and button touch target spacing with Bootstrap responsive utilities. | **RESOLVED & VERIFIED** |
 | `DEF-KPI-01` | P2 | Layout / Polish | Teacher dashboard KPI cards stacking unevenly on mid-tier mobile viewports. | `app/templates/teacher/dashboard.html` | Standardized on `row g-3 row-cols-2 row-cols-lg-3 row-cols-xl-6` with equal card heights and flex alignment. | **RESOLVED & VERIFIED** |
 
+---
+
+## 9. Final Visual Acceptance & Evidence Corrections Register
+
+This section records the final audit findings and resolutions from the 47-screenshot visual acceptance verification (`ui-redesign-evidence(1).rar`).
+
+### Final Defect & Verification Matrix
+
+| Issue ID | Severity | Category | Description | Scope / Affected Files | Resolution Summary | Status |
+|---|---|---|---|---|---|---|
+| `DEF-RTE-01` | **Critical (P0)** | Route / Screenshot Integrity | 4 screenshot routes captured HTTP 404 pages instead of rendered transaction views: `student_request_success`, `teacher_request_detail`, `teacher_handover_confirm`, and `teacher_handover_receipt`. | `scripts/seed_demo.py`, `request_service.py`, `handover_service.py`, `scripts/run_visual_acceptance_audit.py` | 1. Switched `INNER JOIN books` to `LEFT JOIN books` in request and handover queries.<br>2. Fixed exhibition seeder to reset `sqlite_sequence` and dynamically map foreign keys `b_map`.<br>3. Automated real form submission and dynamic database ID discovery in visual audit script with HTTP 200 assertions.<br>4. Re-captured all 4 transaction views cleanly at HTTP 200. | **RESOLVED & VERIFIED** |
+| `DEF-QDS-01` | **Critical (P0)** | Data Consistency | Student requests showed Pending=1, All=0, and "No Requests in this Queue" empty state. Handovers showed 2 on KPI but 0 rows in ledger. | `app/services/request_service.py`, `app/services/handover_service.py`, `app/blueprints/teacher/routes.py` | Resolved SQL join discrepancy (`LEFT JOIN books`), standardized query parameter handling (`class_grade` and `class`), ensuring all counts, filters, and tab badge tallies match database rows exactly. | **RESOLVED & VERIFIED** |
+| `DEF-LOC-03` | **Major (P1)** | Multilingual Localization | Incomplete Urdu/Sindhi translations across remaining navigation headers, status badges, metrics, modal confirmation titles, and table headers. | `app/translations/en.json`, `ur.json`, `sd.json`, and all 33 templates | Added 106 new keys to translation dictionaries (total 441 keys across all 3 languages). Fully translated all headers, badges, alerts, and toolbars without raw English fallback. | **RESOLVED & VERIFIED** |
+| `DEF-MOB-01` | **Major (P1)** | Mobile Density / UI | Long student homepage scroll on phones due to oversized card height; inventory cards had excessive vertical whitespace. | `app/templates/student/index.html`, `app/templates/teacher/inventory.html` | Implemented compact horizontal cards view (`< md`, ~100px height per item) on student home, and tightened padding and card vertical margins on teacher inventory. | **RESOLVED & VERIFIED** |
+| `DEF-TAB-04` | **Moderate (P2)** | Responsive Navigation | Filter pills on Teacher Requests, Donations, and Inventory clipped or wrapped awkwardly on narrow mobile screens (<400px). | `requests.html`, `donations.html`, `inventory.html` | Implemented responsive mobile `<select>` tab selector (`d-block d-md-none`) synchronized with desktop `.nav-pills` (`d-none d-md-flex`). | **RESOLVED & VERIFIED** |
+| `DEF-REP-01` | **Moderate (P2)** | Responsive Reports | Circulation metrics table cramped on mobile screens; ambiguous CSV export button labels. | `app/templates/teacher/reports.html` | Converted circulation breakdown table to stacked responsive cards on `< md` screens. Disambiguated CSV export buttons as "Export Inventory CSV" and "Export Handover CSV". | **RESOLVED & VERIFIED** |
+
+### Complete 47-Screenshot Evidence Manifest
+
+All 47 required visual acceptance screenshots have been captured, asserted at HTTP 200 (or intentional 404/503), and verified to have 0 visual defects and 0 external CDN requests:
+
+1. `student_home_desktop.png` (HTTP 200)
+2. `student_catalogue_desktop.png` (HTTP 200)
+3. `student_book_detail_desktop.png` (HTTP 200)
+4. `student_donate_desktop.png` (HTTP 200)
+5. `student_request_desktop.png` (HTTP 200)
+6. `student_track_desktop.png` (HTTP 200)
+7. `student_scan_desktop.png` (HTTP 200)
+8. `auth_login_desktop.png` (HTTP 200)
+9. `student_donation_success_desktop.png` (HTTP 200)
+10. `student_request_success_desktop.png` (HTTP 200 - Live form submit redirect)
+11. `student_home_mobile.png` (HTTP 200, Overflow: NO)
+12. `student_catalogue_mobile.png` (HTTP 200, Overflow: NO)
+13. `student_book_detail_mobile.png` (HTTP 200, Overflow: NO)
+14. `student_donate_mobile.png` (HTTP 200, Overflow: NO)
+15. `student_request_mobile.png` (HTTP 200, Overflow: NO)
+16. `student_track_mobile.png` (HTTP 200, Overflow: NO)
+17. `student_scan_mobile.png` (HTTP 200, Overflow: NO)
+18. `auth_login_mobile.png` (HTTP 200, Overflow: NO)
+19. `nav_offcanvas_mobile_open.png` (HTTP 200, Mobile offcanvas open)
+20. `teacher_dashboard_desktop.png` (HTTP 200)
+21. `teacher_donations_desktop.png` (HTTP 200)
+22. `teacher_requests_desktop.png` (HTTP 200)
+23. `teacher_handovers_desktop.png` (HTTP 200)
+24. `teacher_inventory_desktop.png` (HTTP 200)
+25. `teacher_reports_desktop.png` (HTTP 200)
+26. `teacher_settings_desktop.png` (HTTP 200)
+27. `teacher_donation_detail_desktop.png` (HTTP 200)
+28. `teacher_request_detail_desktop.png` (HTTP 200 - Valid approved request view)
+29. `teacher_handover_confirm_desktop.png` (HTTP 200 - Valid handover confirm form)
+30. `teacher_handover_receipt_desktop.png` (HTTP 200 - Valid official receipt)
+31. `teacher_qr_sheet_desktop.png` (HTTP 200)
+32. `teacher_dashboard_mobile.png` (HTTP 200, Sidebar hidden: YES, Overflow: NO)
+33. `teacher_donations_mobile.png` (HTTP 200, Sidebar hidden: YES, Overflow: NO)
+34. `teacher_requests_mobile.png` (HTTP 200, Sidebar hidden: YES, Overflow: NO)
+35. `teacher_handovers_mobile.png` (HTTP 200, Sidebar hidden: YES, Overflow: NO)
+36. `teacher_inventory_mobile.png` (HTTP 200, Sidebar hidden: YES, Overflow: NO)
+37. `teacher_reports_mobile.png` (HTTP 200, Sidebar hidden: YES, Overflow: NO)
+38. `teacher_settings_mobile.png` (HTTP 200, Sidebar hidden: YES, Overflow: NO)
+39. `teacher_nav_offcanvas_mobile_open.png` (HTTP 200, Teacher mobile sidebar open)
+40. `rtl_urdu_home_desktop.png` (HTTP 200, dir=rtl, Nastaliq typography)
+41. `rtl_urdu_dashboard_desktop.png` (HTTP 200, dir=rtl, Urdu dashboard)
+42. `rtl_sindhi_home_desktop.png` (HTTP 200, dir=rtl, Sindhi typography)
+43. `rtl_sindhi_catalogue_desktop.png` (HTTP 200, dir=rtl, Sindhi catalogue with bidi codes)
+44. `theme_dark_home_desktop.png` (HTTP 200, data-bs-theme=dark)
+45. `theme_dark_dashboard_desktop.png` (HTTP 200, data-bs-theme=dark)
+46. `error_404_desktop.png` (HTTP 404 - Intentional custom error page)
+47. `error_503_desktop.png` (HTTP 503 - Intentional maintenance mode page)
+
+

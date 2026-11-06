@@ -16,8 +16,27 @@
     </div>
   </div>
 
-  <!-- Status Tabs Bar (Scrollable on mobile without wrapping) -->
-  <div class="d-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap">
+  <!-- Mobile Status Selector (< 768px, solves DEF-TAB-01) -->
+  <div class="d-md-none mb-3">
+    <label for="mobile-donations-status-select" class="form-label small fw-semibold text-body-secondary visually-hidden">{{ _t('filter_status', 'Filter Queue Status') }}</label>
+    <select id="mobile-donations-status-select" class="form-select" onchange="if(this.value) window.location.href=this.value;">
+      <option value="{{ url_for('teacher.donations', status='pending') }}" {% if current_status == 'pending' %}selected{% endif %}>
+        {{ _t('status_pending', 'Pending Review') }} ({{ counts.pending }})
+      </option>
+      <option value="{{ url_for('teacher.donations', status='approved') }}" {% if current_status == 'approved' %}selected{% endif %}>
+        {{ _t('status_approved', 'Approved') }} ({{ counts.approved }})
+      </option>
+      <option value="{{ url_for('teacher.donations', status='rejected') }}" {% if current_status == 'rejected' %}selected{% endif %}>
+        {{ _t('status_rejected', 'Rejected') }} ({{ counts.rejected }})
+      </option>
+      <option value="{{ url_for('teacher.donations', status='all') }}" {% if current_status == 'all' %}selected{% endif %}>
+        {{ _t('filter_all_statuses', 'All Records') }} ({{ counts.all }})
+      </option>
+    </select>
+  </div>
+
+  <!-- Status Tabs Bar (>= 768px, Scrollable on mobile without wrapping) -->
+  <div class="d-none d-md-flex gap-2 overflow-x-auto pb-2 mb-4 flex-nowrap">
     <a href="{{ url_for('teacher.donations', status='pending') }}" class="btn btn-sm text-nowrap {% if current_status == 'pending' %}btn-primary{% else %}btn-outline-secondary{% endif %} d-inline-flex align-items-center gap-2">
       {{ icon('clock', extra_class='small') }}
       <span>{{ _t('status_pending', 'Pending Review') }}</span>
@@ -328,13 +347,13 @@
         {{ icon('inbox', style='regular', extra_class='text-body-tertiary') }}
       </div>
       <h3 class="h5 fw-bold text-body mb-2">
-        {{ _t('table_donor', 'No Donations in this Queue') }}
+        {{ _t('no_donations_found', 'No Donations in this Queue') }}
       </h3>
       <p class="text-body-secondary small mb-0 mx-auto" style="max-width: 440px;">
         {% if current_status == 'pending' %}
-        There are currently no pending student book donations awaiting teacher verification.
+        {{ _t('no_pending_donations', 'There are currently no pending student book donations awaiting teacher verification.') }}
         {% else %}
-        No donation records match the selected status or filter parameters.
+        {{ _t('no_donations_match_filter', 'No donation records match the selected status or filter parameters.') }}
         {% endif %}
       </p>
     </div>

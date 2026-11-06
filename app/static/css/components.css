@@ -309,3 +309,86 @@ footer.bg-body {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 600;
 }
+
+/* 10. WCAG AA Contrast Optimization: Buttons & Muted Typography */
+.text-muted,
+.text-body-secondary {
+  color: var(--kb-text-muted) !important;
+}
+
+.btn-primary {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #0369a1;
+  --bs-btn-border-color: #0369a1;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #075985;
+  --bs-btn-hover-border-color: #075985;
+  --bs-btn-focus-shadow-rgb: 3, 105, 161;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #075985;
+  --bs-btn-active-border-color: #075985;
+  --bs-btn-disabled-color: #ffffff;
+  --bs-btn-disabled-bg: #0369a1;
+  --bs-btn-disabled-border-color: #0369a1;
+  background-color: #0369a1 !important;
+  border-color: #0369a1 !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #075985 !important;
+  border-color: #075985 !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+  background-color: #075985 !important;
+  border-color: #075985 !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:disabled,
+.btn-primary.disabled {
+  background-color: #0369a1 !important;
+  border-color: #0369a1 !important;
+  color: #ffffff !important;
+  opacity: 0.65;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #0369a1;
+  --bs-btn-border-color: #0369a1;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #0369a1;
+  --bs-btn-hover-border-color: #0369a1;
+  color: #0369a1;
+  border-color: #0369a1;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: #0369a1;
+  border-color: #0369a1;
+  color: #ffffff;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary,
+[data-theme="dark"] .btn-outline-primary {
+  --bs-btn-color: #38bdf8;
+  --bs-btn-border-color: #38bdf8;
+  --bs-btn-hover-color: #0f172a;
+  --bs-btn-hover-bg: #38bdf8;
+  --bs-btn-hover-border-color: #38bdf8;
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary:hover,
+[data-theme="dark"] .btn-outline-primary:focus {
+  background-color: #38bdf8;
+  border-color: #38bdf8;
+  color: #0f172a;
+}

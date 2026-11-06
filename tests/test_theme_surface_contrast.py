@@ -56,6 +56,9 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         card_border = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).borderColor"))
         card_footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card-footer')).backgroundColor"))
         footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('footer')).backgroundColor"))
+        btn_primary_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).backgroundColor"))
+        btn_primary_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).color"))
+        muted_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.text-muted, .text-body-secondary')).color"))
 
         self.assertEqual(body_bg, "#F1F4F8", "Light Theme page background must be #F1F4F8")
         self.assertEqual(body_color, "#172033", "Light Theme body color must be #172033")
@@ -64,6 +67,9 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         self.assertEqual(card_footer_bg, "#E8EDF4", "Light Theme secondary surface (card footer) must be #E8EDF4")
         self.assertEqual(card_border, "#DFE5ED", "Light Theme border must be #DFE5ED")
         self.assertEqual(footer_bg, "#FFFFFF", "Light Theme footer background must be #FFFFFF")
+        self.assertEqual(btn_primary_bg, "#0369A1", "Light Theme btn-primary background must be #0369A1 (WCAG AA)")
+        self.assertEqual(btn_primary_color, "#FFFFFF", "Light Theme btn-primary text must be #FFFFFF (5.93:1 contrast)")
+        self.assertEqual(muted_color, "#5F6B7A", "Light Theme muted text must be #5F6B7A (4.92:1 contrast)")
         
         # Verify visual separation: card background != page background
         self.assertNotEqual(card_bg, body_bg, "Light Theme cards must visually stand out from page background")
@@ -85,6 +91,9 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         card_border = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).borderColor"))
         card_footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card-footer')).backgroundColor"))
         footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('footer')).backgroundColor"))
+        btn_primary_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).backgroundColor"))
+        btn_primary_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).color"))
+        muted_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.text-muted, .text-body-secondary')).color"))
 
         self.assertEqual(body_bg, "#111827", "Dark Theme page background must be #111827")
         self.assertEqual(body_color, "#F1F5F9", "Dark Theme body color must be #F1F5F9")
@@ -93,6 +102,9 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         self.assertEqual(card_footer_bg, "#263449", "Dark Theme secondary surface (card footer) must be #263449")
         self.assertEqual(card_border, "#334155", "Dark Theme border must be #334155")
         self.assertEqual(footer_bg, "#17212F", "Dark Theme footer background must be #17212F")
+        self.assertEqual(btn_primary_bg, "#0369A1", "Dark Theme btn-primary background must be #0369A1")
+        self.assertEqual(btn_primary_color, "#FFFFFF", "Dark Theme btn-primary text must be #FFFFFF")
+        self.assertEqual(muted_color, "#A7B4C5", "Dark Theme muted text must be #A7B4C5")
 
         # Verify visual separation: card background != page background
         self.assertNotEqual(card_bg, body_bg, "Dark Theme cards must visually stand out from deep charcoal background")

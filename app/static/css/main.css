@@ -4,9 +4,9 @@
    ========================================================================== */
 
 :root, [data-bs-theme="light"], [data-theme="light"] {
-  /* Brand Core (Educational Blue & Teal) */
-  --kb-primary: #0284c7;
-  --kb-primary-hover: #0369a1;
+  /* Brand Core (Educational Blue & Teal) - Refined for WCAG AA 4.5:1 Contrast */
+  --kb-primary: #0369a1;
+  --kb-primary-hover: #075985;
   --kb-primary-subtle: #e0f2fe;
   --kb-primary-border: #bae6fd;
   --kb-primary-text: #0369a1;
@@ -16,9 +16,9 @@
   --kb-accent-subtle: #ccfbf1;
 
   /* Bootstrap 5.3 Variable Overrides */
-  --bs-primary: #0284c7;
-  --bs-primary-rgb: 2, 132, 199;
-  --bs-primary-hover: #0369a1;
+  --bs-primary: #0369a1;
+  --bs-primary-rgb: 3, 105, 161;
+  --bs-primary-hover: #075985;
   --bs-primary-bg-subtle: #e0f2fe;
   --bs-primary-border-subtle: #bae6fd;
   --bs-primary-text-emphasis: #0369a1;
@@ -40,10 +40,10 @@
   --bs-body-bg-rgb: 241, 244, 248;
   --bs-body-color: #172033;
   --bs-body-color-rgb: 23, 32, 51;
-  --bs-secondary-color: #64748B;
-  --bs-secondary-color-rgb: 100, 116, 139;
-  --bs-tertiary-color: #64748B;
-  --bs-tertiary-color-rgb: 100, 116, 139;
+  --bs-secondary-color: #5F6B7A;
+  --bs-secondary-color-rgb: 95, 107, 122;
+  --bs-tertiary-color: #5F6B7A;
+  --bs-tertiary-color-rgb: 95, 107, 122;
 
   --bs-card-bg: #FFFFFF;
   --bs-card-color: #172033;
@@ -58,7 +58,7 @@
   /* Text & Hierarchy */
   --kb-text-primary: #172033;
   --kb-text-secondary: #475569;
-  --kb-text-muted: #64748B;
+  --kb-text-muted: #5F6B7A;
   --kb-text-inverse: #FFFFFF;
 
   /* Borders & Dividers */
@@ -88,13 +88,13 @@
   --bg-subtle: #E8EDF4;
   --text-primary: #172033;
   --text-secondary: #475569;
-  --text-muted: #64748B;
+  --text-muted: #5F6B7A;
   --text-inverse: #FFFFFF;
   --border-color: #DFE5ED;
   --border-subtle: #DFE5ED;
   --border-strong: #94A3B8;
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
+  --primary: #0369a1;
+  --primary-hover: #075985;
   --primary-light: #e0f2fe;
   --primary-border: #bae6fd;
   --primary-text: #0369a1;

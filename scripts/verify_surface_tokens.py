@@ -32,6 +32,9 @@ with sync_playwright() as p:
     card_border_l = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).borderColor"))
     footer_bg_l = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('footer')).backgroundColor"))
     card_footer_bg_l = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card-footer')).backgroundColor"))
+    btn_bg_l = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).backgroundColor"))
+    btn_color_l = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).color"))
+    muted_color_l = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.text-muted, .text-body-secondary')).color"))
     
     print("=== STUDENT PORTAL LIGHT THEME ===")
     print(f"  Body BG:        {body_bg_l} (Expected #F1F4F8)")
@@ -41,6 +44,9 @@ with sync_playwright() as p:
     print(f"  Card Footer BG: {card_footer_bg_l} (Expected #E8EDF4)")
     print(f"  Card Border:    {card_border_l} (Expected #DFE5ED)")
     print(f"  Footer BG:      {footer_bg_l} (Expected #FFFFFF)")
+    print(f"  Btn Primary BG: {btn_bg_l} (Expected #0369A1)")
+    print(f"  Btn Text Color: {btn_color_l} (Expected #FFFFFF)")
+    print(f"  Text Muted:     {muted_color_l} (Expected #5F6B7A)")
 
     # Dark Mode
     page.evaluate("() => { localStorage.setItem('kb_theme', 'dark'); }")

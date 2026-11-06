@@ -938,5 +938,6 @@ Following the visual acceptance baseline established by the 36 full-page screens
     - Added automated Playwright regression suite `tests/test_theme_surface_contrast.py` verifying exact hex token matches, visual separation, teacher surfaces, and 0 horizontal overflow across 1440px, 1024px, 768px, 390px, and 360px viewports.
     - Verified strict print media isolation in `print.css` (`@media print` forces pure `#FFFFFF` background and `#000000` text).
     - Captured 50 full-fidelity screenshots in `docs/ui-redesign-evidence/` demonstrating clear surface elevation in Light, Dark, and RTL modes with 0 console errors and 0 CDN requests.
-    - Passed all 149 discovery unit tests, `test_phase1.py`, `test_concurrency.py`, `test_browser_phase9.py`, and 4 theme contrast tests.
+    - Optimized WCAG AA accessibility contrast: refined Light muted text to `#5F6B7A` (4.92:1 contrast against `#F1F4F8`, 5.43:1 on white cards) and primary blue button background to `#0369A1` (5.93:1 contrast with `#FFFFFF` text, up from 4.10:1 on `#0284C7`).
+    - Passed all 153 discovery unit tests, `test_phase1.py`, `test_concurrency.py`, `test_browser_phase9.py`, and 4 theme contrast tests.
     - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.

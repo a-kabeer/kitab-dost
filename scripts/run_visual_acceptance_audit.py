@@ -141,6 +141,22 @@ def run_visual_audit():
             ("student_scan", f"{BASE_URL}/scan")
         ]
 
+        # Helper: Ensure all lazy-loaded images are pre-loaded by the browser before screenshots
+        def scroll_and_load_images(page):
+            try:
+                page.evaluate("""async () => {
+                    const scrollStep = 400;
+                    const maxScroll = document.body.scrollHeight;
+                    for (let y = 0; y < maxScroll; y += scrollStep) {
+                        window.scrollTo(0, y);
+                        await new Promise(r => setTimeout(r, 40));
+                    }
+                    window.scrollTo(0, 0);
+                }""")
+                page.wait_for_timeout(350)
+            except Exception:
+                pass
+
         # 1A. Desktop Student Views
         desktop_ctx = browser.new_context(viewport=DESKTOP_VIEWPORT)
         desktop_page = desktop_ctx.new_page()
@@ -151,6 +167,8 @@ def run_visual_audit():
             resp = desktop_page.goto(url, wait_until="networkidle")
             assert resp.status == 200, f"Expected HTTP 200 on {name} ({url}), got {resp.status}"
             time.sleep(0.3)
+            if "catalogue" in name:
+                scroll_and_load_images(desktop_page)
             out_file = EVIDENCE_DIR / f"{name}_desktop.png"
             desktop_page.screenshot(path=str(out_file), full_page=True)
             results["screenshots"].append(str(out_file))
@@ -210,6 +228,30 @@ def run_visual_audit():
             if overflow:
                 results["errors"].append(f"Horizontal overflow on {name} mobile")
                 print(f"  ⚠️ Warning: Horizontal overflow on {name} mobile")
+
+            if name == "student_catalogue":
+                scroll_and_load_images(mobile_page)
+                # Verify Class 6 Sindhi book (KB-BK-000004) cover image loaded
+                sindhi_card = mobile_page.locator(".d-md-none article.card:has-text('سنڌي سليس')")
+                if sindhi_card.count() > 0:
+                    sindhi_img = sindhi_card.locator("img")
+                    is_comp = sindhi_img.evaluate("el => el.complete")
+                    nat_w = sindhi_img.evaluate("el => el.naturalWidth")
+                    print(f"  ✓ Verified KB-BK-000004 cover on mobile (390px): complete={is_comp}, naturalWidth={nat_w}px")
+                    assert is_comp and nat_w > 0, "KB-BK-000004 mobile cover not loaded!"
+
+                    # Also test 360px compact mobile viewport for KB-BK-000004
+                    comp_ctx = browser.new_context(viewport={"width": 360, "height": 640}, is_mobile=True, has_touch=True)
+                    comp_page = comp_ctx.new_page()
+                    comp_page.goto(f"{BASE_URL}/catalogue", wait_until="networkidle")
+                    scroll_and_load_images(comp_page)
+                    comp_img = comp_page.locator(".d-md-none article.card:has-text('سنڌي سليس') img")
+                    if comp_img.count() > 0:
+                        is_comp_360 = comp_img.evaluate("el => el.complete")
+                        nat_w_360 = comp_img.evaluate("el => el.naturalWidth")
+                        print(f"  ✓ Verified KB-BK-000004 cover on compact mobile (360px): complete={is_comp_360}, naturalWidth={nat_w_360}px")
+                        assert is_comp_360 and nat_w_360 > 0, "KB-BK-000004 cover not loaded at 360px!"
+                    comp_ctx.close()
 
             if name == "student_book_detail":
                 card_box = mobile_page.locator(".d-md-none article.card").first.bounding_box()
@@ -494,6 +536,7 @@ def run_visual_audit():
         print(f"  ✓ Captured {sindhi_home_out.name} (dir=rtl, Sindhi typography)")
 
         rtl_page.goto(f"{BASE_URL}/catalogue", wait_until="networkidle")
+        scroll_and_load_images(rtl_page)
         time.sleep(0.4)
         dir_attr = rtl_page.locator("html").get_attribute("dir")
         assert dir_attr == "rtl", f"Expected dir='rtl' for Sindhi Catalogue, got {dir_attr}"
@@ -530,6 +573,7 @@ def run_visual_audit():
 
         # Sindhi Catalogue Mobile
         rtl_mob_page.goto(f"{BASE_URL}/catalogue", wait_until="networkidle")
+        scroll_and_load_images(rtl_mob_page)
         time.sleep(0.3)
         sindhi_cat_mob = EVIDENCE_DIR / "rtl_sindhi_catalogue_mobile.png"
         rtl_mob_page.screenshot(path=str(sindhi_cat_mob), full_page=True)

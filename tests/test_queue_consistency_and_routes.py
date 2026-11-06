@@ -368,6 +368,14 @@ class TestQueueConsistencyAndRoutes(unittest.TestCase):
         self.assertIn('هن وقت دستياب', html)
         self.assertIn('ٻيهر واپرائل ڪتاب', html)
 
+        # Class 6 Sindhi book (KB-BK-000004) has valid local asset in catalogue
+        res_cat = self.client.get('/catalogue')
+        self.assertEqual(res_cat.status_code, 200)
+        html_cat = res_cat.data.decode('utf-8')
+        self.assertIn('KB-BK-000004', html_cat)
+        self.assertIn('img/covers/sindhi_class6.svg', html_cat)
+        self.assertIn('img/covers/placeholder.svg', html_cat)
+
     def test_settings_mobile_selector_and_desktop_tabs_guard(self):
         """Assert Settings template includes mobile tab selector and hides desktop tablist on mobile."""
         self._login_teacher()

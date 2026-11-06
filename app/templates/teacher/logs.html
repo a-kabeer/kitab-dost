@@ -124,7 +124,7 @@
             </div>
           </td>
           <td class="small text-body leading-normal">
-            {{ log.details }}
+            {{ format_activity_detail(log.details) | safe }}
           </td>
         </tr>
         {% else %}

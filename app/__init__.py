@@ -87,8 +87,15 @@ def create_app(config_name='default'):
             'lang_dir': meta['dir'],
             'supported_languages': translation_service.SUPPORTED_LANGUAGES,
             '_t': lambda key, default=None, **kwargs: translation_service.translate(key, lang=lang, default=default, **kwargs),
+            'format_activity_detail': lambda details: translation_service.localize_activity_details(details, lang=lang),
             'is_demo_mode': is_demo
         }
+
+    @app.template_filter('format_activity_detail')
+    def filter_format_activity_detail(details):
+        lang = session.get('lang') or request.cookies.get('kb_lang') or 'en'
+        return translation_service.localize_activity_details(details, lang=lang)
+
 
     @app.route('/set-language/<lang_code>')
     def set_language(lang_code):

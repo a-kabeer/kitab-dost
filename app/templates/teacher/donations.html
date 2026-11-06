@@ -160,9 +160,7 @@
                   >
                 </a>
                 {% else %}
-                <div class="rounded border border-secondary-subtle bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary" style="width: 44px; height: 58px;" title="No photo uploaded">
-                  {{ icon('book', extra_class='fs-5') }}
-                </div>
+                <img src="{{ url_for('static', filename='img/covers/placeholder.svg') }}" alt="Placeholder Cover" class="rounded border object-fit-cover" style="width: 44px; height: 58px;">
                 {% endif %}
               </td>
 
@@ -296,9 +294,7 @@
               {% if d.temp_image_path %}
               <img src="{{ url_for('static', filename=d.temp_image_path) }}" alt="Book" class="rounded border object-fit-cover flex-shrink-0" style="width: 48px; height: 64px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';">
               {% else %}
-              <div class="rounded border border-secondary-subtle bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary flex-shrink-0" style="width: 48px; height: 64px;">
-                {{ icon('book', extra_class='fs-5') }}
-              </div>
+              <img src="{{ url_for('static', filename='img/covers/placeholder.svg') }}" alt="Placeholder Cover" class="rounded border object-fit-cover flex-shrink-0" style="width: 48px; height: 64px;">
               {% endif %}
               <div class="flex-grow-1 overflow-hidden">
                 <h3 class="h6 fw-bold text-body mb-1 text-truncate" title="{{ d.title }}">{{ d.title }}</h3>

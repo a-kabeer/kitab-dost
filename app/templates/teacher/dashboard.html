@@ -8,7 +8,7 @@
 <!-- Dashboard Header -->
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
   <div>
-    <h1 class="h3 fw-bold text-body mb-1">{{ _t('teacher_dashboard', 'Library Overview & Operations') }}</h1>
+    <h1 class="h3 fw-bold text-body mb-1">{{ _t('welcome_teacher', 'Welcome back, {name}!', name=session.get('teacher_name') or 'Teacher') }}</h1>
     <p class="text-body-secondary small mb-0">{{ _t('teacher_dashboard_sub', 'Live analytics from local SQLite records.') }}</p>
   </div>
   <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -335,7 +335,7 @@
               {{ _t('action_' + act.action, act.action.replace('_', ' ')) }}
             </span>
             <div class="flex-grow-1 overflow-hidden">
-              <div class="small text-body text-truncate">{{ act.details }}</div>
+              <div class="small text-body text-truncate">{{ format_activity_detail(act.details) | safe }}</div>
               <div class="text-body-secondary" style="font-size: 0.725rem;">
                 {{ _t('by_prefix', 'By') }} <strong>{{ act.actor_name }}</strong> ({{ _t('actor_' + act.actor_type, act.actor_type) }}) &bull; <bdi class="kb-code">{{ act.created_at }}</bdi>
               </div>

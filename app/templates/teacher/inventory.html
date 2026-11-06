@@ -181,13 +181,7 @@
               </bdi>
             </td>
             <td>
-              {% if book.image_path %}
-                <img src="{{ url_for('static', filename=book.image_path) }}" alt="{{ book.title }}" class="rounded border object-fit-cover" style="width: 44px; height: 58px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';">
-              {% else %}
-                <div class="rounded border border-secondary-subtle bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary" style="width: 44px; height: 58px;">
-                  {{ icon('book', extra_class='fs-5') }}
-                </div>
-              {% endif %}
+              <img src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" alt="{{ book.title }}" class="rounded border object-fit-cover" style="width: 44px; height: 58px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';">
             </td>
             <td>
               <div class="fw-semibold text-body text-truncate mb-1" style="max-width: 220px;" title="{{ book.title }}">
@@ -303,13 +297,7 @@
         </div>
         <div class="card-body p-2 p-sm-3">
           <div class="d-flex gap-2 align-items-start mb-1">
-            {% if book.image_path %}
-            <img src="{{ url_for('static', filename=book.image_path) }}" alt="{{ book.title }}" class="rounded border object-fit-cover flex-shrink-0" style="width: 44px; height: 58px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';">
-            {% else %}
-            <div class="rounded border border-secondary-subtle bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary flex-shrink-0" style="width: 44px; height: 58px;">
-              {{ icon('book', extra_class='fs-5') }}
-            </div>
-            {% endif %}
+            <img src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" alt="{{ book.title }}" class="rounded border object-fit-cover flex-shrink-0" style="width: 44px; height: 58px;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';">
             <div class="flex-grow-1 overflow-hidden">
               <h3 class="h6 fw-bold text-body mb-0 text-truncate" title="{{ book.title }}">{{ book.title }}</h3>
               <div class="small text-body-secondary text-truncate mb-1" style="font-size: 0.775rem;">{{ book.author or 'Unknown' }} &bull; {{ _t(book.language, book.language) }}</div>

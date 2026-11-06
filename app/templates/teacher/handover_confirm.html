@@ -87,9 +87,7 @@
               onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/covers/placeholder.svg') }}';"
             >
             {% else %}
-            <div class="rounded border border-dashed bg-body d-flex align-items-center justify-content-center text-body-secondary flex-shrink-0" style="width: 56px; height: 76px;">
-              {{ icon('book', extra_class='fs-4') }}
-            </div>
+            <img src="{{ url_for('static', filename='img/covers/placeholder.svg') }}" alt="Placeholder Cover" class="rounded border object-fit-cover shadow-sm flex-shrink-0" style="width: 56px; height: 76px;">
             {% endif %}
             <div class="overflow-hidden">
               <h5 class="fs-6 fw-bold text-body text-truncate mb-1" title="{{ req.book_title }}">

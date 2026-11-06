@@ -137,7 +137,7 @@
           </div>
 
           <!-- Cover Preview -->
-          <div id="imagePreviewBox" class="rounded border border-dashed bg-body-tertiary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0" style="width: 72px; height: 96px;">
+          <div id="imagePreviewBox" class="rounded border border-secondary-subtle bg-body-tertiary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0" style="width: 72px; height: 96px;">
             {% if is_edit and book.image_path %}
               <img id="previewImg" src="{{ url_for('static', filename=book.image_path) }}" class="w-100 h-100 object-fit-cover" alt="Cover">
             {% else %}

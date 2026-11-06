@@ -49,10 +49,16 @@ def run_visual_audit():
     try:
         cur.execute("SELECT COUNT(*) FROM books")
         book_count = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM requests WHERE status='approved'")
+        approved_count = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM handovers")
+        handover_count = cur.fetchone()[0]
     except Exception:
         book_count = 0
+        approved_count = 0
+        handover_count = 0
 
-    if book_count < 18:
+    if book_count < 18 or approved_count == 0 or handover_count == 0:
         print("\n--- 0. SEEDING CLEAN DEMO DATABASE WITH RELATIONAL INTEGRITY ---")
         from app import create_app
         from app.database import init_db
@@ -64,7 +70,7 @@ def run_visual_audit():
             reset_and_seed_demo_data(create_safety_backup=False)
         print("  ✓ Demo database initialized and seeded successfully.")
     else:
-        print(f"\n--- 0. DEMO DATABASE READY ({book_count} books in inventory) ---")
+        print(f"\n--- 0. DEMO DATABASE READY ({book_count} books, {approved_count} approved reqs, {handover_count} handovers) ---")
 
     # Dynamically discover test IDs from database
     db_path = Path("kitaab_bank.db")
@@ -77,27 +83,27 @@ def run_visual_audit():
     book_id = brow['id'] if brow else 1
     book_code = brow['book_code'] if brow else "KB-BK-000001"
 
-    cur.execute("SELECT id, tracking_code FROM requests WHERE status='approved' LIMIT 1")
+    cur.execute("SELECT id, tracking_code FROM requests WHERE status='approved' ORDER BY id DESC LIMIT 1")
     rrow = cur.fetchone()
-    if not rrow:
-        cur.execute("SELECT id, tracking_code FROM requests LIMIT 1")
-        rrow = cur.fetchone()
-    req_id = rrow['id'] if rrow else 1
-    approved_tracking = rrow['tracking_code'] if rrow else "KB-REQ-8L1N-3K5V"
+    assert rrow is not None, "An approved request must exist in database for teacher request audit!"
+    req_id = rrow['id']
+    approved_tracking = rrow['tracking_code']
 
-    cur.execute("SELECT tracking_code FROM requests WHERE status='pending' LIMIT 1")
+    cur.execute("SELECT tracking_code FROM requests WHERE status='pending' ORDER BY id DESC LIMIT 1")
     prow = cur.fetchone()
-    pending_tracking = prow['tracking_code'] if prow else "KB-REQ-8L1N-3K5V"
+    pending_tracking = prow['tracking_code'] if prow else approved_tracking
 
-    cur.execute("SELECT id, donation_code FROM donations LIMIT 1")
+    cur.execute("SELECT id, donation_code FROM donations ORDER BY id DESC LIMIT 1")
     drow = cur.fetchone()
-    don_id = drow['id'] if drow else 1
-    donation_code = drow['donation_code'] if drow else "KB-DON-3M9X-7P4Q"
+    assert drow is not None, "A donation must exist in database for donation detail audit!"
+    don_id = drow['id']
+    donation_code = drow['donation_code']
 
-    cur.execute("SELECT id, handover_code FROM handovers LIMIT 1")
+    cur.execute("SELECT id, handover_code FROM handovers ORDER BY id DESC LIMIT 1")
     hrow = cur.fetchone()
-    handover_id = hrow['id'] if hrow else 1
-    handover_code = hrow['handover_code'] if hrow else "KB-HO-000001"
+    assert hrow is not None, "A handover must exist in database for handover receipt audit!"
+    handover_id = hrow['id']
+    handover_code = hrow['handover_code']
     con.close()
 
     print(f"  Target Identifiers: Book={book_code} (ID:{book_id}), ApprovedReq={approved_tracking} (ID:{req_id}), DonCode={donation_code}, HandoverID={handover_id}")
@@ -172,9 +178,10 @@ def run_visual_audit():
         # Priority 0 Verification: Submit actual valid book request to capture genuine success view
         resp = desktop_page.goto(f"{BASE_URL}/request/{book_id}", wait_until="networkidle")
         assert resp.status == 200, f"Expected HTTP 200 on /request/{book_id}, got {resp.status}"
+        dynamic_roll = str(int(time.time() * 1000) % 8999 + 1000)
         desktop_page.fill("#requester-name", "Zainab Bibi")
         desktop_page.fill("#requester-class", "Class 8-B")
-        desktop_page.fill("#requester-roll", "8999")
+        desktop_page.fill("#requester-roll", dynamic_roll)
         desktop_page.fill("#requester-contact", "0301-9988776")
         desktop_page.fill("#request-notes", "Needed for daily classwork and exam preparation.")
         desktop_page.locator("button[type='submit']").click()
@@ -335,6 +342,8 @@ def run_visual_audit():
             resp = t_mob_page.goto(url, wait_until="networkidle")
             assert resp.status == 200, f"Expected HTTP 200 for {name} on mobile, got {resp.status}"
             time.sleep(0.3)
+            if name == "teacher_settings":
+                assert t_mob_page.locator("#mobileSettingsTabSelect").is_visible(), "Expected mobile settings tab select dropdown to be visible!"
             overflow = t_mob_page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
             if overflow:
                 results["errors"].append(f"Horizontal overflow on {name} mobile teacher")
@@ -441,27 +450,36 @@ def run_visual_audit():
         rtl_page.fill("#password", "Teacher@123")
         rtl_page.click("button[type='submit']")
         rtl_page.wait_for_url("**/teacher/dashboard", timeout=5000)
-        time.sleep(0.3)
+        # Explicitly enforce Urdu locale for authenticated dashboard screenshot
+        rtl_page.goto(f"{BASE_URL}/set-language/ur", wait_until="networkidle")
+        rtl_page.goto(f"{BASE_URL}/teacher/dashboard", wait_until="networkidle")
+        time.sleep(0.4)
+        dir_attr = rtl_page.locator("html").get_attribute("dir")
+        assert dir_attr == "rtl", f"Expected dir='rtl' for Urdu dashboard, got {dir_attr}"
         urdu_dash_out = EVIDENCE_DIR / "rtl_urdu_dashboard_desktop.png"
         rtl_page.screenshot(path=str(urdu_dash_out), full_page=True)
         results["screenshots"].append(str(urdu_dash_out))
-        print(f"  ✓ Captured {urdu_dash_out.name} (Teacher dashboard in Urdu RTL)")
+        print(f"  ✓ Captured {urdu_dash_out.name} (Teacher dashboard in Urdu RTL, dir=rtl)")
 
         # 4C. Sindhi RTL Home & Catalogue
         rtl_page.goto(f"{BASE_URL}/set-language/sd", wait_until="networkidle")
         rtl_page.goto(f"{BASE_URL}/", wait_until="networkidle")
-        time.sleep(0.3)
+        time.sleep(0.4)
+        dir_attr = rtl_page.locator("html").get_attribute("dir")
+        assert dir_attr == "rtl", f"Expected dir='rtl' for Sindhi Home, got {dir_attr}"
         sindhi_home_out = EVIDENCE_DIR / "rtl_sindhi_home_desktop.png"
         rtl_page.screenshot(path=str(sindhi_home_out), full_page=True)
         results["screenshots"].append(str(sindhi_home_out))
         print(f"  ✓ Captured {sindhi_home_out.name} (dir=rtl, Sindhi typography)")
 
         rtl_page.goto(f"{BASE_URL}/catalogue", wait_until="networkidle")
-        time.sleep(0.3)
+        time.sleep(0.4)
+        dir_attr = rtl_page.locator("html").get_attribute("dir")
+        assert dir_attr == "rtl", f"Expected dir='rtl' for Sindhi Catalogue, got {dir_attr}"
         sindhi_cat_out = EVIDENCE_DIR / "rtl_sindhi_catalogue_desktop.png"
         rtl_page.screenshot(path=str(sindhi_cat_out), full_page=True)
         results["screenshots"].append(str(sindhi_cat_out))
-        print(f"  ✓ Captured {sindhi_cat_out.name} (Sindhi catalogue with bidi codes)")
+        print(f"  ✓ Captured {sindhi_cat_out.name} (Sindhi catalogue with bidi codes, dir=rtl)")
 
         # Reset language to English
         rtl_page.goto(f"{BASE_URL}/set-language/en", wait_until="networkidle")

@@ -53,8 +53,13 @@
             >
           </div>
           {% else %}
-          <div class="rounded border border-dashed bg-body-tertiary d-flex align-items-center justify-content-center text-body-secondary mb-3" style="aspect-ratio: 3/4;">
-            {{ icon('book', extra_class='display-5 text-body-tertiary') }}
+          <div class="mb-3">
+            <img
+              src="{{ url_for('static', filename='img/covers/placeholder.svg') }}"
+              alt="{{ handover.book_title }}"
+              class="img-fluid rounded border w-100 object-fit-cover shadow-sm"
+              style="aspect-ratio: 3/4;"
+            >
           </div>
           {% endif %}
 

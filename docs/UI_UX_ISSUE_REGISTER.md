@@ -330,4 +330,18 @@ All 47 required visual acceptance screenshots have been captured, asserted at HT
 46. `error_404_desktop.png` (HTTP 404 - Intentional custom error page)
 47. `error_503_desktop.png` (HTTP 503 - Intentional maintenance mode page)
 
+---
+
+## 8. Final Visual Evidence Reconciliation & Verification Audit (Stage 4)
+
+| Issue ID | Component | Severity | Resolution Summary | Validation Evidence | Status |
+|---|---|---|---|---|---|
+| **ISSUE-RTL-03** | Urdu & Sindhi Dashboard Localization | **Major (P1)** | Integrated `localize_activity_details` regex localization engine in `translation_service.py` to translate live activity log messages into Urdu and Sindhi while preserving student names, book titles, and `<bdi class="kb-code">` identifiers. Localized welcome messages, WAL Concurrency badges, Reuse Rate, circulation status distributions, and catalogue book counters. | `app/services/translation_service.py`, `dashboard.html`, `catalogue.html`, `rtl_urdu_dashboard_desktop.png`, `rtl_sindhi_catalogue_desktop.png`. | **RESOLVED & VERIFIED** |
+| **ISSUE-BRD-01** | Dashed Border Elimination | **Major (P1)** | Enforced `border-style: solid !important; border-color: var(--bs-border-color-subtle) !important;` on `.border-dashed` in `components.css`. Replaced all remaining dashed borders in `student.css`, `track.html`, `scan.html`, `book_form.html`, `donation_detail.html`, `handover_confirm.html`, `handover_detail.html`, `handover_receipt.html`, and `qr_sheet.html`. Verified 0 computed dashed borders across DOM. | `components.css`, `student.css`, `verify_visual_evidence.py` (0 dashed elements). | **RESOLVED & VERIFIED** |
+| **ISSUE-MOB-03** | Settings Mobile Section Selector | **Moderate (P2)** | Built responsive `<select id="mobileSettingsTabSelect">` inside `<div class="d-block d-md-none">` with 4 sections (Profile, Security, Backup & Restore, Exhibition Mode). Reduced tab card padding to `p-3 p-sm-4` ensuring comfortable unclipped controls at 390px and 360px. | `settings.html`, `teacher_settings_mobile.png`, Playwright mobile locator check. | **RESOLVED & VERIFIED** |
+| **ISSUE-PII-01** | Handover Receipt Student Privacy | **Major (P1)** | Omitted parent/student contact phone number from default printed receipt layout in `handover_receipt.html` to eliminate PII exposure, while preserving student name, class, roll number, book code, reference token, and signature lines. | `handover_receipt.html`, `teacher_handover_receipt_desktop.png`, privacy assertion check. | **RESOLVED & VERIFIED** |
+| **ISSUE-IMG-01** | Book Cover Fallback Graphics | **Minor (P3)** | Replaced blank grey `<div>` containers in `inventory.html` (table and mobile card views) and `donations.html` with subject-specific SVG fallback (`img/covers/placeholder.svg`) with `onerror` protection so no book ever displays an empty grey box. | `inventory.html`, `donations.html`, `placeholder.svg`. | **RESOLVED & VERIFIED** |
+| **ISSUE-REL-01** | Related Books Mobile Density | **Moderate (P2)** | Structured compact horizontal related book cards (`<div class="d-md-none">`) with 3:4 thumbnail, category badge, and concise metadata below 768px, reducing excessive vertical scrolling while keeping desktop 4-column grid (`d-none d-md-block`). | `book_detail.html`, `student_book_detail_mobile.png`. | **RESOLVED & VERIFIED** |
+
+
 

@@ -159,7 +159,7 @@
             <p class="mb-2 small">
               {{ _t('handover_success_desc', 'This educational textbook has been officially handed over to you for your academic studies.') }}
             </p>
-            <div class="d-flex flex-wrap gap-3 pt-2 border-top border-dashed small">
+            <div class="d-flex flex-wrap gap-3 pt-2 border-top border-secondary-subtle small">
               {% if req.handover_code %}
               <div>
                 <span class="text-body-secondary d-block" style="font-size: 0.725rem;">{{ _t('table_handover_ref', 'HANDOVER REFERENCE') }}</span>
@@ -228,7 +228,7 @@
             </div>
           </div>
 
-          <div class="mt-2 pt-2 border-top border-dashed small text-body-secondary" style="font-size: 0.75rem;">
+          <div class="mt-2 pt-2 border-top border-secondary-subtle small text-body-secondary" style="font-size: 0.75rem;">
             {{ icon('lock') }} <em>{{ _t('privacy_notice_redacted', 'Student phone numbers and school roll numbers are confidential and strictly redacted from public tracking lookups.') }}</em>
           </div>
         </div>

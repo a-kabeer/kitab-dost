@@ -241,7 +241,7 @@
   gap: 0.4rem;
   margin-top: auto;
   padding-top: 0.75rem;
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px solid var(--border-color);
 }
 
 .book-card-footer {
@@ -485,7 +485,7 @@
   text-align: center;
   padding: 4rem 1.5rem;
   background-color: var(--bg-surface);
-  border: 2px dashed var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   margin-top: 1.5rem;
 }
@@ -613,7 +613,7 @@ textarea.form-control {
 }
 
 .file-dropzone {
-  border: 2px dashed var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 1.5rem;
   text-align: center;
@@ -657,7 +657,7 @@ textarea.form-control {
 
 .code-display-box {
   background-color: var(--primary-light);
-  border: 2px dashed var(--primary-border);
+  border: 1px solid var(--primary-border);
   border-radius: var(--radius-md);
   padding: 1.25rem;
   margin: 1.5rem 0;

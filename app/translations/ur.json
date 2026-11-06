@@ -416,7 +416,7 @@
   "table_details": "تفصیلات",
   "no_logs_found": "آپ کی تلاش کے معیار کے مطابق کوئی سرگرمی ریکارڈ نہیں ملی",
   "server_active_badge": "مقامی اسکول سرور فعال ہے",
-  "footer_copyright": "© 2026 گورنمنٹ ماڈل ہائی اسکول۔ طلبہ اور اساتذہ کے لیے تیار کردہ۔",
+  "footer_copyright": "© 2026 گورنمنٹ ماڈل ہائی اسکول۔",
   "footer_offline_badge": "اسکول وائی فائی پر 100٪ آف لائن چلتا ہے",
   "school_profile_title": "اسکول پروفائل اور ترجیحات",
   "school_profile_desc": "معلومات جو طلبہ کے کیٹلاگ، پرنٹ شدہ کیو آر لیبلز اور رسیدوں پر ظاہر ہوتی ہے۔",
@@ -518,5 +518,12 @@
   "Handed Over (Reused)": "جاری شدہ (دوبارہ زیرِ استعمال)",
   "WAL Concurrency Active": "محفوظ متوازی نظام فعال ہے",
   "Reuse Rate": "دوبارہ استعمال کی شرح",
-  "Showing available books count": "دستیاب کتب کی نمائش"
+  "Showing available books count": "دستیاب کتب کی نمائش",
+  "theme_light_short": "روشن",
+  "theme_dark_short": "تاریک",
+  "theme_system_short": "سسٹم",
+  "System": "سسٹم",
+  "footer_built_for": "طلباء اور اساتذہ کے لیے تیار کردہ۔",
+  "Built for Students & Teachers": "طلباء اور اساتذہ کے لیے تیار کردہ",
+  "Built for Students & Teachers.": "طلباء اور اساتذہ کے لیے تیار کردہ۔"
 }

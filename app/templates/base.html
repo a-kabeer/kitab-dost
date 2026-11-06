@@ -128,9 +128,9 @@
 
           <!-- Theme Selector Dropdown -->
           <div class="dropdown">
-            <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Toggle Theme">
+            <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ _t('toggle_theme', 'Toggle Theme') }}">
               <span data-theme-icon>{{ icon('sun', extra_class='text-warning') }}</span>
-              <span class="d-none d-sm-inline" data-theme-label>{{ _t('theme', 'Theme') }}</span>
+              <span class="d-none d-sm-inline" data-theme-label data-label-light="{{ _t('theme_light_short', 'Light') }}" data-label-dark="{{ _t('theme_dark_short', 'Dark') }}" data-label-system="{{ _t('System', 'System') }}">{{ _t('System', 'System') }}</span>
             </button>
             <ul class="dropdown-menu {% if is_rtl %}dropdown-menu-start{% else %}dropdown-menu-end{% endif %} shadow-sm border-subtle" aria-labelledby="themeDropdown">
               <li><button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2" data-theme-set="light">{{ icon('sun', extra_class='text-warning') }} {{ _t('theme_light', 'Light Mode') }}</button></li>
@@ -276,7 +276,7 @@
         </div>
       </div>
       <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 pt-3 small">
-        <span>{{ _t('footer_copyright', '© 2026 Government Model High School. Built for Students & Teachers.') }}</span>
+        <span>{{ _t('footer_copyright', '© 2026 Government Model High School.') }} {{ _t('footer_built_for', 'Built for Students & Teachers.') }}</span>
         <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle d-inline-flex align-items-center gap-1">
           {{ icon('wifi') }} <span>{{ _t('footer_offline_badge', 'Runs 100% Offline on School Wi-Fi') }}</span>
         </span>

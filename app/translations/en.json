@@ -416,7 +416,7 @@
   "table_details": "Details",
   "no_logs_found": "No activity logs match your search criteria",
   "server_active_badge": "Local School Server Active",
-  "footer_copyright": "© 2026 Government Model High School. Built for Students & Teachers.",
+  "footer_copyright": "© 2026 Government Model High School.",
   "footer_offline_badge": "Runs 100% Offline on School Wi-Fi",
   "school_profile_title": "School Profile & System Preferences",
   "school_profile_desc": "Metadata displayed on student catalogue, printed QR labels, and circulation receipts.",
@@ -518,5 +518,12 @@
   "Handed Over (Reused)": "Handed Over (Reused)",
   "WAL Concurrency Active": "WAL Concurrency Active",
   "Reuse Rate": "Reuse Rate",
-  "Showing available books count": "Showing available books"
+  "Showing available books count": "Showing available books",
+  "theme_light_short": "Light",
+  "theme_dark_short": "Dark",
+  "theme_system_short": "System",
+  "System": "System",
+  "footer_built_for": "Built for Students & Teachers.",
+  "Built for Students & Teachers": "Built for Students & Teachers",
+  "Built for Students & Teachers.": "Built for Students & Teachers."
 }

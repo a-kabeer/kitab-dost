@@ -919,3 +919,10 @@ Following the visual acceptance baseline established by the 36 full-page screens
     - All 15 defects in `docs/UI_UX_ISSUE_REGISTER.md` marked as **RESOLVED & VERIFIED**.
     - Full test suite passed: **137/137 discovery tests**, `test_phase1.py`, `test_concurrency.py`, and `test_browser_phase9.py`.
     - Maintained branch `ui/bootstrap-fontawesome-redesign` unmerged.
+
+11. **Milestone CORR-11 — Final Localization Micro-Polish (`ISSUE-LOC-05`, `ISSUE-LOC-06`, `ISSUE-SVG-01`):**
+    - Localized theme selector `System` label to `سسٹم` (Urdu) and `سسٽم` (Sindhi) in `theme.js` and HTML templates with reactive switching.
+    - Localized footer phrase `Built for Students & Teachers.` to `طلباء اور اساتذہ کے لیے تیار کردہ۔` (Urdu) and `شاگردن ۽ استادن لاءِ تيار ڪيل.` (Sindhi).
+    - Localized generic English filler labels in SVG covers (`CURRICULUM SPECIFICATION:`, `REUSABLE TEXTBOOK`, `GOVT SCHOOLS`) for all 9 Urdu, Islamiat, and Sindhi book covers, while strictly preserving authentic book titles, publishers, and vector graphics.
+    - Verified 50/50 visual acceptance screenshots, passed all 149 discovery unit tests, `test_phase1.py`, `test_concurrency.py`, and Playwright browser audits.
+    - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.

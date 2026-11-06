@@ -416,7 +416,7 @@
   "table_details": "تفصيل",
   "no_logs_found": "اوهان جي ڳولا جي معيار مطابق ڪا به سرگرمي رڪارڊ نه ملي",
   "server_active_badge": "مقامي اسڪول سرور فعال آهي",
-  "footer_copyright": "© 2026 گورنمينٽ ماڊل هاءِ اسڪول. شاگردن ۽ استادن لاءِ تيار ڪيل.",
+  "footer_copyright": "© 2026 گورنمينٽ ماڊل هاءِ اسڪول.",
   "footer_offline_badge": "اسڪول وائي فائي تي 100٪ آف لائن هلي ٿو",
   "school_profile_title": "اسڪول پروفائل ۽ ترجيحون",
   "school_profile_desc": "معلومات جيڪا شاگردن جي ڪيٽلاگ، پرنٽ ٿيل ڪيو آر ليبلز ۽ رسيدن تي ظاهر ٿئي ٿي.",
@@ -518,5 +518,12 @@
   "Handed Over (Reused)": "جاري ڪيل (ٻيهر زيرِ استعمال)",
   "WAL Concurrency Active": "محفوظ متوازي نظام فعال آهي",
   "Reuse Rate": "ٻيهر استعمال جي شرح",
-  "Showing available books count": "دستياب ڪتابن جي نمائش"
+  "Showing available books count": "دستياب ڪتابن جي نمائش",
+  "theme_light_short": "روشن",
+  "theme_dark_short": "اونداهي",
+  "theme_system_short": "سسٽم",
+  "System": "سسٽم",
+  "footer_built_for": "شاگردن ۽ استادن لاءِ تيار ڪيل.",
+  "Built for Students & Teachers": "شاگردن ۽ استادن لاءِ تيار ڪيل",
+  "Built for Students & Teachers.": "شاگردن ۽ استادن لاءِ تيار ڪيل."
 }

@@ -40,18 +40,21 @@
       system: '<i class="fa-solid fa-desktop text-secondary" aria-hidden="true"></i>'
     };
 
-    const labels = {
-      light: 'Light',
-      dark: 'Dark',
-      system: 'System'
+    const lang = (document.documentElement.getAttribute('lang') || 'en').toLowerCase();
+    const localizedLabels = {
+      ur: { light: 'روشن', dark: 'تاریک', system: 'سسٹم', theme: 'تھیم' },
+      sd: { light: 'روشن', dark: 'اونداهي', system: 'سسٽم', theme: 'ٿيم' },
+      en: { light: 'Light', dark: 'Dark', system: 'System', theme: 'Theme' }
     };
+    const labels = localizedLabels[lang] || localizedLabels.en;
 
     iconEls.forEach(el => {
       el.innerHTML = icons[preference] || icons.light;
     });
 
     labelEls.forEach(el => {
-      el.textContent = labels[preference] || 'Theme';
+      const override = el.getAttribute('data-label-' + preference);
+      el.textContent = override || labels[preference] || labels.system;
     });
 
     // Mark active option in dropdowns

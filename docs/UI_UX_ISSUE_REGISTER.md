@@ -355,6 +355,17 @@ All 47 required visual acceptance screenshots have been captured, asserted at HT
 | **ISSUE-REL-02** | Related Books Mobile Card Height Optimization | **Moderate (P2)** | Constrained mobile related book cards on `/book/<code_or_id>` to compact horizontal component (`style="max-height: 120px;"`) with 80px thumbnail (3:4 ratio), single-line typography, and tight padding, achieving exactly 108.7px rendered height (target: 100–120px). Desktop grid remains unchanged. | `book_detail.html`, `student_book_detail_mobile.png`, Playwright bounding box check (108.7px). | **RESOLVED & VERIFIED** |
 | **ISSUE-KPI-01** | Dashboard Shared KPI Definitions | **Minor (P3)** | Verified consistent KPI display across desktop and mobile: `Total Donations` displays all donations (3 in demo dataset) and subtext indicates pending review count (`1 pending`). No view displays 3 under a "Pending Donations" label. | `dashboard.html`, `test_queue_consistency_and_routes.py`. | **RESOLVED & VERIFIED** |
 
+---
+
+## 10. Final Localization Micro-Polish (Stage 6)
+
+| Issue ID | Component | Severity | Resolution Summary | Validation Evidence | Status |
+|---|---|---|---|---|---|
+| **ISSUE-LOC-05** | Theme Selector `System` Label Localization | **Minor (P3)** | Localized dynamic theme button label in `theme.js` across English, Urdu, and Sindhi based on active `document.documentElement.lang`. When active preference is `system`, Urdu renders `سسٹم` and Sindhi renders `سسٽم`. Also updated template dropdown toggles with `data-label-*` attributes. Seamless zero-FOUC switching verified. | `theme.js`, `base.html`, `base_teacher.html`, `en.json`, `ur.json`, `sd.json`. | **RESOLVED & VERIFIED** |
+| **ISSUE-LOC-06** | Footer Phrase Localization | **Minor (P3)** | Separated school copyright from tagline and fully localized the footer phrase `Built for Students & Teachers.` in `base.html`. Urdu translates to `طلباء اور اساتذہ کے لیے تیار کردہ۔` and Sindhi translates to `شاگردن ۽ استادن لاءِ تيار ڪيل.`. School profile metadata preserved. | `base.html`, `en.json`, `ur.json`, `sd.json`, `rtl_urdu_home_desktop.png`, `rtl_sindhi_home_desktop.png`. | **RESOLVED & VERIFIED** |
+| **ISSUE-SVG-01** | SVG Book Cover Filler Label Localization | **Minor (P3)** | Localized generic English decorative badges (`CURRICULUM SPECIFICATION:`, `REUSABLE TEXTBOOK`, `GOVT SCHOOLS`) across all 9 Urdu, Islamiat, and Sindhi SVG covers in `app/static/img/covers/`. Urdu covers now feature authentic Urdu labels (`نصابی معیار:`, `قابلِ استعمال درسی کتاب`, `سرکاری اسکولز`). Sindhi covers feature authentic Sindhi labels (`نصابي معيار:`, `ٻيهر استعمال جوڳو ڪتاب`, `سرڪاري اسڪول`). Actual textbook titles, publishers, and vector artwork 100% preserved. | `app/static/img/covers/`, `catalogue.html`, `rtl_urdu_dashboard_desktop.png`, `rtl_sindhi_catalogue_desktop.png`. | **RESOLVED & VERIFIED** |
+
+
 
 
 

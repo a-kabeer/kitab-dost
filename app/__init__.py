@@ -65,7 +65,7 @@ def create_app(config_name='default'):
                 cur.execute("SELECT COUNT(*) FROM teachers;")
                 if cur.fetchone()[0] == 0:
                     from werkzeug.security import generate_password_hash
-                    pwd_hash = generate_password_hash("Teacher@123")
+                    pwd_hash = generate_password_hash(app.config.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123'))
                     cur.execute(
                         "INSERT INTO teachers (username, password_hash, full_name, email, role, is_active) "
                         "VALUES (?, ?, ?, ?, ?, 1);",

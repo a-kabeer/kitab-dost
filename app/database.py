@@ -46,42 +46,55 @@ def close_db(e=None):
         pass
 
 def check_and_recover_interrupted_restore(app):
-    """Detect and recover from an interrupted database restore upon application startup."""
+    """Recover an interrupted restore before the application serves requests.
+
+    Returns False on any recovery uncertainty so startup can fail closed rather
+    than serving a potentially half-restored SQLite database.
+    """
     try:
         from app.services import maintenance_service
         info = maintenance_service.get_interrupted_restore_info()
         if not info:
-            return
+            return True
 
         rollback_path = info.get("rollback_snapshot")
-        if not rollback_path or not os.path.exists(rollback_path):
-            app.logger.error(f"Interrupted restore detected, but rollback snapshot '{rollback_path}' not found!")
-            return
+        if not rollback_path or not os.path.isfile(rollback_path):
+            app.logger.critical(
+                "Interrupted database restore marker exists, but its rollback snapshot is missing: %s",
+                rollback_path
+            )
+            return False
 
-        app.logger.warning(f"CRITICAL: Interrupted database restoration detected from previous session! Auto-recovering live database from rollback snapshot: {rollback_path}")
+        app.logger.warning(
+            "Interrupted database restoration detected. Recovering live database from rollback snapshot: %s",
+            rollback_path
+        )
 
         db_path = app.config['DATABASE_PATH']
-        src_conn = sqlite3.connect(rollback_path)
-        dest_conn = sqlite3.connect(str(db_path), timeout=10.0)
-        src_conn.backup(dest_conn)
-        try:
-            dest_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
-        except Exception:
-            pass
-        dest_conn.close()
-        src_conn.close()
+        with sqlite3.connect(str(rollback_path), timeout=10.0) as src_conn:
+            integrity = src_conn.execute("PRAGMA integrity_check;").fetchone()
+            if not integrity or integrity[0] != 'ok':
+                app.logger.critical("Rollback snapshot failed integrity_check: %s", integrity)
+                return False
 
-        # Verify integrity
-        chk = sqlite3.connect(str(db_path))
-        res = chk.execute("PRAGMA integrity_check;").fetchone()
-        chk.close()
-        if res and res[0] == 'ok':
-            maintenance_service.clear_restore_in_progress()
-            app.logger.info("Successfully recovered live database from rollback snapshot after interrupted restore.")
-        else:
-            app.logger.error(f"Rollback recovery integrity check failed: {res}")
-    except Exception as e:
-        app.logger.error(f"Failed to recover interrupted restore: {e}")
+            with sqlite3.connect(str(db_path), timeout=10.0) as dest_conn:
+                src_conn.backup(dest_conn)
+                dest_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+
+        with sqlite3.connect(str(db_path), timeout=10.0) as check_conn:
+            result = check_conn.execute("PRAGMA integrity_check;").fetchone()
+
+        if not result or result[0] != 'ok':
+            app.logger.critical("Rollback recovery integrity check failed: %s", result)
+            return False
+
+        # Marker removal is part of successful recovery; failure must stop startup.
+        maintenance_service.clear_restore_in_progress()
+        app.logger.info("Interrupted restore recovery completed successfully.")
+        return True
+    except Exception:
+        app.logger.exception("Failed to recover interrupted database restoration.")
+        return False
 
 def init_db(app):
     """Initialize the SQLite database schema, enforce WAL mode, and seed default teacher."""
@@ -90,7 +103,8 @@ def init_db(app):
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     # 0. Crash Resilience: Check and recover from any previously interrupted restore
-    check_and_recover_interrupted_restore(app)
+    if not check_and_recover_interrupted_restore(app):
+        raise RuntimeError('Interrupted database restore could not be recovered. Application startup aborted to protect school data.')
 
     with app.app_context():
         db = get_db()

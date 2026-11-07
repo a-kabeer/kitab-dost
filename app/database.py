@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import time
+from contextlib import closing
 from pathlib import Path
 from contextlib import contextmanager
 from flask import g, current_app
@@ -71,17 +72,17 @@ def check_and_recover_interrupted_restore(app):
         )
 
         db_path = app.config['DATABASE_PATH']
-        with sqlite3.connect(str(rollback_path), timeout=10.0) as src_conn:
+        with closing(sqlite3.connect(str(rollback_path), timeout=10.0)) as src_conn:
             integrity = src_conn.execute("PRAGMA integrity_check;").fetchone()
             if not integrity or integrity[0] != 'ok':
                 app.logger.critical("Rollback snapshot failed integrity_check: %s", integrity)
                 return False
 
-            with sqlite3.connect(str(db_path), timeout=10.0) as dest_conn:
+            with closing(sqlite3.connect(str(db_path), timeout=10.0)) as dest_conn:
                 src_conn.backup(dest_conn)
                 dest_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
 
-        with sqlite3.connect(str(db_path), timeout=10.0) as check_conn:
+        with closing(sqlite3.connect(str(db_path), timeout=10.0)) as check_conn:
             result = check_conn.execute("PRAGMA integrity_check;").fetchone()
 
         if not result or result[0] != 'ok':

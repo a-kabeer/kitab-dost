@@ -9,6 +9,9 @@ def record_activity(action, entity_type, entity_id, actor_type='system', actor_n
     Record an immutable audit entry in the activity_logs table.
     """
     db = get_db()
+    # Do not commit a caller-owned transaction. Several domain services write
+    # the activity row as part of a larger atomic operation.
+    transaction_already_open = db.in_transaction
     cur = db.cursor()
     cur.execute(
         """
@@ -18,7 +21,8 @@ def record_activity(action, entity_type, entity_id, actor_type='system', actor_n
         """,
         (action, entity_type, entity_id, actor_type, actor_name or 'System', details or '')
     )
-    db.commit()
+    if not transaction_already_open:
+        db.commit()
     return cur.lastrowid
 
 def get_activity_logs(

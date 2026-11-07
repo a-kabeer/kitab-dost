@@ -23,6 +23,10 @@ class Phase7TeacherDashboardTests(unittest.TestCase):
         cls.client = cls.app.test_client()
 
         with cls.app.app_context():
+            # The test app uses an isolated empty database; seed its own
+            # sample catalogue instead of relying on the developer's DB.
+            from app.seed_data import seed_sample_books
+            seed_sample_books()
             db = get_db()
             cls._cleanup_test_data(db)
             cls._ensure_teacher_account(db)

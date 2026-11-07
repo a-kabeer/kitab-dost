@@ -183,7 +183,11 @@
       <div class="row row-cols-2 row-cols-lg-4 g-4">
         {% for book in books %}
         <div class="col">
-          <article class="card h-100 border shadow-xs card-hover overflow-hidden">
+          <article class="card h-100 border shadow-xs card-hover clickable-card overflow-hidden"
+                   data-href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}"
+                   tabindex="0"
+                   role="link"
+                   aria-label="{{ book.title }} - {{ _t('status_available', 'Available') }}">
             <div class="position-relative bg-body-secondary ratio ratio-3x4 border-bottom overflow-hidden">
               <img 
                 src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 
@@ -213,7 +217,7 @@
               </div>
 
               <h3 class="h6 card-title fw-bold text-body mb-1" title="{{ book.title }}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; min-height: 2.7rem;">
-                <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="text-decoration-none text-body">
+                <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="text-decoration-none text-body card-title-link">
                   {{ book.title }}
                 </a>
               </h3>
@@ -228,14 +232,13 @@
               </div>
             </div>
 
-            <div class="card-footer bg-body-tertiary border-top p-3 d-flex align-items-center justify-content-between">
+            <div class="card-footer bg-transparent border-top p-3 d-flex align-items-center justify-content-between">
               <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
                 {{ icon('circle-dot') }} {{ _t('status_available', 'Available') }}
               </span>
-              <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
-                {{ icon('circle-info') }}
-                <span>{{ _t('btn_details', 'Details') }}</span>
-              </a>
+              <span class="text-primary small fw-semibold d-inline-flex align-items-center gap-1 card-nav-arrow">
+                {{ icon('arrow-right', extra_class='small') }}
+              </span>
             </div>
           </article>
         </div>
@@ -247,7 +250,11 @@
     <div class="d-md-none">
       <div class="d-flex flex-column gap-2">
         {% for book in books %}
-        <article class="card border shadow-xs overflow-hidden">
+        <article class="card clickable-card border shadow-xs overflow-hidden"
+                 data-href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}"
+                 tabindex="0"
+                 role="link"
+                 aria-label="{{ book.title }} - {{ _t('status_available', 'Available') }}">
           <div class="row g-0 align-items-stretch">
             <div class="col-4 position-relative bg-body-secondary overflow-hidden" style="max-width: 105px; min-width: 90px;">
               <div class="w-100 h-100 ratio ratio-3x4">
@@ -268,7 +275,7 @@
                   <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">{{ _t('status_available', 'Available') }}</span>
                 </div>
                 <h3 class="h6 card-title fw-bold text-body mb-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.25; font-size: 0.9rem;">
-                  <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="text-decoration-none text-body">
+                  <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="text-decoration-none text-body card-title-link">
                     {{ book.title }}
                   </a>
                 </h3>
@@ -278,10 +285,9 @@
               </div>
               <div class="d-flex align-items-center justify-content-between gap-2 pt-1 border-top border-secondary-subtle">
                 <bdi class="kb-code text-body-secondary" style="font-size: 0.725rem;">{{ book.book_code }}</bdi>
-                <a href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}" class="btn btn-primary btn-sm py-1 px-2 d-inline-flex align-items-center gap-1 shadow-xs" style="font-size: 0.75rem;">
-                  {{ icon('circle-info') }}
-                  <span>{{ _t('btn_details', 'Details') }}</span>
-                </a>
+                <span class="text-primary small d-inline-flex align-items-center gap-1 card-nav-arrow" style="font-size: 0.75rem;">
+                  {{ icon('arrow-right', extra_class='small') }}
+                </span>
               </div>
             </div>
           </div>

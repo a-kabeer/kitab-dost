@@ -237,8 +237,12 @@
     <div class="d-md-none mb-4">
       <div class="d-flex flex-column gap-3">
         {% for h in handovers %}
-        <div class="card border shadow-xs overflow-hidden">
-          <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between py-2 px-3">
+        <div class="card clickable-card border shadow-xs overflow-hidden"
+             data-href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}"
+             tabindex="0"
+             role="link"
+             aria-label="{{ h.book_title }} - {{ h.handover_code }}">
+          <div class="card-header bg-transparent d-flex align-items-center justify-content-between py-2 px-3">
             <bdi class="kb-code fw-bold text-primary small">{{ h.handover_code }}</bdi>
             <span class="badge bg-success-subtle text-success border border-success-subtle">
               {{ _t('status_completed', 'Handed Over') }}
@@ -258,10 +262,7 @@
               <div class="text-body-tertiary mt-1">{{ h.handover_date[:16] if h.handover_date else '' }}</div>
             </div>
           </div>
-          <div class="card-footer bg-body-tertiary p-2 d-flex gap-2 justify-content-end">
-            <a href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
-              {{ icon('eye') }} <span>{{ _t('btn_details', 'Detail') }}</span>
-            </a>
+          <div class="card-footer bg-transparent p-2 d-flex gap-2 justify-content-end">
             <a href="{{ url_for('teacher.handover_receipt', handover_id=h.id) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" target="_blank">
               {{ icon('receipt') }} <span>{{ _t('btn_print_receipt', 'Receipt') }}</span>
             </a>

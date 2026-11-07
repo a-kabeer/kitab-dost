@@ -274,8 +274,12 @@
     <div class="d-md-none mb-4">
       <div class="d-flex flex-column gap-3">
         {% for d in donations %}
-        <div class="card border shadow-xs overflow-hidden">
-          <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between py-2 px-3">
+        <div class="card clickable-card border shadow-xs overflow-hidden"
+             data-href="{{ url_for('teacher.donation_detail', donation_id=d.id) }}"
+             tabindex="0"
+             role="link"
+             aria-label="{{ d.title }} - {{ d.donation_code }}">
+          <div class="card-header bg-transparent d-flex align-items-center justify-content-between py-2 px-3">
             <bdi class="kb-code fw-bold text-primary small">{{ d.donation_code }}</bdi>
             {% if d.status == 'pending' %}
               <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ _t('status_pending', 'Pending') }}</span>
@@ -309,11 +313,8 @@
               {% endif %}
             </div>
           </div>
-          <div class="card-footer bg-body-tertiary p-2 d-flex gap-2 justify-content-end">
-            <a href="{{ url_for('teacher.donation_detail', donation_id=d.id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
-              {{ icon('eye') }} <span>{{ _t('btn_view', 'View') }}</span>
-            </a>
-            {% if d.status == 'pending' %}
+          {% if d.status == 'pending' %}
+          <div class="card-footer bg-transparent p-2 d-flex gap-2 justify-content-end">
             <form action="{{ url_for('teacher.approve_donation', donation_id=d.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve donation \'{{ d.title }}\' and publish to public catalogue?');">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1">
@@ -323,8 +324,8 @@
             <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" onclick="openRejectModal({{ d.id }}, '{{ d.title|replace('\'', '\\\'') }}')">
               {{ icon('xmark') }} <span>{{ _t('btn_reject', 'Reject') }}</span>
             </button>
-            {% endif %}
           </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>

@@ -284,8 +284,12 @@
     <div class="d-md-none mb-4">
       <div class="d-flex flex-column gap-3">
         {% for r in requests %}
-        <div class="card border shadow-xs overflow-hidden">
-          <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between py-2 px-3">
+        <div class="card clickable-card border shadow-xs overflow-hidden"
+             data-href="{{ url_for('teacher.request_detail', request_id=r.id) }}"
+             tabindex="0"
+             role="link"
+             aria-label="{{ r.book_title }} - {{ r.tracking_code }}">
+          <div class="card-header bg-transparent d-flex align-items-center justify-content-between py-2 px-3">
             <bdi class="kb-code fw-bold text-primary small">{{ r.tracking_code }}</bdi>
             {% if r.status == 'pending' %}
               <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ _t('status_pending', 'Pending') }}</span>
@@ -314,11 +318,8 @@
               {% endif %}
             </div>
           </div>
-          <div class="card-footer bg-body-tertiary p-2 d-flex flex-wrap gap-2 justify-content-end">
-            <a href="{{ url_for('teacher.request_detail', request_id=r.id) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
-              {{ icon('eye') }} <span>{{ _t('btn_view', 'View') }}</span>
-            </a>
-
+          {% if r.status != 'rejected' %}
+          <div class="card-footer bg-transparent p-2 d-flex flex-wrap gap-2 justify-content-end">
             {% if r.status == 'pending' %}
             <form action="{{ url_for('teacher.approve_request', request_id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve request and reserve book \'{{ r.book_code }}\' for {{ r.requester_name }}?');">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -344,6 +345,7 @@
             </a>
             {% endif %}
           </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>

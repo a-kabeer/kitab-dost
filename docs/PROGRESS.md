@@ -25,6 +25,7 @@
 | **Desktop Sticky Sidebar** | **Teacher Dashboard Desktop Sticky Sidebar & Main Page Scrolling** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Positioned sticky sidebar at top: 56px on screens >= 992px, removed overflow-hidden on parent wrapper, freed main content to use normal page scrolling, enabled independent sidebar internal scrolling on short viewports, 155 discovery tests passing, 0 horizontal overflow across 5 viewports. |
 | **Data Tables & Book Detail** | **Data Table Sorting, Pagination (10/25/50/100), Themed Rows, Clickable Rows & Book Detail Navbar Non-Overlap** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Enhanced all data tables with column sorting (asc/desc with FontAwesome icons), client-side pagination with page-size options (10, 25, 50, 100), white row background (#FFFFFF) in Light mode, card surface (#1E293B) in Dark mode, removed View buttons and made entire row clickable with action click-isolation, resolved book cover navbar overlap with z-index: 1030 on navbar and natural page flow on cover card. 161/161 tests passing (+6 new automated browser tests), 50 fresh visual screenshots verified. |
 | **Teal Secondary Palette** | **Professional Teal Secondary Brand Color Integration & Grey Replacement** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Replaced dull grey secondary brand color with a cohesive, professional Teal palette (Light: #0F766E, Dark: #2DD4BF) across secondary buttons, outline buttons, subtle/solid badges, text-secondary, and focus indicators. Preserved primary Blue (#0369A1 / #38BDF8) branding and neutral structural greys (#DFE5ED borders, #5F6B7A muted text, #F1F4F8/#111827 surfaces). WCAG AAA contrast compliant (5.5:1 - 14.3:1). 163/163 discovery tests passing, 50/50 screenshots verified with 0 defects and 0 CDN requests. |
+| **Catalogue Card UX & Status Contrast** | **Clickable Catalogue Cards, Action Click-Isolation, Vibrant Available Status & Surface Consistency** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Removed Details buttons from catalogue cards, made entire book card clickable with hover elevation and keyboard focus, isolated interactive child controls, upgraded Available status to vibrant green (#15803D Light / #4ADE80 Dark, WCAG AAA), aligned card footers seamlessly with card surface (#FFFFFF / #1E293B), 166/166 unit/browser tests passing, 50/50 visual screenshots verified with 0 defects and 0 CDN requests. |
 
 ---
 
@@ -992,4 +993,38 @@ Following the visual acceptance baseline established by the 36 full-page screens
       - Full test discovery passed: **163/163 tests passing** (0 failures, 0 errors).
       - Phase 1 ACID/WAL test suite passed (30 assertions).
       - Re-ran 50-screenshot multi-viewport visual acceptance audit (`scripts/run_visual_acceptance_audit.py`): 50/50 screenshots captured with 0 visual defects and 0 external CDN requests.
+    - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.
+
+16. **Milestone CORR-16 — Catalogue Cards, Clickable Navigation, Availability Visibility & Card Surface Consistency (`ISSUE-CARD-02`, `ISSUE-CARD-03`, `ISSUE-STAT-01`, `ISSUE-SURF-03`):**
+    - **Phase 1 — Catalogue Card Interaction:**
+      - Removed the redundant "Details" (`{{ _('Details') }}`) button from Student Catalogue book cards across desktop grid and mobile compact list.
+      - Converted entire book cards into interactive elements via `.clickable-card[data-href]`, `tabindex="0"`, and `role="link"`.
+      - Styled `.clickable-card` in `components.css` with subtle elevation on hover (`transform: translateY(-2px); box-shadow: var(--bs-box-shadow);`), smooth transition (`all 0.2s cubic-bezier(0.16, 1, 0.3, 1);`), and pointer cursor.
+      - Added high-visibility keyboard focus rings via `:focus-visible` (`outline: 2px solid var(--bs-primary); outline-offset: 2px;`).
+      - Added subtle directional navigation indicator (`.card-nav-arrow`) that smoothly slides on hover in both LTR (`translateX(3px)`) and RTL (`translateX(-3px)`).
+      - Enhanced global event delegator in `tables.js` with strict action-isolation, preventing card navigation when interacting with forms, buttons, inputs, selects, links, or text selection. Added full keyboard support (`Enter` / `Space`).
+    - **Phase 2 — Audit Similar Card Patterns Across Student and Teacher Pages:**
+      - Applied `.clickable-card` and removed redundant "Details"/"View" buttons on:
+        - `index.html`: Desktop & mobile featured book cards.
+        - `book_detail.html`: Desktop & mobile related book cards.
+        - `donations.html`: Mobile single-donation cards (isolated Approve/Reject actions).
+        - `requests.html`: Mobile single-request cards (isolated Reserve/Reject/Handover/Cancel actions).
+        - `handovers.html`: Mobile single-handover cards (isolated Receipt action).
+      - Kept statistical and multi-action summary cards non-clickable to maintain clean UX boundaries.
+    - **Phase 3 — Available Status Visibility:**
+      - Replaced dim available badge color with vibrant semantic green:
+        - **Light Mode:** `#15803D` text on `#DCFCE7` soft container with `#86EFAC` border (**5.02:1** contrast against white cards, WCAG AA).
+        - **Dark Mode:** `#4ADE80` text on `#052E16` soft container with `#166534` border (**8.38:1** contrast against dark cards, WCAG AAA).
+      - Set `font-weight: 600` on subtle success badges and synchronized `--kb-success*` and Bootstrap `--bs-success*` design tokens in `main.css`.
+      - Preserved other status indicators (Pending `#F59E0B`, Reserved `#0284C7`, Handed Over `#475569`, Cancelled/Rejected `#DC2626`).
+    - **Phase 4 — Fix Inconsistent Card Bottom Background:**
+      - Identified root cause of contrasting bottom grey bar: Bootstrap's `--bs-card-cap-bg` defaulted to `#E8EDF4` (Light) and `#263449` (Dark), and templates had explicit `.bg-body-tertiary` classes on `.card-footer`.
+      - Configured `--bs-card-cap-bg: #FFFFFF;` (Light) and `--bs-card-cap-bg: #1E293B;` (Dark) in `main.css`.
+      - Set `.card-footer { background-color: var(--kb-bg-surface) !important; }` in `components.css` and replaced `.bg-body-tertiary` with `bg-transparent` in all card templates (`catalogue.html`, `index.html`, `book_detail.html`, `donations.html`, `requests.html`, `handovers.html`, `inventory.html`).
+      - Retained clean structural dividing border (`border-top`) with seamless background tone.
+    - **Phase 5 — Testing & Visual Verification:**
+      - Added automated regression tests `test_09_catalogue_cards_clickable_interaction_and_no_details_button`, `test_10_card_keyboard_and_surface_consistency`, and `test_11_available_status_contrast_and_color` to `tests/test_theme_surface_contrast.py`.
+      - Full test discovery suite passed: **166/166 tests passing** (0 errors, 0 failures).
+      - Re-seeded exhibition demo data cleanly (`seed_demo.py` in 710ms).
+      - Re-ran 50-screenshot multi-viewport visual acceptance audit (`scripts/run_visual_acceptance_audit.py`): **50/50 screenshots passed with 0 defects and 0 CDN leaks**.
     - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.

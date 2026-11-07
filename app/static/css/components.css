@@ -75,9 +75,22 @@
 }
 
 .badge-success {
-  background-color: var(--bs-success-bg-subtle);
-  color: var(--bs-success-text-emphasis);
-  border: 1px solid var(--bs-success-border-subtle);
+  background-color: var(--kb-success-subtle);
+  color: var(--kb-success-text);
+  border: 1px solid var(--kb-success-border, var(--bs-success-border-subtle));
+  font-weight: 600;
+}
+
+.badge.bg-success-subtle,
+.bg-success-subtle {
+  background-color: var(--kb-success-subtle) !important;
+  color: var(--kb-success-text) !important;
+  border-color: var(--kb-success-border, var(--bs-success-border-subtle)) !important;
+  font-weight: 600;
+}
+
+.text-success {
+  color: var(--kb-success-text) !important;
 }
 
 .badge-warning {
@@ -142,10 +155,12 @@
 }
 
 .card-header {
+  background-color: var(--kb-bg-surface);
   border-bottom-color: var(--bs-border-color);
 }
 
 .card-footer {
+  background-color: var(--kb-bg-surface) !important;
   border-top-color: var(--bs-border-color);
 }
 
@@ -157,6 +172,42 @@
   transform: translateY(-2px);
   box-shadow: var(--bs-box-shadow);
   border-color: var(--bs-primary-border-subtle);
+}
+
+/* Clickable Interactive Cards */
+.clickable-card {
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--bs-box-shadow);
+  border-color: var(--bs-primary-border-subtle);
+}
+
+.clickable-card:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.clickable-card .card-nav-arrow {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.clickable-card:hover .card-nav-arrow {
+  transform: translateX(3px);
+  color: var(--kb-primary-hover) !important;
+}
+
+[dir="rtl"] .clickable-card .card-nav-arrow {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .clickable-card:hover .card-nav-arrow {
+  transform: scaleX(-1) translateX(3px);
 }
 
 .table-card {

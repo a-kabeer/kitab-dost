@@ -420,24 +420,43 @@
   }
 
   /**
-   * Global Click Delegator for Clickable Rows
+   * Global Click Delegator for Clickable Rows & Cards
    * Isolates buttons, inputs, links, forms, and drag-selection.
    */
   document.addEventListener('click', function (e) {
-    // If clicked inside an interactive action element, ignore row click
-    if (e.target.closest('a, button, input, select, textarea, form, label, .btn, [onclick], [data-bs-toggle], [data-bs-dismiss]')) {
+    // If clicked inside an interactive action element, ignore container click
+    if (e.target.closest('button, input, select, textarea, form, label, .btn, [onclick], [data-bs-toggle], [data-bs-dismiss]')) {
       return;
     }
 
-    // If user made a text selection (e.g. copying a code), ignore row click
+    // If user made a text selection (e.g. copying a code), ignore navigation click
     const sel = window.getSelection();
     if (sel && sel.toString().trim().length > 0) {
       return;
     }
 
+    // 1. Check for clickable table rows
     const row = e.target.closest('tr.clickable-row[data-href]');
-    if (row) {
+    if (row && !e.target.closest('a')) {
       const url = row.getAttribute('data-href');
+      if (url) {
+        if (e.ctrlKey || e.metaKey) {
+          window.open(url, '_blank');
+        } else {
+          window.location.href = url;
+        }
+      }
+      return;
+    }
+
+    // 2. Check for clickable cards
+    const card = e.target.closest('.clickable-card[data-href]');
+    if (card) {
+      // If clicked on an internal link that is NOT a title link, let it handle itself
+      if (e.target.closest('a:not(.card-title-link):not(.stretched-link)')) {
+        return;
+      }
+      const url = card.getAttribute('data-href');
       if (url) {
         if (e.ctrlKey || e.metaKey) {
           window.open(url, '_blank');
@@ -448,10 +467,10 @@
     }
   });
 
-  // Global Keyboard Navigation for Clickable Rows
+  // Global Keyboard Navigation for Clickable Rows & Cards
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
-      if (e.target && e.target.matches('tr.clickable-row[data-href]')) {
+      if (e.target && e.target.matches('tr.clickable-row[data-href], .clickable-card[data-href]')) {
         e.preventDefault();
         const url = e.target.getAttribute('data-href');
         if (url) window.location.href = url;

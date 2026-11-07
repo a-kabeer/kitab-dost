@@ -55,6 +55,7 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         card_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).backgroundColor"))
         card_border = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).borderColor"))
         card_footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card-footer')).backgroundColor"))
+        secondary_surface_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.bg-body-secondary, .table thead th, .input-group-text')).backgroundColor"))
         footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('footer')).backgroundColor"))
         btn_primary_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).backgroundColor"))
         btn_primary_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).color"))
@@ -64,7 +65,8 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         self.assertEqual(body_color, "#172033", "Light Theme body color must be #172033")
         self.assertEqual(navbar_bg, "#FFFFFF", "Light Theme navbar background must be #FFFFFF")
         self.assertEqual(card_bg, "#FFFFFF", "Light Theme card background must be #FFFFFF")
-        self.assertEqual(card_footer_bg, "#E8EDF4", "Light Theme secondary surface (card footer) must be #E8EDF4")
+        self.assertEqual(card_footer_bg, "#FFFFFF", "Light Theme card footer must match card surface #FFFFFF")
+        self.assertEqual(secondary_surface_bg, "#E8EDF4", "Light Theme secondary surface must be #E8EDF4")
         self.assertEqual(card_border, "#DFE5ED", "Light Theme border must be #DFE5ED")
         self.assertEqual(footer_bg, "#FFFFFF", "Light Theme footer background must be #FFFFFF")
         self.assertEqual(btn_primary_bg, "#0369A1", "Light Theme btn-primary background must be #0369A1 (WCAG AA)")
@@ -90,6 +92,7 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         card_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).backgroundColor"))
         card_border = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).borderColor"))
         card_footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card-footer')).backgroundColor"))
+        secondary_surface_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.bg-body-secondary, .table thead th, .input-group-text')).backgroundColor"))
         footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('footer')).backgroundColor"))
         btn_primary_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).backgroundColor"))
         btn_primary_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.btn-primary')).color"))
@@ -99,7 +102,8 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         self.assertEqual(body_color, "#F1F5F9", "Dark Theme body color must be #F1F5F9")
         self.assertEqual(navbar_bg, "#17212F", "Dark Theme navbar background must be #17212F")
         self.assertEqual(card_bg, "#1E293B", "Dark Theme card background must be #1E293B")
-        self.assertEqual(card_footer_bg, "#263449", "Dark Theme secondary surface (card footer) must be #263449")
+        self.assertEqual(card_footer_bg, "#1E293B", "Dark Theme card footer must match card surface #1E293B")
+        self.assertEqual(secondary_surface_bg, "#263449", "Dark Theme secondary surface must be #263449")
         self.assertEqual(card_border, "#334155", "Dark Theme border must be #334155")
         self.assertEqual(footer_bg, "#17212F", "Dark Theme footer background must be #17212F")
         self.assertEqual(btn_primary_bg, "#0369A1", "Dark Theme btn-primary background must be #0369A1")
@@ -400,6 +404,90 @@ class TestThemeSurfaceContrast(unittest.TestCase):
         self.assertEqual(rgb_to_hex(elem_styles['badgeSecBg']), "#2DD4BF", "badge secondary background must be #2DD4BF")
         self.assertEqual(rgb_to_hex(elem_styles['badgeSecColor']), "#0B1F1E", "badge secondary text must be #0B1F1E")
         self.assertEqual(rgb_to_hex(elem_styles['textSecColor']), "#2DD4BF", "text-secondary must be #2DD4BF")
+        context.close()
+
+    def test_09_catalogue_cards_clickable_interaction_and_no_details_button(self):
+        """Verify Details button is removed and whole card is clickable."""
+        context = self.browser.new_context(viewport={"width": 1440, "height": 900})
+        page = context.new_page()
+        page.goto(f"{BASE_URL}/catalogue")
+        page.wait_for_timeout(200)
+
+        # 1. Verify NO Details buttons exist inside book cards on desktop
+        details_buttons = page.query_selector_all('.card .btn:has-text("Details"), .card .btn:has-text("تفصیل"), .card .btn:has-text("تفصيل")')
+        self.assertEqual(len(details_buttons), 0, "All redundant Details buttons must be removed from book cards")
+
+        # 2. Verify cards have clickable-card class, data-href, and pointer cursor
+        first_card = page.query_selector('.clickable-card[data-href]')
+        self.assertIsNotNone(first_card, "Book card must have .clickable-card and data-href attribute")
+        
+        cursor = page.evaluate("(el) => window.getComputedStyle(el).cursor", first_card)
+        self.assertEqual(cursor, "pointer", "Clickable card must have pointer cursor")
+
+        data_href = first_card.get_attribute('data-href')
+        self.assertTrue('/book/' in data_href, "Card data-href must point to book detail")
+
+        # 3. Click anywhere on card (e.g. whitespace / card-body) and verify navigation
+        first_card.click()
+        page.wait_for_url("**/book/**")
+        self.assertIn("/book/", page.url, "Clicking card must navigate to book detail page")
+        context.close()
+
+    def test_10_card_keyboard_and_surface_consistency(self):
+        """Verify keyboard navigation and card footer background consistency."""
+        context = self.browser.new_context(viewport={"width": 1440, "height": 900})
+        page = context.new_page()
+        page.goto(f"{BASE_URL}/catalogue")
+
+        # Test Light Mode Card Footer Surface Consistency
+        page.evaluate("() => { localStorage.setItem('kb_theme', 'light'); }")
+        page.reload()
+        page.wait_for_timeout(200)
+
+        light_footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card .card-footer')).backgroundColor"))
+        light_card_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).backgroundColor"))
+        self.assertEqual(light_footer_bg, "#FFFFFF", "Light Mode card footer background must be #FFFFFF")
+        self.assertEqual(light_footer_bg, light_card_bg, "Light Mode card footer must match card surface")
+
+        # Test Dark Mode Card Footer Surface Consistency
+        page.evaluate("() => { localStorage.setItem('kb_theme', 'dark'); }")
+        page.reload()
+        page.wait_for_timeout(200)
+
+        dark_footer_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card .card-footer')).backgroundColor"))
+        dark_card_bg = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.card')).backgroundColor"))
+        self.assertEqual(dark_footer_bg, "#1E293B", "Dark Mode card footer background must be #1E293B")
+        self.assertEqual(dark_footer_bg, dark_card_bg, "Dark Mode card footer must match card surface")
+
+        # Test Keyboard Navigation: Focus card and press Enter
+        first_card = page.query_selector('.clickable-card')
+        first_card.focus()
+        page.keyboard.press('Enter')
+        page.wait_for_url("**/book/**")
+        self.assertIn("/book/", page.url, "Pressing Enter on focused card must navigate to book detail")
+        context.close()
+
+    def test_11_available_status_contrast_and_color(self):
+        """Verify Available status colors: Light #15803D and Dark #4ADE80."""
+        context = self.browser.new_context(viewport={"width": 1440, "height": 900})
+        page = context.new_page()
+        page.goto(f"{BASE_URL}/catalogue")
+
+        # Light Mode Available Color
+        page.evaluate("() => { localStorage.setItem('kb_theme', 'light'); }")
+        page.reload()
+        page.wait_for_timeout(200)
+
+        light_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.badge.bg-success-subtle.text-success, .text-success')).color"))
+        self.assertEqual(light_color, "#15803D", "Light Mode Available text must be #15803D")
+
+        # Dark Mode Available Color
+        page.evaluate("() => { localStorage.setItem('kb_theme', 'dark'); }")
+        page.reload()
+        page.wait_for_timeout(200)
+
+        dark_color = rgb_to_hex(page.evaluate("() => window.getComputedStyle(document.querySelector('.badge.bg-success-subtle.text-success, .text-success')).color"))
+        self.assertEqual(dark_color, "#4ADE80", "Dark Mode Available text must be #4ADE80")
         context.close()
 
 if __name__ == '__main__':

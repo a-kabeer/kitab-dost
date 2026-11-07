@@ -284,7 +284,7 @@
     <div class="d-flex flex-column gap-2">
       {% for book in books %}
       <div class="card border shadow-xs overflow-hidden">
-        <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between py-1 px-3">
+        <div class="card-header bg-transparent d-flex align-items-center justify-content-between py-1 px-3">
           <bdi class="kb-code fw-bold text-primary small">{{ book.book_code }}</bdi>
           <span class="badge
             {% if book.status == 'available' %}bg-success-subtle text-success border border-success-subtle
@@ -313,7 +313,7 @@
             <span>Added: <bdi class="kb-code">{{ book.created_at[:10] if book.created_at else '—' }}</bdi></span>
           </div>
         </div>
-        <div class="card-footer bg-body-tertiary p-1 p-sm-2 d-flex gap-1 justify-content-end">
+        <div class="card-footer bg-transparent p-1 p-sm-2 d-flex gap-1 justify-content-end">
           <a href="{{ url_for('teacher.book_qr_label', code_or_id=book.book_code) }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" target="_blank">
             {{ icon('qrcode') }} <span>QR</span>
           </a>

@@ -66,51 +66,52 @@ def verify_backup_integrity(filepath, expected_checksum=None):
     SQLite integrity_check, and strict schema & column verification.
     """
     filepath = Path(filepath)
-    if not filepath.exists():
+    if not filepath.is_file():
         return False, f"File '{filepath}' not found on disk."
 
-    # 1. SHA-256 verification if provided
     if expected_checksum:
-        actual_hash = calculate_sha256(filepath)
+        try:
+            actual_hash = calculate_sha256(filepath)
+        except OSError as exc:
+            return False, f"Unable to read backup checksum: {exc}"
         if actual_hash.lower() != expected_checksum.lower():
-            return False, f"SHA-256 hash mismatch! Catalog: {expected_checksum[:12]}..., On-Disk: {actual_hash[:12]}... File corrupted or modified."
+            return False, (
+                f"SHA-256 hash mismatch! Catalog: {expected_checksum[:12]}..., "
+                f"On-Disk: {actual_hash[:12]}... File corrupted or modified."
+            )
 
+    from contextlib import closing
     try:
-        conn = sqlite3.connect(str(filepath))
-        cur = conn.cursor()
-        cur.execute("PRAGMA integrity_check;")
-        res = cur.fetchone()
-        if not res or res[0] != 'ok':
-            conn.close()
-            return False, f"Integrity check failed: {res[0] if res else 'Unknown error'}"
+        with closing(sqlite3.connect(str(filepath), timeout=10.0)) as conn:
+            cur = conn.cursor()
+            cur.execute("PRAGMA integrity_check;")
+            integrity = cur.fetchone()
+            if not integrity or integrity[0] != 'ok':
+                return False, f"Integrity check failed: {integrity[0] if integrity else 'Unknown error'}"
 
-        # Verify all required tables and columns
-        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = {r[0] for r in cur.fetchall()}
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = {row[0] for row in cur.fetchall()}
+            missing_tables = set(REQUIRED_SCHEMA) - tables
+            if missing_tables:
+                return False, f"Missing required backup tables: {sorted(missing_tables)}"
 
-        missing_tables = set(REQUIRED_SCHEMA.keys()) - tables
-        if missing_tables:
-            conn.close()
-            return False, f"Missing required tables in backup schema: {missing_tables}"
+            for table_name, required_columns in REQUIRED_SCHEMA.items():
+                cur.execute(f"PRAGMA table_info({table_name});")
+                existing_columns = {row[1] for row in cur.fetchall()}
+                missing_columns = required_columns - existing_columns
+                if missing_columns:
+                    return False, (
+                        f"Table '{table_name}' is missing required columns: "
+                        f"{sorted(missing_columns)}"
+                    )
 
-        for table_name, req_cols in REQUIRED_SCHEMA.items():
-            cur.execute(f"PRAGMA table_info({table_name});")
-            existing_cols = {row[1] for row in cur.fetchall()}
-            if not req_cols.issubset(existing_cols):
-                missing = req_cols - existing_cols
-                conn.close()
-                return False, f"Table '{table_name}' is missing required schema column(s): {missing}"
+            cur.execute("SELECT COUNT(*) FROM system_settings;")
+            if cur.fetchone()[0] == 0:
+                return False, "Backup system_settings table is empty."
 
-        # Schema content validation: system_settings must contain settings
-        cur.execute("SELECT COUNT(*) FROM system_settings;")
-        if cur.fetchone()[0] == 0:
-            conn.close()
-            return False, "Backup system_settings table is empty."
-
-        conn.close()
         return True, "VALID"
-    except Exception as e:
-        return False, f"Corrupt or invalid SQLite database file: {str(e)}"
+    except (sqlite3.Error, OSError, ValueError) as exc:
+        return False, f"Corrupt or invalid SQLite database file: {exc}"
 
 def create_database_backup(created_by_id=None, teacher_name=None):
     """

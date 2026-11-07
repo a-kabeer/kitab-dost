@@ -82,6 +82,10 @@ def change_teacher_password(teacher_id, current_password, new_password, confirm_
         return False, "New password and confirmation do not match."
     if len(new_password) < 8:
         return False, "New password must be at least 8 characters long."
+    from flask import current_app
+    initial_password = current_app.config.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
+    if new_password == initial_password:
+        return False, "Choose a new password different from the initial teacher password."
 
     db = get_db()
     cur = db.cursor()

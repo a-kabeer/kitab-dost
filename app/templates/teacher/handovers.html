@@ -156,7 +156,7 @@
           </thead>
           <tbody>
             {% for h in handovers %}
-            <tr>
+            <tr class="clickable-row" data-href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}">
               <!-- Handover Ref & Date -->
               <td>
                 <bdi class="kb-code fw-bold text-primary fs-7 d-block">
@@ -217,9 +217,6 @@
               <!-- Actions -->
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
-                  <a href="{{ url_for('teacher.handover_detail', handover_id=h.id) }}" class="btn btn-outline-secondary" title="View detail">
-                    {{ icon('eye') }}
-                  </a>
                   <a href="{{ url_for('teacher.handover_receipt', handover_id=h.id) }}" class="btn btn-primary" title="Print receipt" target="_blank">
                     {{ icon('receipt') }}
                   </a>

@@ -20,7 +20,7 @@
     <div class="row g-4 align-items-start">
       <!-- Left Column: Cover & Quick Status (Constrained on mobile for DEF-DET-01) -->
       <div class="col-12 col-md-5 col-lg-4">
-        <div class="card border shadow-xs overflow-hidden sticky-top book-detail-cover-card" style="top: 5rem;">
+        <div class="card border shadow-xs overflow-hidden book-detail-cover-card">
           <div class="position-relative bg-body-secondary ratio ratio-3x4 border-bottom overflow-hidden">
             <img 
               src="{{ url_for('static', filename=book.image_path or 'img/covers/placeholder.svg') }}" 

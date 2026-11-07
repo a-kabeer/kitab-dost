@@ -136,29 +136,114 @@
   box-shadow: var(--kb-shadow-sm);
 }
 
-.table-card .table {
+/* 4. Table Systems & Theme Surface Styling */
+.table {
   margin-bottom: 0;
   --bs-table-bg: var(--bs-card-bg);
   --bs-table-color: var(--bs-body-color);
   --bs-table-border-color: var(--bs-border-color);
+  --bs-table-hover-bg: var(--bs-tertiary-bg);
+  --bs-table-hover-color: var(--bs-body-color);
+  color: var(--bs-body-color);
+  border-color: var(--bs-border-color);
 }
 
+.table thead th,
 .table-card .table thead th {
-  background-color: var(--bs-tertiary-bg);
-  color: var(--bs-body-color);
+  background-color: var(--bs-tertiary-bg) !important;
+  color: var(--bs-body-color) !important;
   border-bottom: 1px solid var(--bs-border-color);
   font-weight: 600;
   font-size: 0.8125rem;
   letter-spacing: 0.025em;
+  vertical-align: middle;
 }
 
+.table tbody tr,
 .table-card .table tbody tr {
-  background-color: var(--bs-card-bg);
+  background-color: var(--bs-card-bg) !important;
+  color: var(--bs-body-color) !important;
   border-bottom: 1px solid var(--bs-border-color);
+  transition: background-color 0.15s ease-in-out;
 }
 
+.table tbody tr > td,
+.table tbody tr > th {
+  background-color: transparent !important;
+  color: inherit;
+  border-color: var(--bs-border-color);
+  vertical-align: middle;
+}
+
+.table-hover > tbody > tr:hover,
 .table-card .table tbody tr:hover {
-  background-color: var(--bs-tertiary-bg);
+  background-color: var(--bs-tertiary-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.table-hover > tbody > tr:hover > td,
+.table-hover > tbody > tr:hover > th {
+  background-color: transparent !important;
+  color: var(--bs-body-color) !important;
+}
+
+/* Clickable table rows */
+.table tbody tr.clickable-row {
+  cursor: pointer;
+}
+
+.table tbody tr.clickable-row:hover {
+  background-color: var(--bs-tertiary-bg) !important;
+}
+
+.table tbody tr.clickable-row:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
+
+/* Column Sorting Indicators */
+.table thead th.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.table thead th.sortable-th:hover {
+  background-color: var(--bs-secondary-bg) !important;
+}
+
+.table thead th.sortable-th .sort-icon {
+  display: inline-block;
+  margin-left: 0.35rem;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+[dir="rtl"] .table thead th.sortable-th .sort-icon {
+  margin-left: 0;
+  margin-right: 0.35rem;
+}
+
+.table thead th.sortable-th.sorted-asc .sort-icon,
+.table thead th.sortable-th.sorted-desc .sort-icon {
+  opacity: 1;
+  color: var(--bs-primary) !important;
+}
+
+/* Table Toolbar & Pagination Footer */
+.table-toolbar {
+  font-size: 0.85rem;
+}
+
+.table-toolbar .form-select-sm {
+  font-size: 0.8rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.table-pagination-nav .pagination {
+  margin-bottom: 0;
 }
 
 /* 5. Clean Buttons & Touch Target Standards */
@@ -271,6 +356,13 @@
 }
 
 /* 8. Structural Layout Surfaces (Navbar, Sidebar, Main, Footer) */
+header.sticky-top,
+.teacher-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030 !important;
+}
+
 header.sticky-top,
 .navbar {
   background-color: var(--kb-navbar-bg) !important;

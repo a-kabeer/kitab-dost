@@ -136,7 +136,7 @@
           </thead>
           <tbody>
             {% for d in donations %}
-            <tr>
+            <tr class="clickable-row" data-href="{{ url_for('teacher.donation_detail', donation_id=d.id) }}">
               <!-- Code -->
               <td>
                 <bdi class="kb-code fw-bold text-primary fs-7 d-block">
@@ -240,10 +240,6 @@
               <!-- Action Buttons -->
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
-                  <a href="{{ url_for('teacher.donation_detail', donation_id=d.id) }}" class="btn btn-outline-secondary" title="View details">
-                    {{ icon('eye') }}
-                  </a>
-
                   {% if d.status == 'pending' %}
                   <form action="{{ url_for('teacher.approve_donation', donation_id=d.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve donation \'{{ d.title }}\' and publish to public catalogue?');">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

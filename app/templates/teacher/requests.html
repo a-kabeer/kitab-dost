@@ -146,7 +146,7 @@
           </thead>
           <tbody>
             {% for r in requests %}
-            <tr>
+            <tr class="clickable-row" data-href="{{ url_for('teacher.request_detail', request_id=r.id) }}">
               <!-- Tracking Code -->
               <td>
                 <bdi class="kb-code fw-bold text-primary fs-7 d-block">
@@ -222,10 +222,6 @@
               <!-- Actions -->
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
-                  <a href="{{ url_for('teacher.request_detail', request_id=r.id) }}" class="btn btn-outline-secondary" title="View details">
-                    {{ icon('eye') }}
-                  </a>
-
                   {% if r.status == 'pending' %}
                   <form action="{{ url_for('teacher.approve_request', request_id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve request and reserve book \'{{ r.book_code }}\' for {{ r.requester_name }}?');">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

@@ -400,6 +400,12 @@
   gap: 1.5rem;
 }
 
+.book-detail-cover-card {
+  position: relative;
+  top: auto !important;
+  z-index: 1;
+}
+
 .book-detail-header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 1.5rem;

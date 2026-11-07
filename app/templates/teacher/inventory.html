@@ -174,7 +174,7 @@
         </thead>
         <tbody>
           {% for book in books %}
-          <tr>
+          <tr class="clickable-row" data-href="{{ url_for('student.book_detail', code_or_id=book.book_code) }}">
             <td>
               <bdi class="kb-code fw-bold text-primary fs-7 d-block">
                 {{ book.book_code }}

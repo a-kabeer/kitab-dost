@@ -35,6 +35,8 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
         try:
             if target_backup_dir:
                 bck_dir = Path(target_backup_dir)
+            elif target_db and Path(target_db).resolve() != DB_PATH.resolve():
+                bck_dir = Path(target_db).parent / 'backups'
             else:
                 try:
                     from flask import current_app
@@ -120,6 +122,7 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
 
     conn = sqlite3.connect(str(db_file), timeout=30.0)
     conn.execute("PRAGMA busy_timeout = 10000;")
+    conn.execute("PRAGMA synchronous = NORMAL;")
     cur = conn.cursor()
 
     # Ensure schema exists before clearing tables
@@ -129,6 +132,9 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
         if schema_path.exists():
             with open(schema_path, 'r', encoding='utf-8') as f:
                 cur.executescript(f.read())
+
+    # Begin batch transaction for sub-second execution
+    conn.execute("BEGIN TRANSACTION;")
 
     # 1. Clear dynamic tables in foreign key order (preserve backup_records!)
     cur.execute("PRAGMA foreign_keys = OFF;")

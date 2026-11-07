@@ -24,7 +24,7 @@ class TestQueueConsistencyAndRoutes(unittest.TestCase):
         self.backup_dir = Path(self.temp_dir) / 'backups'
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
-        self.app = create_app('development')
+        self.app = create_app('testing')
         self.app.config.update({
             'TESTING': True,
             'DATABASE_PATH': self.db_path,

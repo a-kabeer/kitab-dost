@@ -11,6 +11,7 @@ from unittest.mock import patch
 from flask import Flask
 from markupsafe import Markup
 
+from app import create_app
 from app.database import check_and_recover_interrupted_restore, db_transaction
 from app.services import activity_service, maintenance_service
 from app.services.request_service import create_book_request
@@ -216,6 +217,33 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
                     value = conn.execute("SELECT value FROM sample").fetchone()[0]
                 self.assertEqual(value, "safe snapshot")
                 self.assertIsNone(maintenance_service.get_interrupted_restore_info())
+
+    def test_initial_teacher_password_is_confined_to_password_rotation(self):
+        app = create_app("testing")
+        client = app.test_client()
+        response = client.post(
+            "/auth/login",
+            data={"username": "teacher", "password": app.config["INITIAL_TEACHER_PASSWORD"]}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/teacher/settings?tab=security", response.headers["Location"])
+
+        blocked = client.get("/teacher/dashboard")
+        self.assertEqual(blocked.status_code, 302)
+        self.assertIn("/teacher/settings?tab=security", blocked.headers["Location"])
+
+        rotated = client.post(
+            "/teacher/settings/password",
+            data={
+                "current_password": app.config["INITIAL_TEACHER_PASSWORD"],
+                "new_password": "A-Strong-New-Pass-2026!",
+                "confirm_password": "A-Strong-New-Pass-2026!"
+            }
+        )
+        self.assertEqual(rotated.status_code, 302)
+
+        allowed = client.get("/teacher/dashboard")
+        self.assertEqual(allowed.status_code, 200)
 
 
 if __name__ == "__main__":

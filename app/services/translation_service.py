@@ -154,30 +154,48 @@ _ACTIVITY_PATTERNS = [
     )
 ]
 
+from markupsafe import Markup, escape
+
+
+def _safe_activity_translation(template, match):
+    """Build trusted translation markup while HTML-escaping captured database text."""
+    rendered = Markup()
+    for token in re.split(r'(\\[1-9][0-9]*)', template):
+        if token.startswith('\\') and token[1:].isdigit():
+            group_number = int(token[1:])
+            rendered += escape(match.group(group_number) or '')
+        else:
+            # Translation templates are application-owned constants; only captures
+            # from the activity log require escaping.
+            rendered += Markup(token)
+    return rendered
+
+
 def localize_activity_details(details, lang='en'):
     """
-    Localize activity log details into target language (Urdu or Sindhi)
-    while preserving book titles, names, classes, and code identifiers.
-    Falls back to original string for English or unmatched patterns.
+    Localize activity details without trusting user-controlled text as HTML.
+    The teacher log template uses this result as markup for a small number of
+    application-owned <bdi> wrappers, so every captured value is escaped here.
     """
-    if not details or lang not in ('ur', 'sd'):
-        return details
+    if details is None:
+        return Markup()
 
-    idx = 1 if lang == 'ur' else 2
-    for item in _ACTIVITY_PATTERNS:
-        pat = item[0]
-        replacement = item[idx]
-        if re.search(pat, details):
-            details = re.sub(pat, replacement, details)
-            break
+    details = str(details)
+    if lang in ('ur', 'sd'):
+        idx = 1 if lang == 'ur' else 2
+        for item in _ACTIVITY_PATTERNS:
+            match = re.match(item[0], details)
+            if match:
+                return _safe_activity_translation(item[idx], match)
 
-    # Localize embedded class taxonomy and roll number labels
-    if lang == 'ur':
-        details = re.sub(r'\bClass (\d+)', r'جماعت \1', details)
-        details = re.sub(r'\bRoll (\d+)', r'رول \1', details)
-    elif lang == 'sd':
-        details = re.sub(r'\bClass (\d+)', r'ڪلاس \1', details)
-        details = re.sub(r'\bRoll (\d+)', r'رول \1', details)
+        # Keep the existing class/roll label localization for unmatched entries.
+        if lang == 'ur':
+            details = re.sub(r'\\bClass (\\d+)', r'جماعت \\1', details)
+            details = re.sub(r'\\bRoll (\\d+)', r'رول \\1', details)
+        else:
+            details = re.sub(r'\\bClass (\\d+)', r'ڪلاس \\1', details)
+            details = re.sub(r'\\bRoll (\\d+)', r'رول \\1', details)
 
-    return details
+    # English and unmatched Urdu/Sindhi details are plain text, not HTML.
+    return escape(details)
 

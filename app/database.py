@@ -91,6 +91,9 @@ def check_and_recover_interrupted_restore(app):
 
         # Marker removal is part of successful recovery; failure must stop startup.
         maintenance_service.clear_restore_in_progress()
+        # A killed process may also have left the cross-process maintenance
+        # gate behind. Recovery is complete now, so remove that stale gate.
+        maintenance_service.set_maintenance_mode(False)
         app.logger.info("Interrupted restore recovery completed successfully.")
         return True
     except Exception:

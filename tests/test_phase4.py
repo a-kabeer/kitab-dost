@@ -21,12 +21,20 @@ if sys.platform == 'win32':
 from app import create_app
 from app.database import get_db
 from app.services import request_service, book_service, rate_limiter
+from scripts.seed_demo import reset_and_seed_demo_data
 
 class Phase4RequestSystemTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = create_app('testing')
         cls.client = cls.app.test_client()
+        # Each isolated testing app needs the same 18-book baseline expected by
+        # the historical circulation tests. Never seed the school database.
+        with cls.app.app_context():
+            reset_and_seed_demo_data(
+                target_db=cls.app.config['DATABASE_PATH'],
+                create_safety_backup=False
+            )
         cls._reset_test_state()
 
     @classmethod

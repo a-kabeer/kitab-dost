@@ -56,19 +56,25 @@ def is_maintenance_active():
         return False
 
 def set_maintenance_mode(active=True):
-    """Enable or disable maintenance mode in memory and on disk."""
+    """Enable or disable database maintenance mode in memory and on disk.
+
+    File-system failures are deliberately raised: restore must not proceed when
+    the cross-process maintenance gate cannot be established or removed.
+    """
     global _in_memory_maintenance
     with _STATE_LOCK:
-        _in_memory_maintenance = active
-        try:
-            m_file = get_maintenance_file()
-            if active:
-                m_file.write_text(f"MAINTENANCE_ACTIVE:{time.time()}")
-            else:
-                if m_file.exists():
-                    m_file.unlink()
-        except Exception:
-            pass
+        m_file = get_maintenance_file()
+        if active:
+            m_file.parent.mkdir(parents=True, exist_ok=True)
+            temp_file = m_file.with_name(m_file.name + ".tmp")
+            temp_file.write_text(f"MAINTENANCE_ACTIVE:{time.time()}", encoding="utf-8")
+            os.replace(temp_file, m_file)
+            _in_memory_maintenance = True
+        else:
+            if m_file.exists():
+                m_file.unlink()
+            _in_memory_maintenance = False
+
 
 # -----------------------------------------------------------------------------
 # 2. Deterministic Request & Connection Tracking
@@ -123,63 +129,63 @@ def drain_connections(timeout=5.0, exclude_thread=None, poll_interval=0.05):
 @contextmanager
 def maintenance_context(timeout=5.0):
     """
-    Context manager to safely encapsulate database restoration.
-    1. Sets maintenance mode (rejects new incoming requests with 503).
-    2. Deterministically drains active in-flight requests and connections.
-    3. Fails safely via TimeoutError if connections cannot be drained within timeout.
-    4. Guarantees maintenance mode is released upon exit or failure.
+    Gate new requests, drain work already in flight, and hold maintenance mode
+    only while the caller performs the protected restore operation.
     """
     current_tid = threading.get_ident()
+
+    # Establish the gate under lock, then release the lock before draining.
+    # New requests can now register and promptly receive HTTP 503.
     with _STATE_LOCK:
+        if _in_memory_maintenance or get_maintenance_file().exists():
+            raise TimeoutError("Database maintenance is already active in this process or another process.")
         set_maintenance_mode(True)
-        try:
-            drained = drain_connections(timeout=timeout, exclude_thread=current_tid)
-            if not drained:
-                req_c, db_c = get_active_counts(exclude_thread=current_tid)
-                raise TimeoutError(
-                    f"Connection drain timeout ({timeout}s): {req_c} active requests and "
-                    f"{db_c} active DB connections could not be drained safely. Live database was not modified."
-                )
-            yield
-        finally:
-            set_maintenance_mode(False)
+
+    try:
+        drained = drain_connections(timeout=timeout, exclude_thread=current_tid)
+        if not drained:
+            req_c, db_c = get_active_counts(exclude_thread=current_tid)
+            raise TimeoutError(
+                f"Connection drain timeout ({timeout}s): {req_c} active requests and "
+                f"{db_c} active DB connections could not be drained safely. Live database was not modified."
+            )
+        yield
+    finally:
+        set_maintenance_mode(False)
+
 
 # -----------------------------------------------------------------------------
 # 3. Interrupted Restore Crash Resilience
 # -----------------------------------------------------------------------------
 def mark_restore_in_progress(rollback_snapshot_path, target_backup=None):
-    """Record that database restoration is in progress on disk before modifying live pages."""
-    try:
-        r_file = get_restore_in_progress_file()
-        payload = {
-            "rollback_snapshot": str(rollback_snapshot_path),
-            "target_backup": str(target_backup) if target_backup else "",
-            "started_at": time.time(),
-            "pid": os.getpid()
-        }
-        r_file.write_text(json.dumps(payload))
-    except Exception:
-        pass
+    """Atomically persist restore metadata before modifying live database pages."""
+    r_file = get_restore_in_progress_file()
+    r_file.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "rollback_snapshot": str(rollback_snapshot_path),
+        "target_backup": str(target_backup) if target_backup else "",
+        "started_at": time.time(),
+        "pid": os.getpid()
+    }
+    temp_file = r_file.with_name(r_file.name + ".tmp")
+    temp_file.write_text(json.dumps(payload), encoding="utf-8")
+    os.replace(temp_file, r_file)
+
 
 def clear_restore_in_progress():
-    """Remove the .restore_in_progress marker once post-restore verification succeeds."""
-    try:
-        r_file = get_restore_in_progress_file()
-        if r_file.exists():
-            r_file.unlink()
-    except Exception:
-        pass
+    """Remove the restore marker; surface failures so callers can fail safely."""
+    r_file = get_restore_in_progress_file()
+    if r_file.exists():
+        r_file.unlink()
+
 
 def get_interrupted_restore_info():
-    """Check if an interrupted restore marker exists and return its metadata dict, or None."""
-    try:
-        r_file = get_restore_in_progress_file()
-        if r_file.exists():
-            content = r_file.read_text().strip()
-            if content.startswith('{'):
-                return json.loads(content)
-            else:
-                return {"rollback_snapshot": content}
-    except Exception:
-        pass
-    return None
+    """Return persisted restore metadata, or None when no marker exists."""
+    r_file = get_restore_in_progress_file()
+    if not r_file.exists():
+        return None
+    content = r_file.read_text(encoding="utf-8").strip()
+    if content.startswith('{'):
+        return json.loads(content)
+    # Backward compatibility with older marker files containing only a path.
+    return {"rollback_snapshot": content}

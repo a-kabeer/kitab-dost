@@ -11,10 +11,12 @@ Includes:
 """
 
 import sys
+import os
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
+from flask import current_app
 
 if sys.platform == 'win32':
     try:
@@ -23,6 +25,14 @@ if sys.platform == 'win32':
         pass
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _initial_teacher_password():
+    """Read the configured bootstrap password in-app, or environment for CLI use."""
+    try:
+        return current_app.config.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
+    except RuntimeError:
+        return os.environ.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
 DB_PATH = PROJECT_ROOT / 'kitaab_bank.db'
 
 def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_backup_dir=None):
@@ -159,7 +169,7 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
             INSERT INTO teachers (username, password_hash, full_name, email, role, is_active)
             VALUES ('teacher', ?, 'Sir Tariq Mahmood', 'tariq.mahmood@school.edu.pk', 'admin', 1);
             """,
-            (generate_password_hash('Teacher@123'),)
+            (generate_password_hash(_initial_teacher_password()),)
         )
         teacher_id = cur.lastrowid
     else:

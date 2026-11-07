@@ -66,9 +66,19 @@ def set_maintenance_mode(active=True):
         m_file = get_maintenance_file()
         if active:
             m_file.parent.mkdir(parents=True, exist_ok=True)
-            temp_file = m_file.with_name(m_file.name + ".tmp")
-            temp_file.write_text(f"MAINTENANCE_ACTIVE:{time.time()}", encoding="utf-8")
-            os.replace(temp_file, m_file)
+            payload = f"MAINTENANCE_ACTIVE:{time.time()}:PID:{os.getpid()}".encode("utf-8")
+            if exclusive:
+                # O_EXCL atomically acquires the cross-process gate; a second
+                # process cannot replace an active restore's lock file.
+                descriptor = os.open(str(m_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+                with os.fdopen(descriptor, "wb") as lock_stream:
+                    lock_stream.write(payload)
+                    lock_stream.flush()
+                    os.fsync(lock_stream.fileno())
+            else:
+                temp_file = m_file.with_name(m_file.name + ".tmp")
+                temp_file.write_bytes(payload)
+                os.replace(temp_file, m_file)
             _in_memory_maintenance = True
         else:
             if m_file.exists():
@@ -139,7 +149,10 @@ def maintenance_context(timeout=5.0):
     with _STATE_LOCK:
         if _in_memory_maintenance or get_maintenance_file().exists():
             raise TimeoutError("Database maintenance is already active in this process or another process.")
-        set_maintenance_mode(True)
+        try:
+            set_maintenance_mode(True, exclusive=True)
+        except FileExistsError as exc:
+            raise TimeoutError("Database maintenance is already active in another process.") from exc
 
     try:
         drained = drain_connections(timeout=timeout, exclude_thread=current_tid)

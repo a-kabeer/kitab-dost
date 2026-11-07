@@ -115,9 +115,13 @@ def verify_backup_integrity(filepath, expected_checksum=None):
 
 def create_database_backup(created_by_id=None, teacher_name=None):
     """
-    Produce a live snapshot backup using sqlite3.Connection.backup().
-    Returns (success, backup_record_dict, error_msg).
+    Produce a live snapshot using SQLite's Online Backup API.
+    Only a verified snapshot is catalogued as a successful backup.
     """
+    from contextlib import closing
+
+    dest_path = None
+    catalogued = False
     try:
         bck_dir = get_backups_dir()
         now_dt = datetime.now()
@@ -132,46 +136,47 @@ def create_database_backup(created_by_id=None, teacher_name=None):
 
         live_db_path = get_live_db_path()
 
-        # 1. Perform Consistent Live Backup
-        src_conn = sqlite3.connect(live_db_path)
-        dest_conn = sqlite3.connect(dest_path)
+        # Open and close both SQLite handles deterministically, including errors.
+        with closing(sqlite3.connect(live_db_path, timeout=10.0)) as src_conn:
+            src_conn.execute("PRAGMA busy_timeout = 10000;")
+            with closing(sqlite3.connect(str(dest_path), timeout=10.0)) as dest_conn:
+                dest_conn.execute("PRAGMA busy_timeout = 10000;")
+                src_conn.backup(dest_conn, pages=100, sleep=0.01)
 
-        # Step through in chunks of 100 pages with minimal sleep
-        src_conn.backup(dest_conn, pages=100, sleep=0.001)
-
-        dest_conn.close()
-        src_conn.close()
-
-        # 2. File Metadata & Checksums
         file_size_bytes = os.path.getsize(dest_path)
         checksum_sha256 = calculate_sha256(dest_path)
 
-        # 3. Post-Backup Integrity Verification
-        is_valid, verify_msg = verify_backup_integrity(dest_path)
-        status_val = 'VALID' if is_valid else 'CORRUPT'
+        is_valid, verify_msg = verify_backup_integrity(
+            dest_path,
+            expected_checksum=checksum_sha256
+        )
+        if not is_valid:
+            return False, None, f"Backup verification failed: {verify_msg}"
 
-        # 4. Catalog in backup_records
         db = get_db()
         cur = db.cursor()
         cur.execute(
             """
             INSERT INTO backup_records (
                 filename, file_size_bytes, checksum_sha256, verification_status, created_by
-            ) VALUES (?, ?, ?, ?, ?);
+            ) VALUES (?, ?, ?, 'VALID', ?);
             """,
-            (filename, file_size_bytes, checksum_sha256, status_val, created_by_id)
+            (filename, file_size_bytes, checksum_sha256, created_by_id)
         )
         db.commit()
         backup_id = cur.lastrowid
+        catalogued = True
 
-        # 5. Log audit trail
         activity_service.record_activity(
             action='backup_created',
             entity_type='backup',
             entity_id=backup_id,
             actor_type='teacher' if created_by_id else 'system',
             actor_name=teacher_name or 'System',
-            details=f"Live snapshot '{filename}' created ({file_size_bytes} bytes, SHA-256: {checksum_sha256[:12]}...). Status: {status_val}."
+            details=(
+                f"Live snapshot '{filename}' created ({file_size_bytes} bytes, "
+                f"SHA-256: {checksum_sha256[:12]}...). Status: VALID."
+            )
         )
 
         record = {
@@ -179,12 +184,18 @@ def create_database_backup(created_by_id=None, teacher_name=None):
             'filename': filename,
             'file_size_bytes': file_size_bytes,
             'checksum_sha256': checksum_sha256,
-            'verification_status': status_val,
+            'verification_status': 'VALID',
             'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         return True, record, None
-    except Exception as e:
-        return False, None, f"Backup creation failed: {str(e)}"
+    except Exception as exc:
+        # Never leave an untracked or partial snapshot that looks restorable.
+        if dest_path is not None and not catalogued:
+            try:
+                dest_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        return False, None, f"Backup creation failed: {exc}"
 
 def get_all_backups(limit=50):
     """Retrieve catalog of all backups with creator information."""

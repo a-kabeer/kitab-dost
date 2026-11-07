@@ -30,6 +30,7 @@ if sys.platform == 'win32':
 from app import create_app
 from app.database import get_db, init_db
 from app.services import request_service, handover_service, rate_limiter
+from scripts.seed_demo import reset_and_seed_demo_data
 
 class Phase5PhysicalHandoverTests(unittest.TestCase):
     @classmethod
@@ -38,6 +39,10 @@ class Phase5PhysicalHandoverTests(unittest.TestCase):
         cls.client = cls.app.test_client()
         with cls.app.app_context():
             init_db(cls.app)
+            reset_and_seed_demo_data(
+                target_db=cls.app.config['DATABASE_PATH'],
+                create_safety_backup=False
+            )
         cls._reset_test_state()
 
     @classmethod

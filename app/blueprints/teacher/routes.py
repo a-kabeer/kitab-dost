@@ -656,6 +656,7 @@ def change_password():
     )
 
     if success:
+        session.pop('password_change_required', None)
         flash("Your password has been changed successfully. Please remember your new password.", "success")
     else:
         flash(f"Password change failed: {error}", "danger")

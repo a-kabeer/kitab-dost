@@ -42,8 +42,13 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
 
+class TestingConfig(DevelopmentConfig):
+    TESTING = True
+    WTF_CSRF_ENABLED = False
+
 config_by_name = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
+    'testing': TestingConfig,
     'default': ProductionConfig
 }

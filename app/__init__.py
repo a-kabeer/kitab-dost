@@ -1,6 +1,8 @@
 import os
 import secrets
 import logging
+import tempfile
+from pathlib import Path
 from flask import Flask, render_template, session, request
 from config import config_by_name
 from app.database import close_db, init_db, check_and_recover_interrupted_restore
@@ -10,6 +12,19 @@ def create_app(config_name='default'):
     app = Flask(__name__)
     config_cls = config_by_name.get(config_name, config_by_name['default'])
     app.config.from_object(config_cls)
+
+    # A testing app must never initialize or mutate the developer's real
+    # school database, uploads, QR files, or backup directory.
+    if config_name == 'testing':
+        test_storage = tempfile.TemporaryDirectory(prefix='kitaab-bank-test-')
+        app.extensions['kitaab_bank_test_storage'] = test_storage
+        test_root = Path(test_storage.name)
+        app.config.update({
+            'DATABASE_PATH': test_root / 'kitaab_bank_test.db',
+            'UPLOAD_FOLDER': test_root / 'uploads' / 'books',
+            'QR_FOLDER': test_root / 'uploads' / 'qr',
+            'BACKUP_FOLDER': test_root / 'backups'
+        })
 
     # Configure logging
     logging.basicConfig(

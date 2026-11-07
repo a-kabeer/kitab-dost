@@ -7,6 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent
 class Config:
     # Security
     SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+    INITIAL_TEACHER_PASSWORD = os.environ.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = 28800  # 8 hours

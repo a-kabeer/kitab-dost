@@ -146,20 +146,26 @@ def db_transaction(db=None, max_retries=3, initial_delay=0.1):
     if db is None:
         db = get_db()
 
+    if max_retries < 1:
+        raise ValueError("max_retries must be at least 1")
+
     delay = initial_delay
+    # Retry only acquiring the write lock. Once the caller's block has run,
+    # it must never be replayed: it may contain non-repeatable side effects.
     for attempt in range(1, max_retries + 1):
         try:
             db.execute("BEGIN IMMEDIATE")
-            yield db
-            db.commit()
-            return
-        except sqlite3.OperationalError as e:
-            db.execute("ROLLBACK")
-            if "database is locked" in str(e).lower() and attempt < max_retries:
-                time.sleep(delay)
-                delay *= 2
-                continue
-            raise e
-        except Exception as e:
-            db.execute("ROLLBACK")
-            raise e
+            break
+        except sqlite3.OperationalError as exc:
+            if "database is locked" not in str(exc).lower() or attempt >= max_retries:
+                raise
+            time.sleep(delay)
+            delay *= 2
+
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        if db.in_transaction:
+            db.rollback()
+        raise

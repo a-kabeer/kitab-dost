@@ -49,31 +49,21 @@ def create_app(config_name='default'):
                 "Startup aborted to protect school data; inspect the restore marker and rollback snapshot."
             )
 
-    # Initialize SQLite database with WAL mode if not existing
+    # Run idempotent schema setup and additive migrations on every startup.
+    # Existing databases need migrations too; initializing only newly-created
+    # files silently leaves deployed school databases on old schemas.
     db_file = app.config['DATABASE_PATH']
-    if not db_file.exists():
+    database_already_existed = db_file.exists()
+    if not database_already_existed:
         app.logger.info("Initializing new database...")
-        init_db(app)
-    else:
-        # Ensure default teacher & sample books exist in established database
+    init_db(app)
+
+    # Preserve the existing behavior of ensuring the sample catalogue exists
+    # for an already-established database, without seeding a new empty school DB.
+    if database_already_existed:
         with app.app_context():
-            from app.database import get_db
             from app.seed_data import seed_sample_books
             try:
-                db = get_db()
-                cur = db.cursor()
-                cur.execute("SELECT COUNT(*) FROM teachers;")
-                if cur.fetchone()[0] == 0:
-                    from werkzeug.security import generate_password_hash
-                    pwd_hash = generate_password_hash(app.config.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123'))
-                    cur.execute(
-                        "INSERT INTO teachers (username, password_hash, full_name, email, role, is_active) "
-                        "VALUES (?, ?, ?, ?, ?, 1);",
-                        ('teacher', pwd_hash, 'School Teacher / Incharge', 'teacher@school.edu.pk', 'admin')
-                    )
-                    db.commit()
-                
-                # Seed sample books if catalog empty
                 seed_sample_books()
             except Exception as e:
                 app.logger.warning(f"Database seed check error: {e}")

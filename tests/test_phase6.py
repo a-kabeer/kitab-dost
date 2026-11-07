@@ -13,8 +13,10 @@ from app.services import qr_service, book_service
 class Phase6QrSystemTests(unittest.TestCase):
 
     def setUp(self):
-        self.app = create_app('default')
-        self.app.config['TESTING'] = True
+        self.app = create_app('testing')
+        with self.app.app_context():
+            from app.seed_data import seed_sample_books
+            seed_sample_books()
         self.client = self.app.test_client()
 
     def _login_teacher(self):

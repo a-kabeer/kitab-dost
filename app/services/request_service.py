@@ -99,12 +99,26 @@ def create_book_request(form_data):
         return False, None, f"This book is currently '{book['status']}' and cannot be requested at this time."
 
     book_id = book['id']
-    tracking_code = generate_secure_tracking_code(db)
-
     # 3. Save request inside a write transaction
     try:
         with db_transaction(db):
             cur = db.cursor()
+
+            # Re-check availability under the write lock. The earlier read is
+            # only for fast validation; a teacher may reserve the book before
+            # this transaction begins.
+            cur.execute(
+                "SELECT id, title, book_code, status, is_approved FROM books WHERE id = ? LIMIT 1;",
+                (book_id,)
+            )
+            current_book = cur.fetchone()
+            if not current_book or not current_book['is_approved']:
+                return False, None, "The requested book is no longer available in the school catalogue."
+            if current_book['status'] != 'available':
+                return False, None, f"This book is currently '{current_book['status']}' and cannot be requested at this time."
+
+            book = dict(current_book)
+            tracking_code = generate_secure_tracking_code(db)
 
             # 2b. Prevent duplicate pending/approved requests from same student for same book
             cur.execute(

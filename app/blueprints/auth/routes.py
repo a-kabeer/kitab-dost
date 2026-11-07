@@ -45,6 +45,8 @@ def login():
         if teacher and teacher['is_active'] and check_password_hash(teacher['password_hash'], password):
             # Clear failures after valid credentials and apply the configured idle timeout.
             rate_limiter.reset_rate_limit('login_failed')
+            initial_password = current_app.config.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
+            password_change_required = check_password_hash(teacher['password_hash'], initial_password)
             saved_lang = session.get('lang')
             session.clear()
             session.permanent = True
@@ -54,6 +56,8 @@ def login():
             session['teacher_username'] = teacher['username']
             session['teacher_name'] = teacher['full_name']
             session['teacher_role'] = teacher['role']
+            if password_change_required:
+                session['password_change_required'] = True
 
             # Update last login timestamp
             db.execute("UPDATE teachers SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?;", (teacher['id'],))
@@ -70,6 +74,9 @@ def login():
             )
 
             flash(f"Welcome back, {teacher['full_name']}!", "success")
+            if password_change_required:
+                flash("Your initial teacher password must be changed before using the Teacher Desk.", "warning")
+                return redirect(url_for('teacher.settings', tab='security'))
             if next_url and is_safe_url(next_url):
                 return redirect(next_url)
             return redirect(url_for('teacher.dashboard'))

@@ -6,29 +6,28 @@
 ## 1. Authentication & Session Security
 
 ### 1.1 Password Hashing & Credentials Storage
-- All teacher passwords are encrypted using **Werkzeug's PBKDF2-HMAC-SHA256** (with a minimum of 600,000 hash iterations) using cryptographically secure random salts.
-- Plaintext passwords are never logged, stored in application memory, or written to database snapshots.
-- Seeded teacher accounts force a password reset prompt on first login.
+- Teacher passwords are stored as salted hashes using Werkzeug's password-hashing helpers. They are not encrypted or stored in plaintext.
+- The initial teacher password is configurable through `INITIAL_TEACHER_PASSWORD`; the fallback for a fresh installation is `Teacher@123`.
+- A successful login using the configured initial password is restricted to the Security settings and password-change action until a different password is saved. Existing sessions are checked by the teacher request guard as well.
+- Plaintext passwords are not written to activity logs.
 
 ### 1.2 Session Hardening
-- Session cookies are signed with a cryptographically high-entropy 256-bit secret key (`SECRET_KEY`).
-- Cookies enforce:
-  - `HttpOnly = True`: Blocks client-side JavaScript access to session tokens.
-  - `SameSite = 'Lax'`: Mitigates Cross-Site Request Forgery across external origins.
-  - `Session Inactivity Timeout`: 8-hour max session lifespan, ensuring unattended school computers log out automatically.
+- Flask signs session cookies with `SECRET_KEY`. Set a stable, unpredictable `SECRET_KEY` in the server environment for production; the generated fallback changes when the process restarts.
+- Cookies enforce `HttpOnly = True` and `SameSite = 'Lax'`.
+- Authenticated sessions are marked permanent and use the configured 8-hour `PERMANENT_SESSION_LIFETIME`.
 
 ### 1.3 Route Authorization Guards
-- Public student endpoints (`/`, `/catalogue`, `/book/<id>`, `/donate`, `/request`, `/track`, `/scan`) are open to all users on the local Wi-Fi.
-- All teacher management endpoints (`/teacher/*`, `/api/teacher/*`) are strictly shielded behind a custom Python decorator `@teacher_required`.
-- Unauthenticated requests are immediately redirected to `/auth/login` with safe `next` parameter validation (open-redirect protection).
+- Public student pages are available without student accounts.
+- Teacher routes are guarded by the `@teacher_bp.before_request` authentication hook, not a standalone `@teacher_required` decorator.
+- Unauthenticated requests are redirected to `/auth/login`; post-login `next` targets are validated against the current host.
 
 ---
 
 ## 2. CSRF Protection & Public Form Defenses
 
 ### 2.1 Cross-Site Request Forgery (CSRF) Guard
-All state-modifying requests (`POST`, `PUT`, `DELETE`) are strictly protected against CSRF attacks:
-- A unique CSRF token is derived per user session using HMAC-SHA256: `HMAC(SECRET_KEY, session_id + timestamp)`.
+All state-modifying requests (`POST`, `PUT`, `DELETE`, and `PATCH`) are checked by a global Flask `before_request` hook:
+- A random 24-byte hex token is created with Python's `secrets.token_hex(24)` and stored in the Flask session.
 - Every HTML form embeds:
   ```html
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -49,9 +48,11 @@ A lightweight, zero-dependency in-memory rate limiter tracks request frequency p
 - **Teacher Login Attempts (`POST /auth/login`):** Capped strictly at **5 failed attempts per 15 minutes per IP** (guards against brute-force attacks).
 - If an individual client exceeds the threshold, the server returns an informative `HTTP 429 Too Many Requests` page with a retry timer.
 
-### 3.2 Proxy & ngrok Header Sanitization
-- Behind ngrok or a reverse proxy, client IP addresses are forwarded in the `X-Forwarded-For` HTTP header.
-- The rate limiter sanitizes incoming headers to prevent IP spoofing, ensuring fair rate limiting for both local subnet devices and remote ngrok connections.
+### 3.2 Proxy & ngrok Trust Boundary
+- The rate limiter uses `request.remote_addr` by default and ignores arbitrary client-supplied `X-Forwarded-For` values.
+- Forwarded addresses are considered only when the immediate peer IP appears in the comma-separated `TRUSTED_PROXY_IPS` environment setting. Configure this only for a reverse proxy that overwrites or appends the header correctly.
+- The rate limiter is in-memory and process-local; counters reset when the server restarts.
+
 
 ---
 
@@ -222,7 +223,7 @@ Uploaded book photographs represent a common attack vector if left unconstrained
 ### 10.3 Teacher Account Security & Password Rotation
 - The Teacher Settings Desk (`/teacher/settings?tab=security`) provides an authenticated self-service credential rotation interface.
 - Requires:
-  1. Verification of the current password against the stored PBKDF2 hash using constant-time comparison (`check_password_hash`).
+  1. Verification of the current password against the stored PBKDF2 hash using Werkzeug's password-hash verification helper (`check_password_hash`).
   2. Enforces a minimum password length of 8 characters.
   3. Strict matching between new password and confirmation fields.
 - Password change events are logged in `activity_logs` without storing the password or hash in the log details.
@@ -231,13 +232,13 @@ Uploaded book photographs represent a common attack vector if left unconstrained
 - Backups created via `backup_service.create_database_backup()` are immediately verified using `PRAGMA integrity_check;`, SHA-256 digest validation, and strict schema & column verification across all 8 tables (`REQUIRED_SCHEMA`).
 - The SHA-256 cryptographic digest is stored in `backup_records`.
 - **Pre-Restoration Integrity Check:** Restoring any backup requires valid SHA-256 digest match, SQLite page integrity, and strict schema & column compliance (`teachers`, `books`, `donations`, `requests`, `handovers`, `activity_logs`, `system_settings`, `backup_records`). Incomplete or modified schemas are rejected before live mutations begin.
-- **Deterministic Connection Draining:** Restoration via web or CLI acquires an atomic maintenance lock (`.maintenance_lock` and `set_maintenance_mode(True)`). All new incoming web requests across Waitress worker threads are gated with HTTP 503 Service Unavailable (`503_maintenance.html`). Active in-flight requests and database connections are tracked thread-safely via `maintenance_service.py` (`_active_requests` and `_active_db_threads`). Instead of fixed sleep timers, `drain_connections()` deterministically monitors when in-flight queries finish.
+- **Deterministic Connection Draining:** Restoration via the CLI and the Exhibition Demo exit workflow acquires an atomic maintenance lock (`.maintenance_lock` and `set_maintenance_mode(True)`). All new incoming web requests across Waitress worker threads are gated with HTTP 503 Service Unavailable (`503_maintenance.html`). Active in-flight requests and database connections are tracked thread-safely via `maintenance_service.py` (`_active_requests` and `_active_db_threads`). Instead of fixed sleep timers, `drain_connections()` deterministically monitors when in-flight queries finish.
 - **Deadlock Exclusion for Controller Thread:** The restore controller thread is specifically excluded (`exclude_thread=threading.get_ident()`) from waiting on its own active request and connection, preventing self-deadlock.
 - **Safe Drain Timeout Abort:** If concurrent database operations fail to drain within the configurable timeout (e.g. 5.0s), restoration aborts safely without replacing or modifying live database pages.
 - **Cross-Process Coordination:** The CLI restore utility (`scripts/restore_backup.py`) actively probes port 5000 (`is_server_active`) and tests for external database write locks (`is_database_locked`). If Waitress is active, CLI restore is halted immediately with instructions to either stop Waitress or restore via the Teacher Settings portal, preventing cross-process write conflicts.
-- **Crash-Resilient Recovery from Interrupted Restores:** Restoration writes an atomic `.restore_in_progress` state marker containing the rollback snapshot path. If a sudden power cut or process kill interrupts page replacement, application startup (`init_db()`) runs `check_and_recover_interrupted_restore()`, restores the live database from the verified rollback snapshot, validates `PRAGMA integrity_check;`, and clears the marker before serving requests.
+- **Crash-Resilient Recovery from Interrupted Restores:** Restoration writes an atomic `.restore_in_progress` state marker containing the rollback snapshot path. If a sudden power cut or process kill interrupts page replacement, application startup runs `check_and_recover_interrupted_restore()` before opening the live database, restores the live database from the verified rollback snapshot, validates `PRAGMA integrity_check;`, and clears the marker before serving requests.
 - **WAL Checkpointing:** Explicitly executes `PRAGMA wal_checkpoint(TRUNCATE);` before and after database restoration to eliminate stale or orphaned WAL journal pages.
-- **Pre-Restore Rollback Copy:** Before executing any database restoration via `scripts/restore_backup.py` or the web interface, the system creates an automated pre-restore safety copy (`backups/pre_restore_YYYYMMDD_HHMMSS.db`). If any error occurs during restoration, this rollback copy is immediately re-applied to guarantee zero live data loss.
+- **Pre-Restore Rollback Copy:** Before executing any database restoration via `scripts/restore_backup.py` or the Exhibition Demo exit workflow, the system creates an automated pre-restore safety copy (`backups/pre_restore_YYYYMMDD_HHMMSS.db`). If any error occurs during restoration, this rollback copy is immediately re-applied to guarantee zero live data loss.
 - **Sole Backup Deletion Defense:** `backup_service.delete_backup()` checks total count of remaining verified backups. If `COUNT(*) <= 1`, deletion is rejected with a clear safety warning, preventing accidental total backup loss.
 - **Historical Catalog Preservation:** Restoring an older snapshot preserves and re-merges existing `backup_records` rows, ensuring newer backups remain cataloged and tracked.
 

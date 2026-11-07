@@ -40,11 +40,14 @@ pip install -r requirements.txt
 ### Step 2.4 — Database Initialization & First Teacher Account
 The database initializes automatically in SQLite WAL mode on first application launch. If initializing explicitly or resetting:
 ```powershell
-python -c "from app import create_app; from app.services.database import init_db; app = create_app(); init_db(app)"
+python -c "from app import create_app; from app.database import init_db; app = create_app(); init_db(app)"
 ```
 Initial teacher administrator credentials:
 - **Username:** `teacher`
-- **Default Password:** `Teacher@123`  *(Rotate immediately via Teacher Settings > Account Security)*
+- **Initial Password:** value of `INITIAL_TEACHER_PASSWORD` (defaults to `Teacher@123` if unset).
+- The Teacher Desk forces a password change before allowing access to management pages when this initial password is used.
+
+For production, set a stable `SECRET_KEY` and a strong `INITIAL_TEACHER_PASSWORD` in the host environment before first launch. Keep both out of GitHub and do not reuse the example value.
 
 ---
 
@@ -117,7 +120,7 @@ backup_now.bat
 Creates a snapshot, calculates a SHA-256 digest, validates SQLite integrity (`PRAGMA integrity_check`), and catalogs it in `backup_records`.
 
 ### Method B — Teacher Administrative Desk
-Navigate to **Teacher Settings > Database Backup & Restore** tab (`/teacher/settings?tab=backup`) and click **Create Live Backup Now**.
+Navigate to **Teacher Settings > Live Backups** tab (`/teacher/settings?tab=backup`) and click **Create Live Backup Now**. The current UI creates, downloads, and deletes catalogued backups; restoration is performed through the CLI runbook below (and automatically when exiting Exhibition Demo Mode).
 
 ### Method C — Automated Windows Task Scheduler (Daily at 4:00 PM)
 Run in elevated PowerShell:
@@ -143,7 +146,7 @@ python scripts/restore_backup.py --file kitab_bank_backup_20261105_120000.db
 
 ### Safety Features of the Restoration Tool:
 1. **WAL Checkpointing:** Executes `PRAGMA wal_checkpoint(TRUNCATE);` to ensure no active write-ahead pages are orphaned.
-2. **Pre-Restore Rollback Copy:** Creates an emergency snapshot `kitaab_bank.db.pre_restore_<timestamp>` before making changes.
+2. **Pre-Restore Rollback Copy:** Creates an emergency snapshot `backups/pre_restore_<timestamp>.db` before making changes.
 3. **Target Integrity Check:** Runs `PRAGMA integrity_check;` and schema verification before restoring.
 4. **Automated Rollback:** If post-restoration verification fails, immediately restores the pre-restore snapshot so live operations are never broken.
 

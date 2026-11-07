@@ -7,8 +7,13 @@ This module deliberately uses TestingConfig storage and never opens the school D
 """
 
 from app import create_app
-from app.seed_data import seed_sample_books
+from scripts.seed_demo import reset_and_seed_demo_data
 
 app = create_app("testing")
 with app.app_context():
-    seed_sample_books()
+    # Browser regression tests assert against the full 18-book demo
+    # workspace and populated circulation tables, all in the temp DB.
+    reset_and_seed_demo_data(
+        target_db=app.config['DATABASE_PATH'],
+        create_safety_backup=False
+    )

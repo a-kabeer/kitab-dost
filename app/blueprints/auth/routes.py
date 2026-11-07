@@ -46,7 +46,10 @@ def login():
             # Clear failures after valid credentials and apply the configured idle timeout.
             rate_limiter.reset_rate_limit('login_failed')
             initial_password = current_app.config.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
-            password_change_required = check_password_hash(teacher['password_hash'], initial_password)
+            password_change_required = (
+                current_app.config.get('ENFORCE_INITIAL_TEACHER_PASSWORD_ROTATION', True)
+                and check_password_hash(teacher['password_hash'], initial_password)
+            )
             saved_lang = session.get('lang')
             session.clear()
             session.permanent = True

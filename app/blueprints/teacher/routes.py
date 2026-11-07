@@ -26,7 +26,10 @@ def require_teacher_login():
 
     # Enforce bootstrap-password rotation for already-authenticated sessions too,
     # including sessions created before this guard was deployed.
-    if not session.get('password_change_required'):
+    if (
+        current_app.config.get('ENFORCE_INITIAL_TEACHER_PASSWORD_ROTATION', True)
+        and not session.get('password_change_required')
+    ):
         from werkzeug.security import check_password_hash
         cur = get_db().cursor()
         cur.execute("SELECT password_hash FROM teachers WHERE id = ? AND is_active = 1;", (session.get('teacher_id'),))

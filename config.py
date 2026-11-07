@@ -8,6 +8,7 @@ class Config:
     # Security
     SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
     INITIAL_TEACHER_PASSWORD = os.environ.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
+    ENFORCE_INITIAL_TEACHER_PASSWORD_ROTATION = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = 28800  # 8 hours
@@ -46,6 +47,9 @@ class ProductionConfig(Config):
 class TestingConfig(DevelopmentConfig):
     TESTING = True
     WTF_CSRF_ENABLED = False
+    # Test fixtures use the public bootstrap credential for legacy route tests.
+    # The dedicated security regression enables this policy explicitly.
+    ENFORCE_INITIAL_TEACHER_PASSWORD_ROTATION = False
 
 config_by_name = {
     'development': DevelopmentConfig,

@@ -35,3 +35,63 @@ jobs:
 
       - name: Run security and data-integrity regressions
         run: python -m unittest discover -s tests -p "test_security_integrity_regressions.py" -v
+
+  windows-full-suite:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install application and browser test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt playwright
+
+      - name: Compile application and test modules
+        run: python -m compileall -q app scripts tests
+
+      - name: Start isolated browser-test server and run full historical suite
+        shell: pwsh
+        run: |
+          $serverOut = Join-Path $env:TEMP "kitab-bank-test-server.out.log"
+          $serverErr = Join-Path $env:TEMP "kitab-bank-test-server.err.log"
+          $server = Start-Process -FilePath python -ArgumentList @(
+            "-m", "waitress", "--listen=127.0.0.1:5000", "scripts.browser_test_server:app"
+          ) -PassThru -WindowStyle Hidden -RedirectStandardOutput $serverOut -RedirectStandardError $serverErr
+
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 30; $i++) {
+              try {
+                $null = Invoke-WebRequest -Uri "http://127.0.0.1:5000/" -TimeoutSec 2
+                $ready = $true
+                break
+              }
+              catch {
+                Start-Sleep -Seconds 1
+              }
+            }
+
+            if (-not $ready) {
+              if (Test-Path $serverOut) { Get-Content $serverOut }
+              if (Test-Path $serverErr) { Get-Content $serverErr }
+              throw "Isolated browser-test server did not become ready."
+            }
+
+            python -m unittest discover -s tests -p "test_*.py" -v
+            if ($LASTEXITCODE -ne 0) {
+              throw "Full historical test suite failed with exit code $LASTEXITCODE"
+            }
+          }
+          finally {
+            if ($server -and -not $server.HasExited) {
+              Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+            }
+          }

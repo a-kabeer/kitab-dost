@@ -4,7 +4,7 @@ import sqlite3
 import tempfile
 import threading
 import unittest
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
@@ -242,13 +242,15 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
             live_db = root / "live.db"
             rollback_db = root / "rollback.db"
 
-            with sqlite3.connect(rollback_db) as conn:
+            with closing(sqlite3.connect(rollback_db)) as conn:
                 conn.execute("CREATE TABLE sample (value TEXT)")
                 conn.execute("INSERT INTO sample VALUES ('safe snapshot')")
+                conn.commit()
 
-            with sqlite3.connect(live_db) as conn:
+            with closing(sqlite3.connect(live_db)) as conn:
                 conn.execute("CREATE TABLE sample (value TEXT)")
                 conn.execute("INSERT INTO sample VALUES ('partial restore')")
+                conn.commit()
 
             app = Flask(__name__)
             app.config["DATABASE_PATH"] = live_db
@@ -256,13 +258,14 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
                 maintenance_service.mark_restore_in_progress(rollback_db, "target.db")
                 self.assertTrue(check_and_recover_interrupted_restore(app))
 
-                with sqlite3.connect(live_db) as conn:
+                with closing(sqlite3.connect(live_db)) as conn:
                     value = conn.execute("SELECT value FROM sample").fetchone()[0]
                 self.assertEqual(value, "safe snapshot")
                 self.assertIsNone(maintenance_service.get_interrupted_restore_info())
 
     def test_initial_teacher_password_is_confined_to_password_rotation(self):
         app = create_app("testing")
+        app.config["ENFORCE_INITIAL_TEACHER_PASSWORD_ROTATION"] = True
         client = app.test_client()
         response = client.post(
             "/auth/login",

@@ -22,6 +22,7 @@ Tests:
    - Credential rotation validation
 """
 
+import hashlib
 import os
 import shutil
 import sqlite3
@@ -142,8 +143,25 @@ class Phase9ComprehensiveQATestCase(unittest.TestCase):
 
             # Create corrupt file
             corrupt_file = self.backup_dir / "corrupt_test.db"
+            corrupt_payload = b"NOT_A_SQLITE_DATABASE_GARBAGE_HEADER"
             with open(corrupt_file, 'wb') as f:
-                f.write(b"NOT_A_SQLITE_DATABASE_GARBAGE_HEADER")
+                f.write(corrupt_payload)
+
+            # Register the malformed bytes with their actual digest so restore
+            # reaches SQLite integrity validation, not the uncatalogued-file guard.
+            db.execute(
+                """
+                INSERT INTO backup_records (
+                    filename, file_size_bytes, checksum_sha256, verification_status
+                ) VALUES (?, ?, ?, 'VALID');
+                """,
+                (
+                    corrupt_file.name,
+                    len(corrupt_payload),
+                    hashlib.sha256(corrupt_payload).hexdigest()
+                )
+            )
+            db.commit()
 
             ok, pre_snap, err = backup_service.restore_database_from_backup(corrupt_file.name)
             self.assertFalse(ok)

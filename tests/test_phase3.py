@@ -185,7 +185,11 @@ class Phase3DonationSystemTests(unittest.TestCase):
             self.assertTrue(rel_path.endswith('.webp'))
 
             # Check file on disk
-            abs_path = os.path.join(self.app.root_path, 'static', rel_path)
+            # TestingConfig stores uploads under its isolated temporary
+            # UPLOAD_FOLDER, not under app/static.
+            abs_path = os.path.join(
+                self.app.config['UPLOAD_FOLDER'], os.path.basename(rel_path)
+            )
             self.assertTrue(os.path.isfile(abs_path))
 
             # Inspect saved file via Pillow: must be WEBP and resized <= 1000px

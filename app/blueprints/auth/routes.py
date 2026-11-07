@@ -1,9 +1,9 @@
-from flask import render_template, request, redirect, url_for, session, flash
+from flask import render_template, request, redirect, url_for, session, flash, abort, current_app
 from werkzeug.security import check_password_hash
 from urllib.parse import urlparse
 from . import auth_bp
 from app.database import get_db
-from app.services import activity_service
+from app.services import activity_service, rate_limiter
 
 def is_safe_url(target):
     """Ensure redirection target belongs to this application (open-redirect defense)."""
@@ -20,11 +20,17 @@ def login():
         return redirect(url_for('teacher.dashboard'))
 
     if request.method == 'POST':
+        login_limit = int(current_app.config.get('RATE_LIMIT_LOGIN_FAILURES', 5))
+        login_window = int(current_app.config.get('RATE_LIMIT_LOGIN_WINDOW_SECONDS', 900))
+        if rate_limiter.is_currently_limited('login_failed', login_limit, login_window):
+            abort(429)
+
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         next_url = request.args.get('next') or request.form.get('next')
 
         if not username or not password:
+            rate_limiter.record_attempt('login_failed', login_window)
             flash("Please enter both username and password.", "danger")
             return render_template('auth/login.html', username=username, next=next_url)
 
@@ -37,9 +43,11 @@ def login():
         teacher = cur.fetchone()
 
         if teacher and teacher['is_active'] and check_password_hash(teacher['password_hash'], password):
-            # Establish authenticated session while preserving language preference
+            # Clear failures after valid credentials and apply the configured idle timeout.
+            rate_limiter.reset_rate_limit('login_failed')
             saved_lang = session.get('lang')
             session.clear()
+            session.permanent = True
             if saved_lang:
                 session['lang'] = saved_lang
             session['teacher_id'] = teacher['id']
@@ -66,6 +74,7 @@ def login():
                 return redirect(next_url)
             return redirect(url_for('teacher.dashboard'))
         else:
+            rate_limiter.record_attempt('login_failed', login_window)
             flash("Invalid teacher credentials. Please check your username and password.", "danger")
 
     return render_template('auth/login.html', next=request.args.get('next'))

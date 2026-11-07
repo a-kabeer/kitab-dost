@@ -8,6 +8,7 @@ This module deliberately uses TestingConfig storage and never opens the school D
 
 from app import create_app
 from scripts.seed_demo import reset_and_seed_demo_data
+from app.services import backup_service
 
 app = create_app("testing")
 with app.app_context():
@@ -17,3 +18,8 @@ with app.app_context():
         target_db=app.config['DATABASE_PATH'],
         create_safety_backup=False
     )
+    # The backup-settings browser test expects the populated backups table;
+    # create one verified snapshot in this disposable test workspace.
+    ok, _record, error = backup_service.create_database_backup()
+    if not ok:
+        raise RuntimeError(f"Could not create browser-test backup fixture: {error}")

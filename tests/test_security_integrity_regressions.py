@@ -13,7 +13,7 @@ from markupsafe import Markup
 
 from app import create_app
 from app.database import check_and_recover_interrupted_restore, db_transaction
-from app.services import activity_service, maintenance_service
+from app.services import activity_service, maintenance_service, backup_service
 from app.services.request_service import create_book_request
 from app.services.translation_service import localize_activity_details
 
@@ -192,6 +192,46 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
                 release_restore.set()
                 restore_thread.join(2)
                 self.assertFalse(restore_thread.is_alive())
+
+    def test_login_rate_limit_blocks_after_five_failed_attempts(self):
+        app = create_app("testing")
+        client = app.test_client()
+
+        for attempt in range(5):
+            response = client.post(
+                "/auth/login",
+                data={"username": "teacher", "password": f"wrong-{attempt}"}
+            )
+            self.assertEqual(response.status_code, 200)
+
+        blocked = client.post(
+            "/auth/login",
+            data={"username": "teacher", "password": "still-wrong"}
+        )
+        self.assertEqual(blocked.status_code, 429)
+
+    def test_inventory_cover_rejects_non_image_content_even_with_allowed_extension(self):
+        from io import BytesIO
+        from werkzeug.datastructures import FileStorage
+        from app.services.book_service import save_book_cover_image
+
+        app = create_app("testing")
+        with app.app_context():
+            upload = FileStorage(
+                stream=BytesIO(b"this is not an image"),
+                filename="fake.jpg",
+                content_type="image/jpeg"
+            )
+            with self.assertRaises(ValueError):
+                save_book_cover_image(upload)
+
+    def test_restore_rejects_path_traversal_filename(self):
+        app = create_app("testing")
+        with app.app_context():
+            success, snapshot, error = backup_service.restore_database_from_backup("../outside.db")
+            self.assertFalse(success)
+            self.assertIsNone(snapshot)
+            self.assertIn("Invalid backup filename", error)
 
     def test_existing_database_is_recovered_from_interrupted_restore_marker(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -349,6 +349,16 @@ def save_book_cover_image(file_storage, upload_folder=None):
         file_storage.stream.seek(0)
         img = Image.open(file_storage.stream)
 
+        # Do not trust the filename extension: verify the decoded image format
+        # before converting and re-encoding the upload.
+        if img.format not in {'JPEG', 'PNG', 'WEBP'}:
+            raise ValueError("Unsupported image content. Please upload a valid JPG, PNG, or WEBP image.")
+        img.verify()
+
+        file_storage.stream.seek(0)
+        img = Image.open(file_storage.stream)
+        img.load()
+
         # Convert palette/transparency to RGB
         if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
             bg = Image.new('RGB', img.size, (255, 255, 255))

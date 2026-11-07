@@ -303,7 +303,13 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expec
         record = get_backup_by_id(int(backup_id_or_filename))
     else:
         filename = str(backup_id_or_filename or '').strip()
-        if not filename or Path(filename).name != filename or Path(filename).suffix.lower() != '.db':
+        if (
+            not filename
+            or "/" in filename
+            or "\\" in filename
+            or Path(filename).name != filename
+            or Path(filename).suffix.lower() != '.db'
+        ):
             return False, None, "Invalid backup filename."
         db = get_db()
         cur = db.cursor()
@@ -315,16 +321,25 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expec
         return False, None, "Backup record not found in catalog."
 
     filename = record.get('filename') or ''
-    if not filename or Path(filename).name != filename or Path(filename).suffix.lower() != '.db':
+    if (
+        not filename
+        or "/" in filename
+        or "\\" in filename
+        or Path(filename).name != filename
+        or Path(filename).suffix.lower() != '.db'
+    ):
         return False, None, "Catalog contains an invalid backup filename."
 
     backup_path = (bck_dir / filename).resolve()
     if backup_path.parent != bck_dir or not backup_path.is_file():
         return False, None, "Catalogued backup file is missing or resolves outside the backup directory."
 
-    expected_hash = expected_checksum or record.get('checksum_sha256')
-    if not expected_hash:
+    catalog_checksum = record.get('checksum_sha256')
+    if not catalog_checksum:
         return False, None, "Backup has no recorded SHA-256 checksum and cannot be restored safely."
+    if expected_checksum and expected_checksum.lower() != catalog_checksum.lower():
+        return False, None, "The supplied checksum does not match the checksum recorded for this backup."
+    expected_hash = catalog_checksum
 
     is_valid, msg = verify_backup_integrity(backup_path, expected_checksum=expected_hash)
     if not is_valid:
@@ -379,7 +394,7 @@ def restore_database_from_backup(backup_id_or_filename, teacher_name=None, expec
                             for row in existing_backup_rows:
                                 dest_conn.execute(
                                     """
-                                    INSERT INTO backup_records (
+                                    INSERT OR IGNORE INTO backup_records (
                                         id, filename, file_size_bytes, checksum_sha256,
                                         verification_status, created_by, created_at
                                     ) VALUES (?, ?, ?, ?, ?, ?, ?)

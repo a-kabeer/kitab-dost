@@ -117,8 +117,27 @@ def init_db(app):
             cur.execute("PRAGMA table_info(handovers);")
             handover_cols = [r[1] for r in cur.fetchall()]
             if 'handover_code' not in handover_cols:
-                cur.execute("DROP TABLE IF EXISTS handovers;")
+                # Never destroy legacy circulation history during a schema upgrade.
+                # Preserve the old table under a deterministic, collision-safe name;
+                # the current schema.sql will then create the new handovers table.
+                legacy_name = 'handovers_legacy'
+                suffix = 1
+                while True:
+                    cur.execute(
+                        "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ?;",
+                        (legacy_name,)
+                    )
+                    if not cur.fetchone():
+                        break
+                    legacy_name = f'handovers_legacy_{suffix}'
+                    suffix += 1
+                cur.execute(f'ALTER TABLE handovers RENAME TO "{legacy_name}";')
                 db.commit()
+                app.logger.warning(
+                    "Archived legacy handovers table as %s to preserve historical records. "
+                    "Review and migrate these rows before removing the archive.",
+                    legacy_name
+                )
 
         with current_app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())

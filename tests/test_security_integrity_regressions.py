@@ -13,12 +13,15 @@ from markupsafe import Markup
 
 from app import create_app
 from app.database import check_and_recover_interrupted_restore, db_transaction
-from app.services import activity_service, maintenance_service, backup_service
+from app.services import activity_service, maintenance_service, backup_service, rate_limiter
 from app.services.request_service import create_book_request
 from app.services.translation_service import localize_activity_details
 
 
 class SecurityAndIntegrityRegressionTests(unittest.TestCase):
+    def setUp(self):
+        rate_limiter.reset_rate_limits()
+
     def test_activity_log_output_escapes_untrusted_text_in_every_language(self):
         payload = "<img src=x onerror=alert(1)>"
         details = f"Book '{payload}' (KB-BK-000001) added to inventory by Teacher."

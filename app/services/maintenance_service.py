@@ -66,20 +66,29 @@ def set_maintenance_mode(active=True, exclusive=False):
     with _STATE_LOCK:
         m_file = get_maintenance_file()
         if active:
-            m_file.parent.mkdir(parents=True, exist_ok=True)
-            payload = f"MAINTENANCE_ACTIVE:{time.time()}:PID:{os.getpid()}".encode("utf-8")
-            if exclusive:
-                # O_EXCL atomically acquires the cross-process gate; a second
-                # process cannot replace an active restore's lock file.
-                descriptor = os.open(str(m_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-                with os.fdopen(descriptor, "wb") as lock_stream:
-                    lock_stream.write(payload)
-                    lock_stream.flush()
-                    os.fsync(lock_stream.fileno())
-            else:
-                temp_file = m_file.with_name(m_file.name + ".tmp")
-                temp_file.write_bytes(payload)
-                os.replace(temp_file, m_file)
+            try:
+                m_file.parent.mkdir(parents=True, exist_ok=True)
+                payload = f"MAINTENANCE_ACTIVE:{time.time()}:PID:{os.getpid()}".encode("utf-8")
+                if exclusive:
+                    # O_EXCL atomically acquires the cross-process gate; a second
+                    # process cannot replace an active restore's lock file.
+                    descriptor = os.open(str(m_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+                    with os.fdopen(descriptor, "wb") as lock_stream:
+                        lock_stream.write(payload)
+                        lock_stream.flush()
+                        os.fsync(lock_stream.fileno())
+                else:
+                    temp_file = m_file.with_name(m_file.name + ".tmp")
+                    temp_file.write_bytes(payload)
+                    os.replace(temp_file, m_file)
+            except FileExistsError:
+                # Another process owns an exclusive gate; do not claim ownership.
+                raise
+            except Exception:
+                # Disk gate could not be established. Keep this process gated
+                # rather than allowing uncertain DB access after a restore error.
+                _in_memory_maintenance = True
+                raise
             _in_memory_maintenance = True
         else:
             if m_file.exists():

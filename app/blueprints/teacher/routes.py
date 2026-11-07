@@ -24,6 +24,17 @@ def require_teacher_login():
         flash("Please sign in with your teacher credentials to access the Teacher Desk.", "warning")
         return redirect(url_for('auth.login', next=request.path))
 
+    # Enforce bootstrap-password rotation for already-authenticated sessions too,
+    # including sessions created before this guard was deployed.
+    if not session.get('password_change_required'):
+        from werkzeug.security import check_password_hash
+        cur = get_db().cursor()
+        cur.execute("SELECT password_hash FROM teachers WHERE id = ? AND is_active = 1;", (session.get('teacher_id'),))
+        teacher_row = cur.fetchone()
+        initial_password = current_app.config.get('INITIAL_TEACHER_PASSWORD', 'Teacher@123')
+        if teacher_row and check_password_hash(teacher_row['password_hash'], initial_password):
+            session['password_change_required'] = True
+
     # The public bootstrap password is accepted only to reach the password
     # rotation screen; do not expose any teacher data or management action.
     if session.get('password_change_required'):

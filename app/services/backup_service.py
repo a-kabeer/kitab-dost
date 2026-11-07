@@ -151,6 +151,7 @@ def create_database_backup(created_by_id=None, teacher_name=None):
             expected_checksum=checksum_sha256
         )
         if not is_valid:
+            dest_path.unlink(missing_ok=True)
             return False, None, f"Backup verification failed: {verify_msg}"
 
         db = get_db()
@@ -167,17 +168,23 @@ def create_database_backup(created_by_id=None, teacher_name=None):
         backup_id = cur.lastrowid
         catalogued = True
 
-        activity_service.record_activity(
-            action='backup_created',
-            entity_type='backup',
-            entity_id=backup_id,
-            actor_type='teacher' if created_by_id else 'system',
-            actor_name=teacher_name or 'System',
-            details=(
-                f"Live snapshot '{filename}' created ({file_size_bytes} bytes, "
-                f"SHA-256: {checksum_sha256[:12]}...). Status: VALID."
+        try:
+            activity_service.record_activity(
+                action='backup_created',
+                entity_type='backup',
+                entity_id=backup_id,
+                actor_type='teacher' if created_by_id else 'system',
+                actor_name=teacher_name or 'System',
+                details=(
+                    f"Live snapshot '{filename}' created ({file_size_bytes} bytes, "
+                    f"SHA-256: {checksum_sha256[:12]}...). Status: VALID."
+                )
             )
-        )
+        except Exception:
+            # A valid snapshot must remain reported as successful even if the
+            # secondary activity-log insert fails after cataloguing.
+            import logging
+            logging.getLogger(__name__).exception("Backup created but audit logging failed")
 
         record = {
             'id': backup_id,

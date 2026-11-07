@@ -132,7 +132,7 @@ class Phase9ComprehensiveQATestCase(unittest.TestCase):
 
         valid, msg = backup_service.verify_backup_integrity(fake_db)
         self.assertFalse(valid)
-        self.assertIn("Missing required tables", msg)
+        self.assertIn("Missing required backup tables", msg)
 
     def test_restore_fails_gracefully_with_corrupt_backup(self):
         """Verify restoration rejects corrupted files without altering the active live database."""

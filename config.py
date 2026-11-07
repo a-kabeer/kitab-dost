@@ -27,6 +27,9 @@ class Config:
     RATE_LIMIT_REQUEST_PER_HOUR = int(os.environ.get('RATE_LIMIT_REQUEST_PER_HOUR', 120))
     RATE_LIMIT_TRACK_PER_MINUTE = int(os.environ.get('RATE_LIMIT_TRACK_PER_MINUTE', 30))
     RATE_LIMIT_LOGIN_FAILURES = int(os.environ.get('RATE_LIMIT_LOGIN_FAILURES', 5))
+    RATE_LIMIT_LOGIN_WINDOW_SECONDS = int(os.environ.get('RATE_LIMIT_LOGIN_WINDOW_SECONDS', 900))
+    # Trust X-Forwarded-For only when the immediate peer is explicitly listed here.
+    TRUSTED_PROXY_IPS = tuple(ip.strip() for ip in os.environ.get('TRUSTED_PROXY_IPS', '').split(',') if ip.strip())
 
     # School Info Defaults
     SCHOOL_NAME = os.environ.get('SCHOOL_NAME', 'Government High School')

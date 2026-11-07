@@ -190,11 +190,11 @@ def localize_activity_details(details, lang='en'):
 
         # Keep the existing class/roll label localization for unmatched entries.
         if lang == 'ur':
-            details = re.sub(r'\\bClass (\\d+)', r'جماعت \\1', details)
-            details = re.sub(r'\\bRoll (\\d+)', r'رول \\1', details)
+            details = re.sub(r'\bClass (\d+)', r'جماعت \1', details)
+            details = re.sub(r'\bRoll (\d+)', r'رول \1', details)
         else:
-            details = re.sub(r'\\bClass (\\d+)', r'ڪلاس \\1', details)
-            details = re.sub(r'\\bRoll (\\d+)', r'رول \\1', details)
+            details = re.sub(r'\bClass (\d+)', r'ڪلاس \1', details)
+            details = re.sub(r'\bRoll (\d+)', r'رول \1', details)
 
     # English and unmatched Urdu/Sindhi details are plain text, not HTML.
     return escape(details)

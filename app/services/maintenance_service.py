@@ -53,9 +53,10 @@ def is_maintenance_active():
         m_file = get_maintenance_file()
         return m_file.exists()
     except Exception:
-        return False
+        # Fail closed: inability to inspect the marker means the gate state is unknown.
+        return True
 
-def set_maintenance_mode(active=True):
+def set_maintenance_mode(active=True, exclusive=False):
     """Enable or disable database maintenance mode in memory and on disk.
 
     File-system failures are deliberately raised: restore must not proceed when

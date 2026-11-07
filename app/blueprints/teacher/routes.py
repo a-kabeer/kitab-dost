@@ -24,6 +24,15 @@ def require_teacher_login():
         flash("Please sign in with your teacher credentials to access the Teacher Desk.", "warning")
         return redirect(url_for('auth.login', next=request.path))
 
+    # The public bootstrap password is accepted only to reach the password
+    # rotation screen; do not expose any teacher data or management action.
+    if session.get('password_change_required'):
+        if request.endpoint == 'teacher.settings':
+            if request.args.get('tab') != 'security':
+                return redirect(url_for('teacher.settings', tab='security'))
+        elif request.endpoint != 'teacher.change_password':
+            return redirect(url_for('teacher.settings', tab='security'))
+
 @teacher_bp.route('/')
 @teacher_bp.route('/dashboard')
 def dashboard():

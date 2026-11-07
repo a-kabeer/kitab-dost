@@ -3,7 +3,7 @@ import secrets
 import logging
 from flask import Flask, render_template, session, request
 from config import config_by_name
-from app.database import close_db, init_db
+from app.database import close_db, init_db, check_and_recover_interrupted_restore
 
 def create_app(config_name='default'):
     """Application Factory for Kitaab Bank."""
@@ -24,6 +24,15 @@ def create_app(config_name='default'):
 
     # Database lifecycle hooks
     app.teardown_appcontext(close_db)
+
+    # Always inspect the restore marker before opening the live database.
+    # This also covers restarts where the database file already exists.
+    with app.app_context():
+        if not check_and_recover_interrupted_restore(app):
+            raise RuntimeError(
+                "Interrupted database restore could not be recovered. "
+                "Startup aborted to protect school data; inspect the restore marker and rollback snapshot."
+            )
 
     # Initialize SQLite database with WAL mode if not existing
     db_file = app.config['DATABASE_PATH']
@@ -103,8 +112,18 @@ def create_app(config_name='default'):
         if lang_code not in translation_service.SUPPORTED_LANGUAGES:
             lang_code = 'en'
         session['lang'] = lang_code
-        target = request.referrer or url_for('student.index')
-        resp = redirect(target)
+        target = request.referrer
+        if target:
+            from urllib.parse import urlparse
+            ref_url = urlparse(request.host_url)
+            target_url = urlparse(target)
+            safe_target = (
+                target_url.scheme in ('', 'http', 'https')
+                and (not target_url.netloc or target_url.netloc == ref_url.netloc)
+            )
+            if not safe_target:
+                target = None
+        resp = redirect(target or url_for('student.index'))
         resp.set_cookie('kb_lang', lang_code, max_age=30*24*3600, samesite='Lax')
         return resp
 
@@ -131,10 +150,9 @@ def create_app(config_name='default'):
         from app.services import maintenance_service
         if maintenance_service.is_maintenance_active():
             path = request.path
-            # Allow static files and the active restore / exit-demo routes to complete
+            # The restore controller has already passed before_request before
+            # entering maintenance_context. All later dynamic requests must stop.
             if path.startswith('/static/') or path == '/favicon.ico':
-                return
-            if path in ('/teacher/settings/seed-demo', '/teacher/settings/exit-demo', '/teacher/settings'):
                 return
             return render_template('errors/503_maintenance.html'), 503
 

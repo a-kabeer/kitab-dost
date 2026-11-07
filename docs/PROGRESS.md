@@ -24,6 +24,7 @@
 | **Surface Contrast Refinement** | **Light & Dark Theme Surface Separation & Design Token Standardization** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-06 | Standardized approved design tokens for Light (#F1F4F8 page / #FFFFFF card) and Dark (#111827 page / #1E293B card) themes, resolved Bootstrap 5.3 .card background inheritance, fixed 1440px navbar flex overflow, 149 unit tests + 4 theme contrast tests passing, 50 fresh screenshots captured with 0 defects and 0 CDN leaks. |
 | **Desktop Sticky Sidebar** | **Teacher Dashboard Desktop Sticky Sidebar & Main Page Scrolling** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Positioned sticky sidebar at top: 56px on screens >= 992px, removed overflow-hidden on parent wrapper, freed main content to use normal page scrolling, enabled independent sidebar internal scrolling on short viewports, 155 discovery tests passing, 0 horizontal overflow across 5 viewports. |
 | **Data Tables & Book Detail** | **Data Table Sorting, Pagination (10/25/50/100), Themed Rows, Clickable Rows & Book Detail Navbar Non-Overlap** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Enhanced all data tables with column sorting (asc/desc with FontAwesome icons), client-side pagination with page-size options (10, 25, 50, 100), white row background (#FFFFFF) in Light mode, card surface (#1E293B) in Dark mode, removed View buttons and made entire row clickable with action click-isolation, resolved book cover navbar overlap with z-index: 1030 on navbar and natural page flow on cover card. 161/161 tests passing (+6 new automated browser tests), 50 fresh visual screenshots verified. |
+| **Teal Secondary Palette** | **Professional Teal Secondary Brand Color Integration & Grey Replacement** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Replaced dull grey secondary brand color with a cohesive, professional Teal palette (Light: #0F766E, Dark: #2DD4BF) across secondary buttons, outline buttons, subtle/solid badges, text-secondary, and focus indicators. Preserved primary Blue (#0369A1 / #38BDF8) branding and neutral structural greys (#DFE5ED borders, #5F6B7A muted text, #F1F4F8/#111827 surfaces). WCAG AAA contrast compliant (5.5:1 - 14.3:1). 163/163 discovery tests passing, 50/50 screenshots verified with 0 defects and 0 CDN requests. |
 
 ---
 
@@ -964,4 +965,31 @@ Following the visual acceptance baseline established by the 36 full-page screens
     - **Phase 3 — Clickable Table Rows:** Removed standalone "View" buttons from table rows in `donations.html`, `requests.html`, and `handovers.html`. Made table rows interactive (`clickable-row`, `tabindex="0"`, `role="link"`) navigating to their respective detail pages, while strictly isolating action buttons (Approve, Reject, Handover, Print label/receipt, Edit, Retire, Restore, Delete) and text highlighting from triggering row navigation.
     - **Phase 4 — Book Detail Cover Navbar Non-Overlap:** Identified root cause of navbar overlap on `/book/<code_or_id>`: `.book-detail-cover-card` had `sticky-top` (`z-index: 1020`), which collided with `header.sticky-top` (`z-index: 1020`) due to DOM source order stacking. Elevated header z-index to `z-index: 1030 !important` and set `.book-detail-cover-card` to `position: relative; z-index: 1; top: auto !important;`, ensuring the cover card scrolls naturally in standard document flow and slides cleanly underneath the navbar with zero overlap across desktop and mobile.
     - **Phase 5 — Testing & Verification:** Created comprehensive Playwright browser test suite `tests/test_data_tables_and_book_detail.py` (6/6 tests passing), ran full test discovery (161/161 tests passing), verified Phase 1 ACID/WAL test suite (30 assertions), and re-ran the 50-screenshot visual acceptance audit (50/50 screenshots passing with 0 defects and 0 CDN requests).
+    - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.
+
+15. **Milestone CORR-15 — Professional Teal Secondary Brand Color Integration (`ISSUE-PAL-01` through `ISSUE-PAL-05`):**
+    - **Design Audit & Brand vs Neutral Separation:** Conducted deep design audit across all 33 Jinja templates and CSS stylesheets. Distinguished brand secondary elements (action buttons, badges, category tags, interactive outlines) from neutral structural elements (page backgrounds `#F1F4F8`/`#111827`, card surfaces `#FFFFFF`/`#1E293B`, secondary table headers/footers `#E8EDF4`/`#263449`, borders `#DFE5ED`/`#334155`, and muted copy `#5F6B7A`/`#A7B4C5`). Preserved educational primary Blue (`#0369A1` / `#38BDF8`) untouched.
+    - **Design Tokens Implemented in `main.css`:**
+      - **Light Mode:** Secondary `#0F766E`, Secondary Hover `#115E59`, Soft Background `#CCFBF1`, Soft Background Text `#134E4A`, Secondary Border `#99F6E4`, Button Text `#FFFFFF`. Synchronized Bootstrap 5.3 variables (`--bs-secondary`, `--bs-secondary-rgb: 15, 118, 110`, `--bs-secondary-hover`, `--bs-secondary-bg-subtle`, `--bs-secondary-border-subtle`, `--bs-secondary-text-emphasis`, `--bs-teal`).
+      - **Dark Mode:** Secondary `#2DD4BF`, Secondary Hover `#5EEAD4`, Soft Background `#123B3B`, Soft Background Text `#CCFBF1`, Secondary Border `#115E59`, Button Text `#0B1F1E`. Synchronized Bootstrap 5.3 variables (`--bs-secondary`, `--bs-secondary-rgb: 45, 212, 191`, `--bs-secondary-hover`, `--bs-secondary-bg-subtle`, `--bs-secondary-border-subtle`, `--bs-secondary-text-emphasis`, `--bs-teal`).
+    - **Component Styling in `components.css`:**
+      - Styled `.btn-secondary` with solid Teal background and high-contrast text (`#FFFFFF` in light, `#0B1F1E` in dark).
+      - Styled `.btn-outline-secondary` with crisp Teal border and text, filling on hover/focus with smooth transitions.
+      - Styled subtle badges (`.badge.bg-secondary-subtle`, `.bg-secondary-subtle`, `.badge-secondary`) with soft Teal container, contrasting text, and subtle tint borders.
+      - Styled solid secondary badges (`.badge.bg-secondary`) with full secondary background and button text.
+      - Styled `.text-secondary` with secondary token, while preserving `.text-body-secondary` and `.text-muted` as neutral grey for body copy readability.
+      - Configured accessible keyboard focus indicators (`outline: 2px solid var(--kb-secondary)`, `box-shadow: 0 0 0 0.25rem rgba(var(--bs-secondary-rgb), 0.25)`).
+    - **Accessibility & Contrast Verification:**
+      - Light mode button text on secondary: **5.50:1** (WCAG AA).
+      - Light mode button text on hover: **7.59:1** (WCAG AAA).
+      - Light mode soft text on soft background: **8.46:1** (WCAG AAA).
+      - Dark mode button text on secondary: **9.24:1** (WCAG AAA).
+      - Dark mode button text on hover: **>12:1** (WCAG AAA).
+      - Dark mode soft text on soft background: **11.00:1** (WCAG AAA).
+      - Dark mode secondary text on dark card: **7.88:1** (WCAG AAA).
+    - **Automated Testing & Multi-Device Verification:**
+      - Added automated regression tests `test_07_teal_secondary_palette_light_theme` and `test_08_teal_secondary_palette_dark_theme` to `tests/test_theme_surface_contrast.py`.
+      - Full test discovery passed: **163/163 tests passing** (0 failures, 0 errors).
+      - Phase 1 ACID/WAL test suite passed (30 assertions).
+      - Re-ran 50-screenshot multi-viewport visual acceptance audit (`scripts/run_visual_acceptance_audit.py`): 50/50 screenshots captured with 0 visual defects and 0 external CDN requests.
     - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.

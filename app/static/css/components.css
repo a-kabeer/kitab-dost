@@ -98,6 +98,37 @@
   border: 1px solid var(--bs-info-border-subtle);
 }
 
+.badge-secondary {
+  background-color: var(--kb-secondary-subtle);
+  color: var(--kb-secondary-text);
+  border: 1px solid var(--kb-secondary-border);
+}
+
+.badge.bg-secondary {
+  background-color: var(--kb-secondary) !important;
+  color: var(--kb-secondary-btn-text) !important;
+  border-color: var(--kb-secondary) !important;
+}
+
+.badge.bg-secondary-subtle,
+.bg-secondary-subtle {
+  background-color: var(--kb-secondary-subtle) !important;
+  color: var(--kb-secondary-text) !important;
+  border-color: var(--kb-secondary-border) !important;
+}
+
+.text-secondary {
+  color: var(--kb-secondary) !important;
+}
+
+.text-secondary-emphasis {
+  color: var(--kb-secondary-text) !important;
+}
+
+.border-secondary-subtle {
+  border-color: var(--kb-secondary-border) !important;
+}
+
 /* 4. Enhanced Interactive Cards */
 .card {
   --bs-card-bg: var(--kb-bg-surface);
@@ -483,4 +514,92 @@ footer.bg-body {
   background-color: #38bdf8;
   border-color: #38bdf8;
   color: #0f172a;
+}
+
+/* Secondary Buttons - Professional Teal Palette */
+.btn-secondary {
+  --bs-btn-color: var(--kb-secondary-btn-text);
+  --bs-btn-bg: var(--kb-secondary);
+  --bs-btn-border-color: var(--kb-secondary);
+  --bs-btn-hover-color: var(--kb-secondary-btn-text);
+  --bs-btn-hover-bg: var(--kb-secondary-hover);
+  --bs-btn-hover-border-color: var(--kb-secondary-hover);
+  --bs-btn-focus-shadow-rgb: var(--bs-secondary-rgb);
+  --bs-btn-active-color: var(--kb-secondary-btn-text);
+  --bs-btn-active-bg: var(--kb-secondary-hover);
+  --bs-btn-active-border-color: var(--kb-secondary-hover);
+  --bs-btn-disabled-color: var(--kb-secondary-btn-text);
+  --bs-btn-disabled-bg: var(--kb-secondary);
+  --bs-btn-disabled-border-color: var(--kb-secondary);
+  background-color: var(--kb-secondary) !important;
+  border-color: var(--kb-secondary) !important;
+  color: var(--kb-secondary-btn-text) !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: var(--kb-secondary-hover) !important;
+  border-color: var(--kb-secondary-hover) !important;
+  color: var(--kb-secondary-btn-text) !important;
+}
+
+.btn-secondary:active,
+.btn-secondary.active,
+.show > .btn-secondary.dropdown-toggle {
+  background-color: var(--kb-secondary-hover) !important;
+  border-color: var(--kb-secondary-hover) !important;
+  color: var(--kb-secondary-btn-text) !important;
+}
+
+.btn-secondary:disabled,
+.btn-secondary.disabled {
+  background-color: var(--kb-secondary) !important;
+  border-color: var(--kb-secondary) !important;
+  color: var(--kb-secondary-btn-text) !important;
+  opacity: 0.65;
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--kb-secondary);
+  --bs-btn-border-color: var(--kb-secondary);
+  --bs-btn-hover-color: var(--kb-secondary-btn-text);
+  --bs-btn-hover-bg: var(--kb-secondary);
+  --bs-btn-hover-border-color: var(--kb-secondary);
+  --bs-btn-focus-shadow-rgb: var(--bs-secondary-rgb);
+  --bs-btn-active-color: var(--kb-secondary-btn-text);
+  --bs-btn-active-bg: var(--kb-secondary-hover);
+  --bs-btn-active-border-color: var(--kb-secondary-hover);
+  color: var(--kb-secondary) !important;
+  border-color: var(--kb-secondary) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background-color: var(--kb-secondary) !important;
+  border-color: var(--kb-secondary) !important;
+  color: var(--kb-secondary-btn-text) !important;
+}
+
+.btn-outline-secondary:active,
+.btn-outline-secondary.active,
+.show > .btn-outline-secondary.dropdown-toggle {
+  background-color: var(--kb-secondary-hover) !important;
+  border-color: var(--kb-secondary-hover) !important;
+  color: var(--kb-secondary-btn-text) !important;
+}
+
+.btn-outline-secondary:disabled,
+.btn-outline-secondary.disabled {
+  color: var(--kb-secondary) !important;
+  border-color: var(--kb-secondary) !important;
+  background-color: transparent !important;
+  opacity: 0.65;
+}
+
+.btn-secondary:focus-visible,
+.btn-outline-secondary:focus-visible {
+  outline: 2px solid var(--kb-secondary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-secondary-rgb), 0.25) !important;
 }

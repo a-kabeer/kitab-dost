@@ -260,5 +260,147 @@ class TestThemeSurfaceContrast(unittest.TestCase):
             self.assertFalse(h_overflow, f"Horizontal overflow detected at {vp_w}px")
             context.close()
 
+    def test_07_teal_secondary_palette_light_theme(self):
+        """Verify Teal secondary tokens and element styling in Light Theme."""
+        context = self.browser.new_context(viewport={"width": 1440, "height": 900})
+        page = context.new_page()
+        page.goto(f"{BASE_URL}/catalogue")
+        page.evaluate("() => { localStorage.setItem('kb_theme', 'light'); }")
+        page.reload()
+        page.wait_for_timeout(200)
+
+        # Check CSS Variables
+        tokens = page.evaluate("""() => {
+            const style = window.getComputedStyle(document.documentElement);
+            return {
+                secondary: style.getPropertyValue('--kb-secondary').trim().toUpperCase(),
+                secondaryHover: style.getPropertyValue('--kb-secondary-hover').trim().toUpperCase(),
+                secondarySubtle: style.getPropertyValue('--kb-secondary-subtle').trim().toUpperCase(),
+                secondaryText: style.getPropertyValue('--kb-secondary-text').trim().toUpperCase(),
+                secondaryBtnText: style.getPropertyValue('--kb-secondary-btn-text').trim().toUpperCase(),
+                bsSecondary: style.getPropertyValue('--bs-secondary').trim().toUpperCase()
+            };
+        }""")
+
+        self.assertEqual(tokens['secondary'], "#0F766E", "Light --kb-secondary must be #0F766E")
+        self.assertEqual(tokens['secondaryHover'], "#115E59", "Light --kb-secondary-hover must be #115E59")
+        self.assertEqual(tokens['secondarySubtle'], "#CCFBF1", "Light --kb-secondary-subtle must be #CCFBF1")
+        self.assertEqual(tokens['secondaryText'], "#134E4A", "Light --kb-secondary-text must be #134E4A")
+        self.assertEqual(tokens['secondaryBtnText'], "#FFFFFF", "Light --kb-secondary-btn-text must be #FFFFFF")
+        self.assertEqual(tokens['bsSecondary'], "#0F766E", "Light --bs-secondary must be #0F766E")
+
+        # Check actual elements and computed styles
+        elem_styles = page.evaluate("""() => {
+            const container = document.createElement('div');
+            container.innerHTML = `
+                <button class="btn btn-secondary" id="test-btn-sec">Secondary</button>
+                <button class="btn btn-outline-secondary" id="test-btn-outline-sec">Outline</button>
+                <span class="badge bg-secondary-subtle" id="test-badge-subtle">Subtle</span>
+                <span class="badge bg-secondary" id="test-badge-sec">Solid</span>
+                <span class="text-secondary" id="test-text-sec">Text</span>
+            `;
+            document.body.appendChild(container);
+
+            const btnSec = window.getComputedStyle(document.getElementById('test-btn-sec'));
+            const btnOutline = window.getComputedStyle(document.getElementById('test-btn-outline-sec'));
+            const badgeSubtle = window.getComputedStyle(document.getElementById('test-badge-subtle'));
+            const badgeSec = window.getComputedStyle(document.getElementById('test-badge-sec'));
+            const textSec = window.getComputedStyle(document.getElementById('test-text-sec'));
+
+            return {
+                btnSecBg: btnSec.backgroundColor,
+                btnSecColor: btnSec.color,
+                btnOutlineColor: btnOutline.color,
+                btnOutlineBorder: btnOutline.borderColor,
+                badgeSubtleBg: badgeSubtle.backgroundColor,
+                badgeSubtleColor: badgeSubtle.color,
+                badgeSecBg: badgeSec.backgroundColor,
+                badgeSecColor: badgeSec.color,
+                textSecColor: textSec.color
+            };
+        }""")
+
+        self.assertEqual(rgb_to_hex(elem_styles['btnSecBg']), "#0F766E", "btn-secondary background must be #0F766E")
+        self.assertEqual(rgb_to_hex(elem_styles['btnSecColor']), "#FFFFFF", "btn-secondary text must be #FFFFFF")
+        self.assertEqual(rgb_to_hex(elem_styles['btnOutlineColor']), "#0F766E", "btn-outline-secondary color must be #0F766E")
+        self.assertEqual(rgb_to_hex(elem_styles['btnOutlineBorder']), "#0F766E", "btn-outline-secondary border must be #0F766E")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSubtleBg']), "#CCFBF1", "badge subtle background must be #CCFBF1")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSubtleColor']), "#134E4A", "badge subtle text must be #134E4A")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSecBg']), "#0F766E", "badge secondary background must be #0F766E")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSecColor']), "#FFFFFF", "badge secondary text must be #FFFFFF")
+        self.assertEqual(rgb_to_hex(elem_styles['textSecColor']), "#0F766E", "text-secondary must be #0F766E")
+        context.close()
+
+    def test_08_teal_secondary_palette_dark_theme(self):
+        """Verify Teal secondary tokens and element styling in Dark Theme."""
+        context = self.browser.new_context(viewport={"width": 1440, "height": 900})
+        page = context.new_page()
+        page.goto(f"{BASE_URL}/catalogue")
+        page.evaluate("() => { localStorage.setItem('kb_theme', 'dark'); }")
+        page.reload()
+        page.wait_for_timeout(200)
+
+        # Check CSS Variables
+        tokens = page.evaluate("""() => {
+            const style = window.getComputedStyle(document.documentElement);
+            return {
+                secondary: style.getPropertyValue('--kb-secondary').trim().toUpperCase(),
+                secondaryHover: style.getPropertyValue('--kb-secondary-hover').trim().toUpperCase(),
+                secondarySubtle: style.getPropertyValue('--kb-secondary-subtle').trim().toUpperCase(),
+                secondaryText: style.getPropertyValue('--kb-secondary-text').trim().toUpperCase(),
+                secondaryBtnText: style.getPropertyValue('--kb-secondary-btn-text').trim().toUpperCase(),
+                bsSecondary: style.getPropertyValue('--bs-secondary').trim().toUpperCase()
+            };
+        }""")
+
+        self.assertEqual(tokens['secondary'], "#2DD4BF", "Dark --kb-secondary must be #2DD4BF")
+        self.assertEqual(tokens['secondaryHover'], "#5EEAD4", "Dark --kb-secondary-hover must be #5EEAD4")
+        self.assertEqual(tokens['secondarySubtle'], "#123B3B", "Dark --kb-secondary-subtle must be #123B3B")
+        self.assertEqual(tokens['secondaryText'], "#CCFBF1", "Dark --kb-secondary-text must be #CCFBF1")
+        self.assertEqual(tokens['secondaryBtnText'], "#0B1F1E", "Dark --kb-secondary-btn-text must be #0B1F1E")
+        self.assertEqual(tokens['bsSecondary'], "#2DD4BF", "Dark --bs-secondary must be #2DD4BF")
+
+        # Check actual elements and computed styles
+        elem_styles = page.evaluate("""() => {
+            const container = document.createElement('div');
+            container.innerHTML = `
+                <button class="btn btn-secondary" id="test-btn-sec-dark">Secondary</button>
+                <button class="btn btn-outline-secondary" id="test-btn-outline-sec-dark">Outline</button>
+                <span class="badge bg-secondary-subtle" id="test-badge-subtle-dark">Subtle</span>
+                <span class="badge bg-secondary" id="test-badge-sec-dark">Solid</span>
+                <span class="text-secondary" id="test-text-sec-dark">Text</span>
+            `;
+            document.body.appendChild(container);
+
+            const btnSec = window.getComputedStyle(document.getElementById('test-btn-sec-dark'));
+            const btnOutline = window.getComputedStyle(document.getElementById('test-btn-outline-sec-dark'));
+            const badgeSubtle = window.getComputedStyle(document.getElementById('test-badge-subtle-dark'));
+            const badgeSec = window.getComputedStyle(document.getElementById('test-badge-sec-dark'));
+            const textSec = window.getComputedStyle(document.getElementById('test-text-sec-dark'));
+
+            return {
+                btnSecBg: btnSec.backgroundColor,
+                btnSecColor: btnSec.color,
+                btnOutlineColor: btnOutline.color,
+                btnOutlineBorder: btnOutline.borderColor,
+                badgeSubtleBg: badgeSubtle.backgroundColor,
+                badgeSubtleColor: badgeSubtle.color,
+                badgeSecBg: badgeSec.backgroundColor,
+                badgeSecColor: badgeSec.color,
+                textSecColor: textSec.color
+            };
+        }""")
+
+        self.assertEqual(rgb_to_hex(elem_styles['btnSecBg']), "#2DD4BF", "btn-secondary background must be #2DD4BF")
+        self.assertEqual(rgb_to_hex(elem_styles['btnSecColor']), "#0B1F1E", "btn-secondary text must be #0B1F1E")
+        self.assertEqual(rgb_to_hex(elem_styles['btnOutlineColor']), "#2DD4BF", "btn-outline-secondary color must be #2DD4BF")
+        self.assertEqual(rgb_to_hex(elem_styles['btnOutlineBorder']), "#2DD4BF", "btn-outline-secondary border must be #2DD4BF")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSubtleBg']), "#123B3B", "badge subtle background must be #123B3B")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSubtleColor']), "#CCFBF1", "badge subtle text must be #CCFBF1")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSecBg']), "#2DD4BF", "badge secondary background must be #2DD4BF")
+        self.assertEqual(rgb_to_hex(elem_styles['badgeSecColor']), "#0B1F1E", "badge secondary text must be #0B1F1E")
+        self.assertEqual(rgb_to_hex(elem_styles['textSecColor']), "#2DD4BF", "text-secondary must be #2DD4BF")
+        context.close()
+
 if __name__ == '__main__':
     unittest.main()

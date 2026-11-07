@@ -11,9 +11,18 @@
   --kb-primary-border: #bae6fd;
   --kb-primary-text: #0369a1;
 
-  --kb-accent: #0d9488;
-  --kb-accent-hover: #0f766e;
-  --kb-accent-subtle: #ccfbf1;
+  /* Brand Secondary: Professional Teal Palette (Light Mode) */
+  --kb-secondary: #0F766E;
+  --kb-secondary-hover: #115E59;
+  --kb-secondary-subtle: #CCFBF1;
+  --kb-secondary-text: #134E4A;
+  --kb-secondary-border: #99F6E4;
+  --kb-secondary-btn-text: #FFFFFF;
+
+  --kb-accent: #0F766E;
+  --kb-accent-hover: #115E59;
+  --kb-accent-subtle: #CCFBF1;
+  --kb-accent-text: #134E4A;
 
   /* Bootstrap 5.3 Variable Overrides */
   --bs-primary: #0369a1;
@@ -23,8 +32,15 @@
   --bs-primary-border-subtle: #bae6fd;
   --bs-primary-text-emphasis: #0369a1;
 
-  --bs-teal: #0d9488;
-  --bs-teal-rgb: 13, 148, 136;
+  --bs-secondary: #0F766E;
+  --bs-secondary-rgb: 15, 118, 110;
+  --bs-secondary-hover: #115E59;
+  --bs-secondary-bg-subtle: #CCFBF1;
+  --bs-secondary-border-subtle: #99F6E4;
+  --bs-secondary-text-emphasis: #134E4A;
+
+  --bs-teal: #0F766E;
+  --bs-teal-rgb: 15, 118, 110;
 
   /* Layout Dimensions */
   --kb-header-height: 56px;
@@ -101,10 +117,10 @@
   --primary-light: #e0f2fe;
   --primary-border: #bae6fd;
   --primary-text: #0369a1;
-  --accent: #0d9488;
-  --accent-hover: #0f766e;
-  --accent-light: #ccfbf1;
-  --accent-text: #0f766e;
+  --accent: #0F766E;
+  --accent-hover: #115E59;
+  --accent-light: #CCFBF1;
+  --accent-text: #134E4A;
   --warning: #d97706;
   --warning-bg: #fef3c7;
   --warning-text: #b45309;
@@ -151,9 +167,18 @@
   --kb-primary-border: #075985;
   --kb-primary-text: #bae6fd;
 
-  --kb-accent: #2dd4bf;
-  --kb-accent-hover: #5eead4;
-  --kb-accent-subtle: #134e4a;
+  /* Brand Secondary: Professional Teal Palette (Dark Mode) */
+  --kb-secondary: #2DD4BF;
+  --kb-secondary-hover: #5EEAD4;
+  --kb-secondary-subtle: #123B3B;
+  --kb-secondary-text: #CCFBF1;
+  --kb-secondary-border: #115E59;
+  --kb-secondary-btn-text: #0B1F1E;
+
+  --kb-accent: #2DD4BF;
+  --kb-accent-hover: #5EEAD4;
+  --kb-accent-subtle: #123B3B;
+  --kb-accent-text: #CCFBF1;
 
   --bs-primary: #38bdf8;
   --bs-primary-rgb: 56, 189, 248;
@@ -161,6 +186,16 @@
   --bs-primary-bg-subtle: #082f49;
   --bs-primary-border-subtle: #075985;
   --bs-primary-text-emphasis: #bae6fd;
+
+  --bs-secondary: #2DD4BF;
+  --bs-secondary-rgb: 45, 212, 191;
+  --bs-secondary-hover: #5EEAD4;
+  --bs-secondary-bg-subtle: #123B3B;
+  --bs-secondary-border-subtle: #115E59;
+  --bs-secondary-text-emphasis: #CCFBF1;
+
+  --bs-teal: #2DD4BF;
+  --bs-teal-rgb: 45, 212, 191;
 
   /* Approved Design Tokens: Surfaces & Backgrounds (Dark) */
   --kb-bg-body: #111827;
@@ -234,10 +269,10 @@
   --primary-light: #082f49;
   --primary-border: #075985;
   --primary-text: #bae6fd;
-  --accent: #2dd4bf;
-  --accent-hover: #5eead4;
-  --accent-light: #134e4a;
-  --accent-text: #5eead4;
+  --accent: #2DD4BF;
+  --accent-hover: #5EEAD4;
+  --accent-light: #123B3B;
+  --accent-text: #CCFBF1;
   --warning: #f59e0b;
   --warning-bg: #451a03;
   --warning-text: #fcd34d;

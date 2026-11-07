@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from flask import Flask, render_template, session, request
 from config import config_by_name
-from app.database import close_db, init_db, check_and_recover_interrupted_restore
+from app.database import close_db, get_db, init_db, check_and_recover_interrupted_restore
 
 def create_app(config_name='default'):
     """Application Factory for Kitaab Bank."""

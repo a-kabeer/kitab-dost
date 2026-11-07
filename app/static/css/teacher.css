@@ -20,6 +20,18 @@
   transition: all var(--transition-normal);
 }
 
+@media (min-width: 992px) {
+  .teacher-sidebar {
+    position: sticky;
+    top: var(--kb-header-height, 56px);
+    height: calc(100vh - var(--kb-header-height, 56px));
+    max-height: calc(100vh - var(--kb-header-height, 56px));
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-shrink: 0;
+  }
+}
+
 .sidebar-heading {
   font-size: 0.75rem;
   font-weight: 700;
@@ -71,7 +83,7 @@
   flex: 1;
   padding: 2rem;
   background-color: var(--bg-app);
-  overflow-y: auto;
+  min-width: 0;
 }
 
 .dashboard-header {

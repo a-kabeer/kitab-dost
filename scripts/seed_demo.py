@@ -118,7 +118,8 @@ def reset_and_seed_demo_data(target_db=None, create_safety_backup=True, target_b
         except Exception:
             pass
 
-    conn = sqlite3.connect(str(db_file))
+    conn = sqlite3.connect(str(db_file), timeout=30.0)
+    conn.execute("PRAGMA busy_timeout = 10000;")
     cur = conn.cursor()
 
     # Ensure schema exists before clearing tables

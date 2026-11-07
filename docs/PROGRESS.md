@@ -22,6 +22,7 @@
 | **Visual Evidence Reconciliation** | **Urdu/Sindhi Activity Localization, Dashed Border Elimination, Receipt Privacy & Fallback Covers** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-06 | Full Urdu & Sindhi audit log localization via regex engine, zero dashed borders across DOM (computed 0), receipt privacy PII redaction, textbook SVG fallback for all missing images, 47/47 fresh screenshots re-captured and verified, 144/144 unit tests passing, Phase 1, Concurrency, Phase 9 browser suites passing. |
 | **Final Visual Acceptance Patch** | **Complete RTL Localization, Zero Dashed Outlines, Settings Mobile Selector, Compact Related Cards & KPI Alignment** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-06 | Complete RTL rendered localization across Urdu & Sindhi (welcome greeting, teacher title, WAL concurrency, class taxonomy, filter dropdowns), eliminated all non-print dashed borders, verified mobile settings select dropdown (#mobileSettingsTabSelect) with desktop tablist hidden, optimized mobile related book card height to 108.7px (~100-120px target), verified shared KPI definitions, 149/149 unit tests passing (+5 new regression tests), Phase 1, Concurrency & Phase 9 browser tests passing, 50/50 screenshots captured. |
 | **Surface Contrast Refinement** | **Light & Dark Theme Surface Separation & Design Token Standardization** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-06 | Standardized approved design tokens for Light (#F1F4F8 page / #FFFFFF card) and Dark (#111827 page / #1E293B card) themes, resolved Bootstrap 5.3 .card background inheritance, fixed 1440px navbar flex overflow, 149 unit tests + 4 theme contrast tests passing, 50 fresh screenshots captured with 0 defects and 0 CDN leaks. |
+| **Desktop Sticky Sidebar** | **Teacher Dashboard Desktop Sticky Sidebar & Main Page Scrolling** | **COMPLETED & VERIFIED** | Day 11 | 2026-11-07 | Positioned sticky sidebar at top: 56px on screens >= 992px, removed overflow-hidden on parent wrapper, freed main content to use normal page scrolling, enabled independent sidebar internal scrolling on short viewports, 155 discovery tests passing, 0 horizontal overflow across 5 viewports. |
 
 ---
 
@@ -940,4 +941,17 @@ Following the visual acceptance baseline established by the 36 full-page screens
     - Captured 50 full-fidelity screenshots in `docs/ui-redesign-evidence/` demonstrating clear surface elevation in Light, Dark, and RTL modes with 0 console errors and 0 CDN requests.
     - Optimized WCAG AA accessibility contrast: refined Light muted text to `#5F6B7A` (4.92:1 contrast against `#F1F4F8`, 5.43:1 on white cards) and primary blue button background to `#0369A1` (5.93:1 contrast with `#FFFFFF` text, up from 4.10:1 on `#0284C7`).
     - Passed all 153 discovery unit tests, `test_phase1.py`, `test_concurrency.py`, `test_browser_phase9.py`, and 4 theme contrast tests.
+    - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.
+
+13. **Milestone CORR-13 — Teacher Dashboard Desktop Sticky Sidebar & Main Page Scrolling (`ISSUE-SIDE-01`, `ISSUE-SIDE-02`, `ISSUE-SIDE-03`, `ISSUE-NAV-04`):**
+    - Identified root cause of non-sticky desktop sidebar: parent `#teacherLayoutWrap` had `overflow-hidden` which canceled CSS sticky positioning, and `.teacher-sidebar` lacked `position: sticky; top: var(--kb-header-height, 56px);` rules.
+    - Removed `overflow-hidden` from `#teacherLayoutWrap` and `overflow-y-auto` from `.teacher-main`, allowing main content to use natural page scrolling.
+    - Added `@media (min-width: 992px)` sticky sidebar rules in `teacher.css`: `position: sticky; top: var(--kb-header-height, 56px); height: calc(100vh - var(--kb-header-height, 56px)); max-height: calc(100vh - var(--kb-header-height, 56px)); overflow-y: auto; overflow-x: hidden; flex-shrink: 0;`.
+    - Preserved existing sidebar width (260px), navigation links, active states, icons, and counter badges.
+    - Enabled independent internal sidebar scrolling when viewport height is constrained (<700px) without scrolling the main page.
+    - Preserved mobile offcanvas drawer behavior below 992px (`d-lg-none`, `#teacherSidebarOffcanvas`).
+    - Hid redundant header subtitle below `xl` (`d-none d-xl-block`) and added `flex-shrink-0 text-nowrap` to header action buttons, eliminating 47px horizontal overflow at 1024px.
+    - Added automated regression tests `test_05_teacher_desktop_sidebar_sticky_and_scroll` and `test_06_teacher_mobile_offcanvas_behavior` to `tests/test_theme_surface_contrast.py`.
+    - Verified across 1440px, 1024px, 768px, 390px, and 360px viewports, plus RTL Urdu and Sindhi modes.
+    - Passed all 155 discovery tests and Phase 1 foundation suite.
     - Preserved branch `ui/bootstrap-fontawesome-redesign` unmerged.

@@ -135,16 +135,16 @@
           </div>
           <div>
             <span class="brand-title fw-bold text-body d-block" style="font-size: 1.1rem; line-height: 1.2;">{{ _t('teacher_dashboard', 'Teacher Dashboard') }}</span>
-            <span class="brand-subtitle text-body-secondary small d-none d-sm-block" style="font-size: 0.725rem;">{{ _t('app_name', 'Kitaab Bank') }} {{ _t('teacher_dashboard_sub', 'Administrative Desk') }}</span>
+            <span class="brand-subtitle text-body-secondary small d-none d-xl-block" style="font-size: 0.725rem;">{{ _t('app_name', 'Kitaab Bank') }} {{ _t('teacher_dashboard_sub', 'Administrative Desk') }}</span>
           </div>
         </a>
       </div>
 
       <!-- Desktop Header Actions (>= lg, hidden on mobile to eliminate clutter) -->
-      <div class="d-none d-lg-flex align-items-center gap-2">
+      <div class="d-none d-lg-flex align-items-center gap-2 flex-shrink-0">
         <!-- Language Switcher Dropdown -->
         <div class="dropdown">
-          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ _t('select_language', 'Select Language') }}">
+          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3 text-nowrap" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ _t('select_language', 'Select Language') }}">
             {{ icon('globe') }}
             <span class="fw-semibold">{{ supported_languages[current_lang].native_name }}</span>
           </button>
@@ -162,7 +162,7 @@
 
         <!-- Theme Switcher Dropdown -->
         <div class="dropdown">
-          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ _t('toggle_theme', 'Toggle Theme') }}">
+          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3 text-nowrap" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ _t('toggle_theme', 'Toggle Theme') }}">
             <span data-theme-icon>{{ icon('sun', extra_class='text-warning') }}</span>
             <span data-theme-label data-label-light="{{ _t('theme_light_short', 'Light') }}" data-label-dark="{{ _t('theme_dark_short', 'Dark') }}" data-label-system="{{ _t('System', 'System') }}">{{ _t('System', 'System') }}</span>
           </button>
@@ -173,10 +173,10 @@
           </ul>
         </div>
 
-        <a href="{{ url_for('student.index') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+        <a href="{{ url_for('student.index') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 text-nowrap">
           {{ icon('arrow-up-right-from-square') }} <span>{{ _t('nav_public', 'Public Portal') }}</span>
         </a>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1 text-nowrap">
           {{ icon('arrow-right-from-bracket') }} <span>{{ _t('nav_logout', 'Sign Out') }}</span>
         </a>
       </div>
@@ -248,14 +248,14 @@
   </div>
 
   <!-- Teacher Workspace Shell -->
-  <div class="d-flex flex-grow-1 overflow-hidden" id="teacherLayoutWrap">
+  <div class="d-flex flex-grow-1" id="teacherLayoutWrap">
     <!-- Desktop Persistent Sidebar (>= lg, >= 992px) -->
-    <aside class="teacher-sidebar d-none d-lg-flex flex-column flex-shrink-0 p-3 bg-body border-end shadow-xs" style="width: 260px; min-height: calc(100vh - 61px);">
+    <aside class="teacher-sidebar d-none d-lg-flex flex-column flex-shrink-0 p-3 bg-body border-end shadow-xs" style="width: 260px;">
       {{ teacher_nav_items() }}
     </aside>
 
     <!-- Main Content Area -->
-    <main class="teacher-main flex-grow-1 p-3 p-md-4 overflow-y-auto bg-body-tertiary">
+    <main class="teacher-main flex-grow-1 p-3 p-md-4 bg-body-tertiary">
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

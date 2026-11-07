@@ -26,6 +26,9 @@
   --bs-teal: #0d9488;
   --bs-teal-rgb: 13, 148, 136;
 
+  /* Layout Dimensions */
+  --kb-header-height: 56px;
+
   /* Approved Design Tokens: Surfaces & Backgrounds (Light) */
   --kb-bg-body: #F1F4F8;
   --kb-bg-surface: #FFFFFF;

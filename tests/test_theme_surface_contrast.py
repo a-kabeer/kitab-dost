@@ -169,5 +169,96 @@ class TestThemeSurfaceContrast(unittest.TestCase):
                 self.assertFalse(overflow, f"Horizontal overflow detected on {route} at {vp['width']}px")
             context.close()
 
+    def test_05_teacher_desktop_sidebar_sticky_and_scroll(self):
+        """Assert Teacher Desktop Sidebar sticky behavior, zero overlap, and independent scrolling."""
+        for vp_w in [1440, 1024]:
+            context = self.browser.new_context(viewport={"width": vp_w, "height": 900})
+            page = context.new_page()
+            page.goto(f"{BASE_URL}/auth/login")
+            page.fill('input[name="username"]', 'teacher')
+            page.fill('input[name="password"]', 'Teacher@123')
+            page.click('button[type="submit"]')
+            page.wait_for_url(f"{BASE_URL}/teacher/dashboard")
+            page.wait_for_timeout(200)
+
+            # Check parent container allows sticky positioning
+            wrap_overflow = page.evaluate("() => window.getComputedStyle(document.getElementById('teacherLayoutWrap')).overflow")
+            self.assertNotEqual(wrap_overflow, "hidden", "Parent #teacherLayoutWrap must not have overflow: hidden")
+
+            # Check sidebar computed positioning
+            sb_pos = page.evaluate("() => window.getComputedStyle(document.querySelector('.teacher-sidebar')).position")
+            self.assertEqual(sb_pos, "sticky", f"Sidebar position must be sticky on {vp_w}px")
+
+            # Scroll deeply
+            for scroll_val in [300, 600, 1000]:
+                page.evaluate(f"() => window.scrollTo(0, {scroll_val})")
+                page.wait_for_timeout(100)
+                h_rect = page.evaluate("() => document.querySelector('header.sticky-top').getBoundingClientRect()")
+                sb_rect = page.evaluate("() => document.querySelector('.teacher-sidebar').getBoundingClientRect()")
+
+                # Allow 1px subpixel tolerance
+                self.assertGreaterEqual(sb_rect['top'], h_rect['bottom'] - 1, f"Sidebar top must be below header at scrollY={scroll_val}")
+                self.assertLessEqual(sb_rect['bottom'], 901, f"Sidebar bottom must stay within viewport at scrollY={scroll_val}")
+
+            # Zero horizontal overflow
+            h_overflow = page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
+            self.assertFalse(h_overflow, f"Horizontal overflow on teacher dashboard at {vp_w}px")
+            context.close()
+
+        # Test independent sidebar scrolling on short viewports
+        context_short = self.browser.new_context(viewport={"width": 1440, "height": 500})
+        page_short = context_short.new_page()
+        page_short.goto(f"{BASE_URL}/auth/login")
+        page_short.fill('input[name="username"]', 'teacher')
+        page_short.fill('input[name="password"]', 'Teacher@123')
+        page_short.click('button[type="submit"]')
+        page_short.wait_for_url(f"{BASE_URL}/teacher/dashboard")
+
+        sb_sh = page_short.evaluate("() => document.querySelector('.teacher-sidebar').scrollHeight")
+        sb_ch = page_short.evaluate("() => document.querySelector('.teacher-sidebar').clientHeight")
+        self.assertGreater(sb_sh, sb_ch, "Sidebar must have scrollable content when viewport height is small")
+
+        page_short.evaluate("() => document.querySelector('.teacher-sidebar').scrollTop = 100")
+        sb_st = page_short.evaluate("() => document.querySelector('.teacher-sidebar').scrollTop")
+        self.assertGreater(sb_st, 0, "Sidebar internal scrolling must work independently")
+        context_short.close()
+
+    def test_06_teacher_mobile_offcanvas_behavior(self):
+        """Assert Mobile & Tablet views (< 992px) preserve offcanvas drawer behavior."""
+        for vp_w, vp_h in [(768, 1024), (390, 844), (360, 640)]:
+            context = self.browser.new_context(viewport={"width": vp_w, "height": vp_h})
+            page = context.new_page()
+            page.goto(f"{BASE_URL}/auth/login")
+            page.fill('input[name="username"]', 'teacher')
+            page.fill('input[name="password"]', 'Teacher@123')
+            page.click('button[type="submit"]')
+            page.wait_for_url(f"{BASE_URL}/teacher/dashboard")
+
+            # Desktop sidebar must be hidden
+            sb_disp = page.evaluate("() => window.getComputedStyle(document.querySelector('.teacher-sidebar')).display")
+            self.assertEqual(sb_disp, "none", f"Desktop sidebar must be hidden at {vp_w}px")
+
+            # Hamburger toggle must be visible
+            hamburger = page.query_selector('button[data-bs-target="#teacherSidebarOffcanvas"]')
+            self.assertIsNotNone(hamburger)
+            self.assertTrue(hamburger.is_visible(), f"Hamburger button must be visible at {vp_w}px")
+
+            # Open drawer
+            hamburger.click()
+            page.wait_for_selector('#teacherSidebarOffcanvas.show', state='visible')
+            self.assertTrue(page.is_visible('#teacherSidebarOffcanvas'))
+
+            # Close drawer
+            close_btn = page.query_selector('#teacherSidebarOffcanvas .btn-close')
+            close_btn.click()
+            page.wait_for_timeout(400)
+            is_open = page.evaluate("() => document.getElementById('teacherSidebarOffcanvas').classList.contains('show')")
+            self.assertFalse(is_open, f"Offcanvas drawer must close at {vp_w}px")
+
+            # Zero horizontal overflow
+            h_overflow = page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
+            self.assertFalse(h_overflow, f"Horizontal overflow detected at {vp_w}px")
+            context.close()
+
 if __name__ == '__main__':
     unittest.main()

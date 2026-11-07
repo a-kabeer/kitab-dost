@@ -61,8 +61,8 @@ def run_visual_audit():
 
     if book_count < 18 or approved_count == 0 or handover_count == 0:
         print("\n--- 0. SEEDING CLEAN DEMO DATABASE WITH RELATIONAL INTEGRITY ---")
-        from scripts.seed_demo import reset_and_seed_demo_data
-        reset_and_seed_demo_data(create_safety_backup=False)
+        import subprocess
+        subprocess.run([sys.executable, str(PROJECT_ROOT / "scripts" / "seed_demo.py")], check=True)
         print("  ✓ Demo database initialized and seeded successfully.")
     else:
         print(f"\n--- 0. DEMO DATABASE READY ({book_count} books, {approved_count} approved reqs, {handover_count} handovers) ---")

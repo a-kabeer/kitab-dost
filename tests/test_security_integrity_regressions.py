@@ -2,6 +2,8 @@
 
 import os
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import threading
 import unittest
@@ -352,6 +354,39 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
                 self.assertFalse(check_and_recover_interrupted_restore(app))
                 self.assertTrue(lock_file.exists())
                 lock_file.unlink()
+
+    def test_restore_recovery_lock_excludes_another_process(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = Flask(__name__)
+            app.config["DATABASE_PATH"] = Path(temp_dir) / "live.db"
+            child_script = """
+import sys
+from pathlib import Path
+from flask import Flask
+from app.services import maintenance_service
+
+app = Flask(__name__)
+app.config["DATABASE_PATH"] = Path(sys.argv[1]) / "live.db"
+with app.app_context():
+    try:
+        with maintenance_service.restore_recovery_context():
+            raise SystemExit(0)
+    except TimeoutError:
+        raise SystemExit(23)
+"""
+            with app.app_context():
+                with maintenance_service.restore_recovery_context():
+                    result = subprocess.run(
+                        [sys.executable, "-c", child_script, temp_dir],
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                    self.assertEqual(
+                        result.returncode,
+                        23,
+                        f"Child process unexpectedly acquired the recovery lock: {result.stdout} {result.stderr}"
+                    )
 
     def test_process_liveness_probe_handles_current_and_nonexistent_pid(self):
         self.assertTrue(maintenance_service.is_process_running(os.getpid()))

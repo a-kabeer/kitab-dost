@@ -300,6 +300,32 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
                 maintenance_service.clear_restore_in_progress()
                 maintenance_service.set_maintenance_mode(False)
 
+    def test_restore_marker_with_live_owner_and_no_gate_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            live_db = root / "live.db"
+            rollback_db = root / "rollback.db"
+            with closing(sqlite3.connect(rollback_db)) as conn:
+                conn.execute("CREATE TABLE sample (value TEXT)")
+                conn.execute("INSERT INTO sample VALUES ('safe snapshot')")
+                conn.commit()
+            with closing(sqlite3.connect(live_db)) as conn:
+                conn.execute("CREATE TABLE sample (value TEXT)")
+                conn.execute("INSERT INTO sample VALUES ('partial restore')")
+                conn.commit()
+
+            app = Flask(__name__)
+            app.config["DATABASE_PATH"] = live_db
+            with app.app_context():
+                maintenance_service.mark_restore_in_progress(rollback_db, "target.db")
+                with patch("app.services.maintenance_service.is_process_running", return_value=True):
+                    self.assertFalse(check_and_recover_interrupted_restore(app))
+                with closing(sqlite3.connect(live_db)) as conn:
+                    value = conn.execute("SELECT value FROM sample").fetchone()[0]
+                self.assertEqual(value, "partial restore")
+                self.assertIsNotNone(maintenance_service.get_interrupted_restore_info())
+                maintenance_service.clear_restore_in_progress()
+
     def test_stale_maintenance_gate_without_restore_marker_is_removed(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             app = Flask(__name__)
@@ -329,7 +355,13 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
 
     def test_process_liveness_probe_handles_current_and_nonexistent_pid(self):
         self.assertTrue(maintenance_service.is_process_running(os.getpid()))
-        self.assertFalse(maintenance_service.is_process_running(2147483647))
+        if os.name == "nt":
+            # os.kill(pid, 0) can terminate a Windows process; the Windows
+            # implementation must use OpenProcess/GetExitCodeProcess instead.
+            with patch("app.services.maintenance_service.os.kill", side_effect=AssertionError("unsafe Windows probe")):
+                self.assertFalse(maintenance_service.is_process_running(2147483647))
+        else:
+            self.assertFalse(maintenance_service.is_process_running(2147483647))
 
     def test_initial_teacher_password_is_confined_to_password_rotation(self):
         app = create_app("testing")

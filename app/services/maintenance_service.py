@@ -63,7 +63,7 @@ def read_maintenance_lock_info():
     except UnicodeDecodeError as exc:
         raise ValueError("Maintenance lock is not valid UTF-8.") from exc
 
-    match = re.fullmatch(r"MAINTENANCE_ACTIVE:[^:]+:PID:(\\d+)", value)
+    match = re.fullmatch(r"MAINTENANCE_ACTIVE:[^:]+:PID:(\d+)", value)
     if not match:
         raise ValueError("Maintenance lock has an unknown or malformed owner.")
 
@@ -161,7 +161,7 @@ def restore_recovery_context():
     try:
         stream.seek(0, os.SEEK_END)
         if stream.tell() == 0:
-            stream.write(b"\\0")
+            stream.write(b"\0")
             stream.flush()
         stream.seek(0)
 

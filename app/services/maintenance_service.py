@@ -97,6 +97,12 @@ def is_process_running(pid):
         open_process = kernel32.OpenProcess
         open_process.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
         open_process.restype = wintypes.HANDLE
+        get_exit_code = kernel32.GetExitCodeProcess
+        get_exit_code.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        get_exit_code.restype = wintypes.BOOL
+        close_handle = kernel32.CloseHandle
+        close_handle.argtypes = [wintypes.HANDLE]
+        close_handle.restype = wintypes.BOOL
         handle = open_process(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
         if not handle:
             error_code = ctypes.get_last_error()
@@ -108,12 +114,12 @@ def is_process_running(pid):
 
         try:
             exit_code = wintypes.DWORD()
-            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+            if not get_exit_code(handle, ctypes.byref(exit_code)):
                 error_code = ctypes.get_last_error()
                 raise OSError(error_code, ctypes.FormatError(error_code))
             return exit_code.value == STILL_ACTIVE
         finally:
-            kernel32.CloseHandle(handle)
+            close_handle(handle)
 
     try:
         os.kill(pid, 0)

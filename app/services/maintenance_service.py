@@ -5,6 +5,8 @@ and crash-resilient recovery for database restoration and exhibition mode.
 """
 
 import os
+import re
+import errno
 import json
 import time
 import threading
@@ -37,6 +39,159 @@ def get_restore_in_progress_file():
     except Exception:
         pass
     return Path(__file__).resolve().parent.parent.parent / '.restore_in_progress'
+
+def get_restore_recovery_lock_file():
+    """Locate the OS-locked file that serializes startup restore recovery."""
+    try:
+        from flask import current_app
+        if current_app and current_app.config.get('DATABASE_PATH'):
+            return Path(current_app.config['DATABASE_PATH']).parent / '.restore_recovery.lock'
+    except Exception:
+        pass
+    return Path(__file__).resolve().parent.parent.parent / '.restore_recovery.lock'
+
+
+def read_maintenance_lock_info():
+    """Read and validate the owner PID and exact bytes of the maintenance gate."""
+    lock_file = get_maintenance_file()
+    if not lock_file.exists():
+        return None
+
+    payload = lock_file.read_bytes()
+    try:
+        value = payload.decode('utf-8').strip()
+    except UnicodeDecodeError as exc:
+        raise ValueError("Maintenance lock is not valid UTF-8.") from exc
+
+    match = re.fullmatch(r"MAINTENANCE_ACTIVE:[^:]+:PID:(\\d+)", value)
+    if not match:
+        raise ValueError("Maintenance lock has an unknown or malformed owner.")
+
+    pid = int(match.group(1))
+    if pid <= 0:
+        raise ValueError("Maintenance lock contains an invalid process ID.")
+    return {"pid": pid, "payload": payload}
+
+
+def is_process_running(pid):
+    """Return whether a PID is alive without ever signalling it on Windows.
+
+    Access-denied and otherwise ambiguous states are treated as alive so startup
+    recovery fails closed rather than touching a database owned by another process.
+    """
+    if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 0:
+        raise ValueError("Process ID must be a positive integer.")
+    if pid == os.getpid():
+        return True
+
+    if os.name == "nt":
+        import ctypes
+        from ctypes import wintypes
+
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        ERROR_ACCESS_DENIED = 5
+        ERROR_INVALID_PARAMETER = 87
+        STILL_ACTIVE = 259
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        open_process = kernel32.OpenProcess
+        open_process.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        open_process.restype = wintypes.HANDLE
+        handle = open_process(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not handle:
+            error_code = ctypes.get_last_error()
+            if error_code == ERROR_INVALID_PARAMETER:
+                return False
+            if error_code == ERROR_ACCESS_DENIED:
+                return True
+            raise OSError(error_code, ctypes.FormatError(error_code))
+
+        try:
+            exit_code = wintypes.DWORD()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+                error_code = ctypes.get_last_error()
+                raise OSError(error_code, ctypes.FormatError(error_code))
+            return exit_code.value == STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError as exc:
+        if exc.errno == errno.ESRCH:
+            return False
+        if exc.errno == errno.EPERM:
+            return True
+        raise
+
+
+def clear_stale_maintenance_lock(expected_payload):
+    """Remove a lock only when its bytes still match the previously checked owner."""
+    global _in_memory_maintenance
+    with _STATE_LOCK:
+        lock_file = get_maintenance_file()
+        if not lock_file.exists():
+            _in_memory_maintenance = False
+            return True
+        if lock_file.read_bytes() != expected_payload:
+            return False
+        lock_file.unlink()
+        _in_memory_maintenance = False
+        return True
+
+
+@contextmanager
+def restore_recovery_context():
+    """Acquire a cross-process, crash-released lock for startup recovery.
+
+    POSIX uses flock; Windows uses a one-byte msvcrt file lock. The lock file
+    intentionally remains on disk: the operating system releases the lock when
+    the process exits, including after a crash.
+    """
+    lock_file = get_restore_recovery_lock_file()
+    lock_file.parent.mkdir(parents=True, exist_ok=True)
+    stream = open(lock_file, "a+b")
+    acquired = False
+    windows_lock = os.name == "nt"
+    try:
+        stream.seek(0, os.SEEK_END)
+        if stream.tell() == 0:
+            stream.write(b"\\0")
+            stream.flush()
+        stream.seek(0)
+
+        if windows_lock:
+            import msvcrt
+            try:
+                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError as exc:
+                raise TimeoutError("Another process is already recovering the interrupted restore.") from exc
+        else:
+            import fcntl
+            try:
+                fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise TimeoutError("Another process is already recovering the interrupted restore.") from exc
+        acquired = True
+        yield
+    finally:
+        if acquired:
+            try:
+                stream.seek(0)
+                if windows_lock:
+                    import msvcrt
+                    msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
+        stream.close()
 
 # -----------------------------------------------------------------------------
 # 1. Maintenance Mode State

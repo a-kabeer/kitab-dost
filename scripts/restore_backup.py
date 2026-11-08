@@ -87,7 +87,7 @@ def restore_backup(backup_path, skip_confirm=False, port=5000, check_server=True
         print(f"The Waitress production server is actively listening on port {port}.")
         print("To guarantee cross-process data safety and eliminate any write conflicts:")
         print("  1. Stop the Waitress server (Ctrl+C on start_kitaab_bank window) before running CLI restore; OR")
-        print("  2. Perform restoration safely from the Teacher Settings web portal (/teacher/settings?tab=backup).")
+        print("  2. If exiting Exhibition Demo Mode, use the 'Exit Demo & Restore Real Data' action in Teacher Settings (/teacher/settings?tab=demo).")
         print("=" * 70)
         print("CLI restoration ABORTED. Live database was NOT modified.\n")
         return False

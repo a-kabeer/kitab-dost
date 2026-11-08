@@ -1,6 +1,7 @@
 # Environment & Secret Configurations
 .env
 .env.*
+!.env.example
 *.env
 instance/
 

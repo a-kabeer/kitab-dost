@@ -4,6 +4,24 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
+def _load_env_file():
+    """Load key-value pairs from .env in BASE_DIR into os.environ if not already set."""
+    env_file = BASE_DIR / '.env'
+    if env_file.is_file():
+        try:
+            for line in env_file.read_text(encoding='utf-8').splitlines():
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, val = line.split('=', 1)
+                key = key.strip()
+                val = val.strip().strip('"').strip("'")
+                os.environ.setdefault(key, val)
+        except Exception:
+            pass
+
+_load_env_file()
+
 class Config:
     # Security
     SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)

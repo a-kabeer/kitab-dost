@@ -199,9 +199,11 @@ def init_db(app):
     # Ensure parent directory exists
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # 0. Crash Resilience: Check and recover from any previously interrupted restore
-    if not check_and_recover_interrupted_restore(app):
-        raise RuntimeError('Interrupted database restore could not be recovered. Application startup aborted to protect school data.')
+    # 0. Crash Resilience: Check and recover using this app's configured database paths.
+    # The app context is required because maintenance markers live beside DATABASE_PATH.
+    with app.app_context():
+        if not check_and_recover_interrupted_restore(app):
+            raise RuntimeError('Interrupted database restore could not be recovered. Application startup aborted to protect school data.')
 
     with app.app_context():
         db = get_db()

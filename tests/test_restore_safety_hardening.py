@@ -21,6 +21,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from app import create_app
 from app.database import get_db, init_db
@@ -287,8 +288,11 @@ class RestoreSafetyHardeningTestCase(unittest.TestCase):
         })
 
         with fresh_app.app_context():
-            # init_db should detect .restore_in_progress, recover from rollback snapshot, and clear marker
-            init_db(fresh_app)
+            # This test simulates a previous process crash while running inside
+            # the current test process; treat the recorded owner as exited.
+            with patch("app.services.maintenance_service.is_process_running", return_value=False):
+                # init_db should detect .restore_in_progress, recover from rollback snapshot, and clear marker
+                init_db(fresh_app)
 
             # Verify marker was removed
             self.assertFalse(maintenance_service.get_restore_in_progress_file().exists(), "Marker should be cleared after recovery")

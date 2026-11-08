@@ -1,5 +1,6 @@
 """Regression coverage for high-impact audit findings fixed in the audit branch."""
 
+import os
 import sqlite3
 import tempfile
 import threading
@@ -236,7 +237,7 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
             self.assertIsNone(snapshot)
             self.assertIn("Invalid backup filename", error)
 
-    def test_existing_database_is_recovered_from_interrupted_restore_marker(self):
+    def test_existing_database_is_recovered_only_after_stale_restore_owner_exits(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             live_db = root / "live.db"
@@ -255,13 +256,80 @@ class SecurityAndIntegrityRegressionTests(unittest.TestCase):
             app = Flask(__name__)
             app.config["DATABASE_PATH"] = live_db
             with app.app_context():
+                maintenance_service.set_maintenance_mode(True, exclusive=True)
                 maintenance_service.mark_restore_in_progress(rollback_db, "target.db")
-                self.assertTrue(check_and_recover_interrupted_restore(app))
+                with patch("app.services.maintenance_service.is_process_running", return_value=False):
+                    self.assertTrue(check_and_recover_interrupted_restore(app))
 
                 with closing(sqlite3.connect(live_db)) as conn:
                     value = conn.execute("SELECT value FROM sample").fetchone()[0]
                 self.assertEqual(value, "safe snapshot")
                 self.assertIsNone(maintenance_service.get_interrupted_restore_info())
+                self.assertFalse(maintenance_service.get_maintenance_file().exists())
+
+    def test_startup_refuses_to_recover_while_restore_owner_is_alive(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            live_db = root / "live.db"
+            rollback_db = root / "rollback.db"
+
+            with closing(sqlite3.connect(rollback_db)) as conn:
+                conn.execute("CREATE TABLE sample (value TEXT)")
+                conn.execute("INSERT INTO sample VALUES ('safe snapshot')")
+                conn.commit()
+
+            with closing(sqlite3.connect(live_db)) as conn:
+                conn.execute("CREATE TABLE sample (value TEXT)")
+                conn.execute("INSERT INTO sample VALUES ('partial restore')")
+                conn.commit()
+
+            app = Flask(__name__)
+            app.config["DATABASE_PATH"] = live_db
+            with app.app_context():
+                maintenance_service.set_maintenance_mode(True, exclusive=True)
+                maintenance_service.mark_restore_in_progress(rollback_db, "target.db")
+                with patch("app.services.maintenance_service.is_process_running", return_value=True):
+                    self.assertFalse(check_and_recover_interrupted_restore(app))
+
+                with closing(sqlite3.connect(live_db)) as conn:
+                    value = conn.execute("SELECT value FROM sample").fetchone()[0]
+                self.assertEqual(value, "partial restore")
+                self.assertIsNotNone(maintenance_service.get_interrupted_restore_info())
+                self.assertTrue(maintenance_service.get_maintenance_file().exists())
+
+                maintenance_service.clear_restore_in_progress()
+                maintenance_service.set_maintenance_mode(False)
+
+    def test_stale_maintenance_gate_without_restore_marker_is_removed(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = Flask(__name__)
+            app.config["DATABASE_PATH"] = Path(temp_dir) / "live.db"
+            with app.app_context():
+                maintenance_service.set_maintenance_mode(True, exclusive=True)
+                lock_file = maintenance_service.get_maintenance_file()
+                self.assertTrue(lock_file.exists())
+                self.assertIsNone(maintenance_service.get_interrupted_restore_info())
+
+                with patch("app.services.maintenance_service.is_process_running", return_value=False):
+                    self.assertTrue(check_and_recover_interrupted_restore(app))
+
+                self.assertFalse(lock_file.exists())
+                self.assertFalse(maintenance_service.is_maintenance_active())
+
+    def test_malformed_maintenance_gate_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = Flask(__name__)
+            app.config["DATABASE_PATH"] = Path(temp_dir) / "live.db"
+            with app.app_context():
+                lock_file = maintenance_service.get_maintenance_file()
+                lock_file.write_text("MAINTENANCE_ACTIVE:unknown-owner", encoding="utf-8")
+                self.assertFalse(check_and_recover_interrupted_restore(app))
+                self.assertTrue(lock_file.exists())
+                lock_file.unlink()
+
+    def test_process_liveness_probe_handles_current_and_nonexistent_pid(self):
+        self.assertTrue(maintenance_service.is_process_running(os.getpid()))
+        self.assertFalse(maintenance_service.is_process_running(2147483647))
 
     def test_initial_teacher_password_is_confined_to_password_rotation(self):
         app = create_app("testing")

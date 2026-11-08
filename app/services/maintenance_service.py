@@ -14,6 +14,7 @@ from pathlib import Path
 from contextlib import contextmanager
 
 _STATE_LOCK = threading.RLock()
+_RECOVERY_LOCK = threading.Lock()
 _in_memory_maintenance = False
 
 # Tracking active in-flight requests and database connections
@@ -153,18 +154,22 @@ def clear_stale_maintenance_lock(expected_payload):
 
 @contextmanager
 def restore_recovery_context():
-    """Acquire a cross-process, crash-released lock for startup recovery.
+    """Acquire process-local and cross-process locks for startup recovery.
 
     POSIX uses flock; Windows uses a one-byte msvcrt file lock. The lock file
     intentionally remains on disk: the operating system releases the lock when
     the process exits, including after a crash.
     """
+    if not _RECOVERY_LOCK.acquire(blocking=False):
+        raise TimeoutError("Another thread is already recovering the interrupted restore.")
+
     lock_file = get_restore_recovery_lock_file()
-    lock_file.parent.mkdir(parents=True, exist_ok=True)
-    stream = open(lock_file, "a+b")
+    stream = None
     acquired = False
     windows_lock = os.name == "nt"
     try:
+        lock_file.parent.mkdir(parents=True, exist_ok=True)
+        stream = open(lock_file, "a+b")
         stream.seek(0, os.SEEK_END)
         if stream.tell() == 0:
             stream.write(b"\0")
@@ -186,18 +191,20 @@ def restore_recovery_context():
         acquired = True
         yield
     finally:
-        if acquired:
-            try:
-                stream.seek(0)
-                if windows_lock:
-                    import msvcrt
-                    msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
-                else:
-                    import fcntl
-                    fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
-            except OSError:
-                pass
-        stream.close()
+        if stream is not None:
+            if acquired:
+                try:
+                    stream.seek(0)
+                    if windows_lock:
+                        import msvcrt
+                        msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+                    else:
+                        import fcntl
+                        fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
+                except OSError:
+                    pass
+            stream.close()
+        _RECOVERY_LOCK.release()
 
 # -----------------------------------------------------------------------------
 # 1. Maintenance Mode State

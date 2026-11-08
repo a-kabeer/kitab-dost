@@ -47,55 +47,148 @@ def close_db(e=None):
         pass
 
 def check_and_recover_interrupted_restore(app):
-    """Recover an interrupted restore before the application serves requests.
+    """Recover an interrupted restore only after its owner has exited.
 
-    Returns False on any recovery uncertainty so startup can fail closed rather
-    than serving a potentially half-restored SQLite database.
+    A cross-process OS lock serializes recovery between simultaneous application
+    startups. Unknown owner state always fails closed; the live database is never
+    overwritten while a restore process may still be running.
     """
     try:
         from app.services import maintenance_service
+
+        def owner_has_exited(pid, context):
+            if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 0:
+                app.logger.critical("%s has no valid owner PID; startup is blocked.", context)
+                return False
+            try:
+                if maintenance_service.is_process_running(pid):
+                    app.logger.critical(
+                        "%s is still owned by live process %s; startup recovery is blocked.",
+                        context,
+                        pid
+                    )
+                    return False
+                return True
+            except Exception:
+                app.logger.exception(
+                    "Could not establish whether %s owner PID %s is still alive; startup is blocked.",
+                    context,
+                    pid
+                )
+                return False
+
         info = maintenance_service.get_interrupted_restore_info()
-        if not info:
+        lock_info = maintenance_service.read_maintenance_lock_info()
+
+        if not info and not lock_info:
             return True
 
-        rollback_path = info.get("rollback_snapshot")
-        if not rollback_path or not os.path.isfile(rollback_path):
+        # A maintenance gate without a restore marker means the process crashed
+        # before live-database mutation began (for example while draining or
+        # creating the rollback snapshot). It may be cleared only after proving
+        # its recorded owner has exited.
+        if not info:
+            with maintenance_service.restore_recovery_context():
+                refreshed_lock = maintenance_service.read_maintenance_lock_info()
+                if not refreshed_lock:
+                    return True
+                if not owner_has_exited(refreshed_lock.get("pid"), "Maintenance gate"):
+                    return False
+                if not maintenance_service.clear_stale_maintenance_lock(refreshed_lock["payload"]):
+                    app.logger.critical(
+                        "Maintenance gate changed during stale-lock cleanup; startup is blocked."
+                    )
+                    return False
+                app.logger.warning("Removed stale maintenance gate left before restore mutation.")
+                return True
+
+        marker_pid = info.get("pid")
+        if marker_pid is None and lock_info:
+            # Older marker files did not persist a PID; the gate is the fallback
+            # source of ownership metadata.
+            marker_pid = lock_info.get("pid")
+
+        if lock_info and marker_pid != lock_info.get("pid"):
             app.logger.critical(
-                "Interrupted database restore marker exists, but its rollback snapshot is missing: %s",
-                rollback_path
+                "Restore marker owner and maintenance gate owner disagree; startup is blocked."
             )
             return False
 
-        app.logger.warning(
-            "Interrupted database restoration detected. Recovering live database from rollback snapshot: %s",
-            rollback_path
-        )
-
-        db_path = app.config['DATABASE_PATH']
-        with closing(sqlite3.connect(str(rollback_path), timeout=10.0)) as src_conn:
-            integrity = src_conn.execute("PRAGMA integrity_check;").fetchone()
-            if not integrity or integrity[0] != 'ok':
-                app.logger.critical("Rollback snapshot failed integrity_check: %s", integrity)
-                return False
-
-            with closing(sqlite3.connect(str(db_path), timeout=10.0)) as dest_conn:
-                src_conn.backup(dest_conn)
-                dest_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
-
-        with closing(sqlite3.connect(str(db_path), timeout=10.0)) as check_conn:
-            result = check_conn.execute("PRAGMA integrity_check;").fetchone()
-
-        if not result or result[0] != 'ok':
-            app.logger.critical("Rollback recovery integrity check failed: %s", result)
+        if not owner_has_exited(marker_pid, "Interrupted restore"):
             return False
 
-        # Marker removal is part of successful recovery; failure must stop startup.
-        maintenance_service.clear_restore_in_progress()
-        # A killed process may also have left the cross-process maintenance
-        # gate behind. Recovery is complete now, so remove that stale gate.
-        maintenance_service.set_maintenance_mode(False)
-        app.logger.info("Interrupted restore recovery completed successfully.")
-        return True
+        # The kernel releases this lock automatically if a recovery process
+        # crashes. A second startup cannot restore/verify/clear markers in
+        # parallel and then accidentally serve while the other is still copying.
+        with maintenance_service.restore_recovery_context():
+            info = maintenance_service.get_interrupted_restore_info()
+            lock_info = maintenance_service.read_maintenance_lock_info()
+
+            # Another startup may have completed recovery while this process
+            # waited for the recovery lock.
+            if not info:
+                if lock_info:
+                    if not owner_has_exited(lock_info.get("pid"), "Maintenance gate"):
+                        return False
+                    if not maintenance_service.clear_stale_maintenance_lock(lock_info["payload"]):
+                        app.logger.critical(
+                            "Maintenance gate changed while another startup completed recovery."
+                        )
+                        return False
+                return True
+
+            marker_pid = info.get("pid")
+            if marker_pid is None and lock_info:
+                marker_pid = lock_info.get("pid")
+            if lock_info and marker_pid != lock_info.get("pid"):
+                app.logger.critical(
+                    "Restore marker owner and maintenance gate owner changed during recovery; startup is blocked."
+                )
+                return False
+            if not owner_has_exited(marker_pid, "Interrupted restore"):
+                return False
+
+            rollback_path = info.get("rollback_snapshot")
+            if not rollback_path or not os.path.isfile(rollback_path):
+                app.logger.critical(
+                    "Interrupted database restore marker exists, but its rollback snapshot is missing: %s",
+                    rollback_path
+                )
+                return False
+
+            app.logger.warning(
+                "Interrupted database restoration detected. Recovering live database from rollback snapshot: %s",
+                rollback_path
+            )
+
+            db_path = app.config['DATABASE_PATH']
+            with closing(sqlite3.connect(str(rollback_path), timeout=10.0)) as src_conn:
+                integrity = src_conn.execute("PRAGMA integrity_check;").fetchone()
+                if not integrity or integrity[0] != 'ok':
+                    app.logger.critical("Rollback snapshot failed integrity_check: %s", integrity)
+                    return False
+
+                with closing(sqlite3.connect(str(db_path), timeout=10.0)) as dest_conn:
+                    src_conn.backup(dest_conn)
+                    dest_conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+
+            with closing(sqlite3.connect(str(db_path), timeout=10.0)) as check_conn:
+                result = check_conn.execute("PRAGMA integrity_check;").fetchone()
+
+            if not result or result[0] != 'ok':
+                app.logger.critical("Rollback recovery integrity check failed: %s", result)
+                return False
+
+            # Remove markers only after the recovered database has been verified.
+            maintenance_service.clear_restore_in_progress()
+            if lock_info and not maintenance_service.clear_stale_maintenance_lock(lock_info["payload"]):
+                app.logger.critical(
+                    "Database was recovered, but the maintenance gate changed before cleanup; startup remains blocked."
+                )
+                return False
+
+            app.logger.info("Interrupted restore recovery completed successfully.")
+            return True
     except Exception:
         app.logger.exception("Failed to recover interrupted database restoration.")
         return False
